@@ -21,15 +21,15 @@ class MasterOpdPapuaBaratSeeder extends Seeder
         DB::transaction(function () {
             // ── 0. Sinkronisasi, Penggabungan & Pembersihan Data Lama di PostgreSQL ──
             $aliases = [
-                'BIRO ADMINISTRASIPELAKSANAAN OTSUS'           => 'BIRO-OTSUS-PB',
+                'BIRO ADMINISTRASIPELAKSANAAN OTSUS' => 'BIRO-OTSUS-PB',
                 'BIRO ADMINISTRASI PELAKSANAAN OTONOMI KHUSUS' => 'BIRO-OTSUS-PB',
-                'BIRO HUKUM'                                   => 'BIRO-HUKUM-PB',
-                'BADAN PENGHUBUNG'                             => 'PENGHUBUNG-PB',
-                'DINAS TRANSMIGRASI DAN TENAGA KERJA'          => 'DISNAKERTRANS-PB',
-                'BAPENDA'                                      => 'BAPENDA-PB',
-                'Biro Administrasi Pimpinan'                   => 'BIRO-ADPIM-PB',
-                'Sekretariat Daerah'                           => 'SETDA-PB',
-                'KOMINFO-PB'                                   => 'DISKOMINFO-PB',
+                'BIRO HUKUM' => 'BIRO-HUKUM-PB',
+                'BADAN PENGHUBUNG' => 'PENGHUBUNG-PB',
+                'DINAS TRANSMIGRASI DAN TENAGA KERJA' => 'DISNAKERTRANS-PB',
+                'BAPENDA' => 'BAPENDA-PB',
+                'Biro Administrasi Pimpinan' => 'BIRO-ADPIM-PB',
+                'Sekretariat Daerah' => 'SETDA-PB',
+                'KOMINFO-PB' => 'DISKOMINFO-PB',
             ];
 
             foreach ($aliases as $oldCode => $newCode) {
@@ -49,7 +49,7 @@ class MasterOpdPapuaBaratSeeder extends Seeder
             // Hapus tuntas organisasi yang tidak ada di daftar resmi (seperti Dinas Damkar)
             $invalidOrgs = Organization::where(function ($q) {
                 $q->where('code', 'like', '%Damkar%')
-                  ->orWhere('name', 'like', '%Damkar%');
+                    ->orWhere('name', 'like', '%Damkar%');
             })->get();
 
             foreach ($invalidOrgs as $inv) {
@@ -61,12 +61,12 @@ class MasterOpdPapuaBaratSeeder extends Seeder
             $provinsi = Organization::updateOrCreate(
                 ['code' => 'PROV-PAPBAR'],
                 [
-                    'name'       => 'Pemerintah Provinsi Papua Barat',
+                    'name' => 'Pemerintah Provinsi Papua Barat',
                     'short_name' => 'Pemprov Papua Barat',
-                    'type'       => 'province',
-                    'parent_id'  => null,
-                    'address'    => 'Jl. Brigjen Marinir (Purn) Abraham O. Atururi, Arfai, Manokwari',
-                    'is_active'  => true,
+                    'type' => 'province',
+                    'parent_id' => null,
+                    'address' => 'Jl. Brigjen Marinir (Purn) Abraham O. Atururi, Arfai, Manokwari',
+                    'is_active' => true,
                 ]
             );
 
@@ -74,12 +74,12 @@ class MasterOpdPapuaBaratSeeder extends Seeder
             $setda = Organization::updateOrCreate(
                 ['code' => 'SETDA-PB'],
                 [
-                    'name'       => 'Sekretariat Daerah',
+                    'name' => 'Sekretariat Daerah',
                     'short_name' => 'Setda',
-                    'type'       => 'opd',
-                    'parent_id'  => $provinsi->id,
-                    'address'    => 'Kompleks Kantor Gubernur Papua Barat, Arfai, Manokwari',
-                    'is_active'  => true,
+                    'type' => 'opd',
+                    'parent_id' => $provinsi->id,
+                    'address' => 'Kompleks Kantor Gubernur Papua Barat, Arfai, Manokwari',
+                    'is_active' => true,
                 ]
             );
 
@@ -101,12 +101,12 @@ class MasterOpdPapuaBaratSeeder extends Seeder
                 Organization::updateOrCreate(
                     ['code' => $b['code']],
                     [
-                        'name'       => $b['name'],
+                        'name' => $b['name'],
                         'short_name' => $b['short_name'],
-                        'type'       => 'opd', // Klien meminta Biro setara OPD agar tampil di analitik & ringkasan
-                        'parent_id'  => $setda->id,
-                        'address'    => 'Kompleks Kantor Gubernur Papua Barat, Arfai, Manokwari',
-                        'is_active'  => true,
+                        'type' => 'opd', // Klien meminta Biro setara OPD agar tampil di analitik & ringkasan
+                        'parent_id' => $setda->id,
+                        'address' => 'Kompleks Kantor Gubernur Papua Barat, Arfai, Manokwari',
+                        'is_active' => true,
                     ]
                 );
             }
@@ -189,11 +189,11 @@ class MasterOpdPapuaBaratSeeder extends Seeder
                 Organization::updateOrCreate(
                     ['code' => $item['code']],
                     [
-                        'name'       => $item['name'],
+                        'name' => $item['name'],
                         'short_name' => $item['short_name'],
-                        'type'       => 'opd',
-                        'parent_id'  => $provinsi->id,
-                        'is_active'  => true,
+                        'type' => 'opd',
+                        'parent_id' => $provinsi->id,
+                        'is_active' => true,
                         'is_bappeda' => $item['is_bappeda'] ?? false,
                     ]
                 );

@@ -36,22 +36,22 @@ class SakipComprehensiveSeeder extends Seeder
             $period = PlanningPeriod::firstOrCreate(
                 ['code' => 'RPJMD-2025-2029'],
                 [
-                    'name'       => 'Periode RPJMD Papua Barat 2025-2029',
-                    'year'       => 2025,
-                    'type'       => 'annual',
+                    'name' => 'Periode RPJMD Papua Barat 2025-2029',
+                    'year' => 2025,
+                    'type' => 'annual',
                     'start_date' => '2025-01-01',
-                    'end_date'   => '2029-12-31',
-                    'status'     => 'active',
+                    'end_date' => '2029-12-31',
+                    'status' => 'active',
                 ]
             );
 
             $perfPeriod2026 = PerformancePeriod::firstOrCreate(
                 ['year' => 2026],
                 [
-                    'name'        => 'Tahunan 2026',
-                    'status'      => 'open',
-                    'start_date'  => '2026-01-01',
-                    'end_date'    => '2026-12-31',
+                    'name' => 'Tahunan 2026',
+                    'status' => 'open',
+                    'start_date' => '2026-01-01',
+                    'end_date' => '2026-12-31',
                     'description' => 'Periode Tahunan TA 2026',
                 ]
             );
@@ -61,14 +61,14 @@ class SakipComprehensiveSeeder extends Seeder
 
             $unitPersen = MeasurementUnit::firstOrCreate(['code' => 'PERSEN'], ['name' => 'Persen', 'symbol' => '%', 'is_active' => true]);
             $unitIndeks = MeasurementUnit::firstOrCreate(['code' => 'INDEKS'], ['name' => 'Indeks', 'symbol' => 'Indeks', 'is_active' => true]);
-            $unitPoin   = MeasurementUnit::firstOrCreate(['code' => 'POIN'], ['name' => 'Poin', 'symbol' => 'Poin', 'is_active' => true]);
+            $unitPoin = MeasurementUnit::firstOrCreate(['code' => 'POIN'], ['name' => 'Poin', 'symbol' => 'Poin', 'is_active' => true]);
 
             // ── 2. Sub-Periode (Triwulan) ──────────────────────────────────────────
             $twDefs = [
                 ['code' => 'TA-2025',  'name' => 'Tahunan 2025',     'start_date' => '2025-01-01', 'end_date' => '2025-12-31', 'status' => 'closed', 'type' => 'annual'],
                 ['code' => 'TW1-2026', 'name' => 'Triwulan I 2026',  'start_date' => '2026-01-01', 'end_date' => '2026-03-31', 'status' => 'closed', 'type' => 'quarterly'],
                 ['code' => 'TW2-2026', 'name' => 'Triwulan II 2026', 'start_date' => '2026-04-01', 'end_date' => '2026-06-30', 'status' => 'closed', 'type' => 'quarterly'],
-                ['code' => 'TW3-2026', 'name' => 'Triwulan III 2026','start_date' => '2026-07-01', 'end_date' => '2026-09-30', 'status' => 'open',   'type' => 'quarterly'],
+                ['code' => 'TW3-2026', 'name' => 'Triwulan III 2026', 'start_date' => '2026-07-01', 'end_date' => '2026-09-30', 'status' => 'open',   'type' => 'quarterly'],
                 ['code' => 'TW4-2026', 'name' => 'Triwulan IV 2026', 'start_date' => '2026-10-01', 'end_date' => '2026-12-31', 'status' => 'open',   'type' => 'quarterly'],
             ];
             foreach ($twDefs as $tw) {
@@ -89,8 +89,8 @@ class SakipComprehensiveSeeder extends Seeder
                 ['code' => 'INSP-PB',     'name' => 'Inspektorat Daerah',                   'short' => 'Inspektorat'],
                 ['code' => 'DISDIK-PB',   'name' => 'Dinas Pendidikan',                     'short' => 'Dinas Pendidikan'],
                 ['code' => 'DINKES-PB',   'name' => 'Dinas Kesehatan',                      'short' => 'Dinas Kesehatan'],
-                ['code' => 'PUPR-PB',     'name' => 'Dinas Pekerjaan Umum dan Penataan Ruang','short' => 'Dinas PUPR'],
-                ['code' => 'KOMINFO-PB',  'name' => 'Dinas Komunikasi, Informatika & Persandian','short' => 'Dinas Kominfo'],
+                ['code' => 'PUPR-PB',     'name' => 'Dinas Pekerjaan Umum dan Penataan Ruang', 'short' => 'Dinas PUPR'],
+                ['code' => 'KOMINFO-PB',  'name' => 'Dinas Komunikasi, Informatika & Persandian', 'short' => 'Dinas Kominfo'],
                 ['code' => 'DISHUB-PB',   'name' => 'Dinas Perhubungan',                    'short' => 'Dinas Perhubungan'],
                 ['code' => 'DISKOP-PB',   'name' => 'Dinas Koperasi dan UKM',               'short' => 'Dinas Koperasi'],
                 ['code' => 'DINSOS-PB',   'name' => 'Dinas Sosial',                         'short' => 'Dinas Sosial'],
@@ -104,10 +104,10 @@ class SakipComprehensiveSeeder extends Seeder
                 $seededOpds[$item['code']] = Organization::updateOrCreate(
                     ['code' => $item['code']],
                     [
-                        'name'       => $item['name'],
-                        'type'       => 'opd',
-                        'parent_id'  => $provinsi->id,
-                        'is_active'  => true,
+                        'name' => $item['name'],
+                        'type' => 'opd',
+                        'parent_id' => $provinsi->id,
+                        'is_active' => true,
                     ]
                 );
             }
@@ -117,33 +117,33 @@ class SakipComprehensiveSeeder extends Seeder
                 ['type' => 'rpjmd',         'title' => 'RPJMD Provinsi Papua Barat 2025-2029',       'status' => 'approved', 'periode_type' => 'lima_tahunan', 'start_year' => 2025, 'end_year' => 2029],
                 ['type' => 'pohon_kinerja', 'title' => 'Pohon Kinerja Pemerintah Daerah 2026',      'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
                 ['type' => 'sop',           'title' => 'Proses Bisnis Pemerintah Daerah 2026',       'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
-                ['type' => 'crosscutting',  'title' => 'Crosscutting Kinerja Pemerintah Daerah 2026','status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
+                ['type' => 'crosscutting',  'title' => 'Crosscutting Kinerja Pemerintah Daerah 2026', 'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
                 ['type' => 'cascading',     'title' => 'Cascading Kinerja Pemerintah Daerah 2026',   'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
                 ['type' => 'iku',           'title' => 'Indikator Kinerja Utama Pemda 2025-2029',    'status' => 'approved', 'periode_type' => 'lima_tahunan', 'start_year' => 2025, 'end_year' => 2029],
-                ['type' => 'rkpd',          'title' => 'Rencana Kerja Pemerintah Daerah (RKPD) 2026','status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
+                ['type' => 'rkpd',          'title' => 'Rencana Kerja Pemerintah Daerah (RKPD) 2026', 'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
                 ['type' => 'dpa',           'title' => 'Dokumen Anggaran/DPA Terkait 2026',          'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
-                ['type' => 'pk',            'title' => 'Perjanjian Kinerja Gubernur Papua Barat 2026','status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
+                ['type' => 'pk',            'title' => 'Perjanjian Kinerja Gubernur Papua Barat 2026', 'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
                 // No 10: Manajemen Risiko tidak di-seed untuk 2026 agar berstatus Belum Tersedia (-)
                 ['type' => 'renaksi',       'title' => 'Rencana Aksi Kinerja Pemda 2026',            'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
-                ['type' => 'pedoman_teknis','title' => 'Pedoman Teknis Perencanaan Kinerja 2026',    'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
-                ['type' => 'lkjip',         'title' => 'Laporan Kinerja Instansi Pemerintah (LKjIP) 2026','status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
+                ['type' => 'pedoman_teknis', 'title' => 'Pedoman Teknis Perencanaan Kinerja 2026',    'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
+                ['type' => 'lkjip',         'title' => 'Laporan Kinerja Instansi Pemerintah (LKjIP) 2026', 'status' => 'approved', 'periode_type' => 'tahunan', 'start_year' => null, 'end_year' => null],
             ];
 
             foreach ($docTypesPemda as $idx => $d) {
-                $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', 'doc_prov_' . $d['type'] . '_26'));
+                $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', 'doc_prov_'.$d['type'].'_26'));
                 $relPath = "planning/documents/{$slug}.pdf";
                 $filePath = $this->createSamplePdf(
                     $relPath,
                     $d['title'],
                     $provinsi->name,
                     strtoupper($d['type']),
-                    (string) ($d['start_year'] ? $d['start_year'] . '-' . $d['end_year'] : 2026),
+                    (string) ($d['start_year'] ? $d['start_year'].'-'.$d['end_year'] : 2026),
                     [
-                        'Nomor Dokumen'     => '00' . ($idx + 1) . '/PEMDA/2026',
+                        'Nomor Dokumen' => '00'.($idx + 1).'/PEMDA/2026',
                         'Pemerintah Daerah' => $provinsi->name,
-                        'Jenis Dokumen'     => strtoupper($d['type']),
-                        'Tahun/Periode'     => (string) ($d['start_year'] ? $d['start_year'] . '-' . $d['end_year'] : 2026),
-                        'Status Legalitas'  => 'Approved (Resmi)',
+                        'Jenis Dokumen' => strtoupper($d['type']),
+                        'Tahun/Periode' => (string) ($d['start_year'] ? $d['start_year'].'-'.$d['end_year'] : 2026),
+                        'Status Legalitas' => 'Approved (Resmi)',
                         'Tanggal Penetapan' => now()->subDays(20)->format('d F Y'),
                     ]
                 );
@@ -151,18 +151,18 @@ class SakipComprehensiveSeeder extends Seeder
                 PlanningDocument::updateOrCreate(
                     ['organization_id' => $provinsi->id, 'type' => $d['type'], 'year' => 2026],
                     [
-                        'code'                  => 'DOC-PROV-' . strtoupper($d['type']) . '-26',
-                        'document_number'       => '00' . ($idx + 1) . '/PEMDA/2026',
-                        'title'                 => $d['title'],
-                        'periode_type'          => $d['periode_type'],
-                        'start_year'            => $d['start_year'] ?? null,
-                        'end_year'              => $d['end_year'] ?? null,
-                        'file_path'             => $filePath,
-                        'status'                => $d['status'],
+                        'code' => 'DOC-PROV-'.strtoupper($d['type']).'-26',
+                        'document_number' => '00'.($idx + 1).'/PEMDA/2026',
+                        'title' => $d['title'],
+                        'periode_type' => $d['periode_type'],
+                        'start_year' => $d['start_year'] ?? null,
+                        'end_year' => $d['end_year'] ?? null,
+                        'file_path' => $filePath,
+                        'status' => $d['status'],
                         'performance_period_id' => $perfPeriod2026->id,
-                        'created_by'            => $adminId,
-                        'approved_by'           => $adminId,
-                        'approved_at'           => now()->subDays(20),
+                        'created_by' => $adminId,
+                        'approved_by' => $adminId,
+                        'approved_at' => now()->subDays(20),
                     ]
                 );
             }
@@ -172,17 +172,17 @@ class SakipComprehensiveSeeder extends Seeder
 
             $opdSpecificDocs = [
                 'BAPPEDA-PB' => $canonical12, // 100% Lengkap (12/12)
-                'INSP-PB'    => $canonical12, // 100% Lengkap (12/12)
-                'DISDIK-PB'  => array_diff($canonical12, ['lkjip']), // 91.67% Belum Lengkap (11/12)
-                'DINKES-PB'  => array_diff($canonical12, ['sop', 'cascading', 'monev', 'lkjip']), // 66.67% Belum Lengkap (8/12)
-                'PUPR-PB'    => array_diff($canonical12, ['monev', 'lkjip']), // 83.33% Belum Lengkap (10/12)
+                'INSP-PB' => $canonical12, // 100% Lengkap (12/12)
+                'DISDIK-PB' => array_diff($canonical12, ['lkjip']), // 91.67% Belum Lengkap (11/12)
+                'DINKES-PB' => array_diff($canonical12, ['sop', 'cascading', 'monev', 'lkjip']), // 66.67% Belum Lengkap (8/12)
+                'PUPR-PB' => array_diff($canonical12, ['monev', 'lkjip']), // 83.33% Belum Lengkap (10/12)
                 'KOMINFO-PB' => $canonical12, // 100% Lengkap (12/12)
-                'DISHUB-PB'  => [], // 0% Belum Tersedia (0/12)
-                'DISKOP-PB'  => array_slice($canonical12, 0, 8), // 66.67% Belum Lengkap (8/12)
-                'DINSOS-PB'  => $canonical12, // 100% Lengkap (12/12)
+                'DISHUB-PB' => [], // 0% Belum Tersedia (0/12)
+                'DISKOP-PB' => array_slice($canonical12, 0, 8), // 66.67% Belum Lengkap (8/12)
+                'DINSOS-PB' => $canonical12, // 100% Lengkap (12/12)
                 'DPMPTSP-PB' => $canonical12, // 100% Lengkap (12/12)
-                'SATPOL-PB'  => array_slice($canonical12, 0, 6), // 50% Belum Lengkap (6/12)
-                'BIRO-ORG-PB'=> $canonical12, // 100% Lengkap (12/12)
+                'SATPOL-PB' => array_slice($canonical12, 0, 6), // 50% Belum Lengkap (6/12)
+                'BIRO-ORG-PB' => $canonical12, // 100% Lengkap (12/12)
             ];
 
             foreach ($seededOpds as $code => $opd) {
@@ -193,40 +193,40 @@ class SakipComprehensiveSeeder extends Seeder
                 foreach ($docTypesToSeed as $i => $dt) {
                     $isMultiYear = in_array($dt, ['renstra', 'iku']);
                     $docYear = $isMultiYear ? '2025-2029' : '2026';
-                    $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', 'doc_' . $code . '_' . $dt . '_26'));
+                    $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', 'doc_'.$code.'_'.$dt.'_26'));
                     $relPath = "planning/documents/{$slug}.pdf";
 
                     $filePath = $this->createSamplePdf(
                         $relPath,
-                        'Dokumen ' . strtoupper($dt) . ' ' . $opd->name . ' 2026',
+                        'Dokumen '.strtoupper($dt).' '.$opd->name.' 2026',
                         $opd->name,
                         strtoupper($dt),
                         $docYear,
                         [
-                            'Nomor Dokumen'    => ($i + 1) . '/' . $code . '/2026',
+                            'Nomor Dokumen' => ($i + 1).'/'.$code.'/2026',
                             'Perangkat Daerah' => $opd->name,
-                            'Jenis Dokumen'    => strtoupper($dt),
-                            'Tahun Anggaran'   => $docYear,
+                            'Jenis Dokumen' => strtoupper($dt),
+                            'Tahun Anggaran' => $docYear,
                             'Status Legalitas' => 'Approved (Resmi)',
-                            'Tanggal Penetapan'=> now()->subDays(15)->format('d F Y'),
+                            'Tanggal Penetapan' => now()->subDays(15)->format('d F Y'),
                         ]
                     );
 
                     PlanningDocument::updateOrCreate(
                         ['organization_id' => $opd->id, 'type' => $dt, 'year' => 2026],
                         [
-                            'code'                  => 'DOC-' . $code . '-' . strtoupper($dt) . '-26',
-                            'document_number'       => ($i + 1) . '/' . $code . '/2026',
-                            'title'                 => 'Dokumen ' . strtoupper($dt) . ' ' . $opd->name . ' 2026',
-                            'periode_type'          => $isMultiYear ? 'lima_tahunan' : 'tahunan',
-                            'start_year'            => $isMultiYear ? 2025 : null,
-                            'end_year'              => $isMultiYear ? 2029 : null,
-                            'file_path'             => $filePath,
-                            'status'                => 'approved',
+                            'code' => 'DOC-'.$code.'-'.strtoupper($dt).'-26',
+                            'document_number' => ($i + 1).'/'.$code.'/2026',
+                            'title' => 'Dokumen '.strtoupper($dt).' '.$opd->name.' 2026',
+                            'periode_type' => $isMultiYear ? 'lima_tahunan' : 'tahunan',
+                            'start_year' => $isMultiYear ? 2025 : null,
+                            'end_year' => $isMultiYear ? 2029 : null,
+                            'file_path' => $filePath,
+                            'status' => 'approved',
                             'performance_period_id' => $perfPeriod2026->id,
-                            'created_by'            => $adminId,
-                            'approved_by'           => $adminId,
-                            'approved_at'           => now()->subDays(15),
+                            'created_by' => $adminId,
+                            'approved_by' => $adminId,
+                            'approved_at' => now()->subDays(15),
                         ]
                     );
                 }
@@ -237,9 +237,9 @@ class SakipComprehensiveSeeder extends Seeder
                 ['code' => 'TUJ-PEMDA-01'],
                 [
                     'planning_period_id' => $period->id,
-                    'organization_id'    => $provinsi->id,
-                    'name'               => 'Meningkatkan Kesejahteraan dan Kualitas SDM Papua Barat',
-                    'status'             => 'active',
+                    'organization_id' => $provinsi->id,
+                    'name' => 'Meningkatkan Kesejahteraan dan Kualitas SDM Papua Barat',
+                    'status' => 'active',
                 ]
             );
 
@@ -267,7 +267,7 @@ class SakipComprehensiveSeeder extends Seeder
             $sasaranList = [];
             foreach ($sasaranNames as $i => $sName) {
                 $sasaranList[] = StrategicObjective::updateOrCreate(
-                    ['code' => 'SAS-PEMDA-' . str_pad($i + 1, 2, '0', STR_PAD_LEFT)],
+                    ['code' => 'SAS-PEMDA-'.str_pad($i + 1, 2, '0', STR_PAD_LEFT)],
                     ['strategic_goal_id' => $goal->id, 'name' => $sName, 'status' => 'active']
                 );
             }
@@ -285,7 +285,7 @@ class SakipComprehensiveSeeder extends Seeder
                 ['code' => 'IND-DPMP-02', 'name' => 'Persentase Izin Usaha Terbit Tepat Waktu',              'opd' => 'DPMPTSP-PB',  'target' => 90.0, 'real' => 91.0, 'real_2025' => 87.0, 'pol' => 'positif', 'is_iku' => true,  'level' => 'pemda',            'sasaran_idx' => 9],
                 ['code' => 'IND-BORG-01', 'name' => 'Indeks Reformasi Birokrasi Pemerintah Daerah',          'opd' => 'BIRO-ORG-PB', 'target' => 70.0, 'real' => 71.0, 'real_2025' => 68.0, 'pol' => 'positif', 'is_iku' => true,  'level' => 'pemda',            'sasaran_idx' => 5],
                 ['code' => 'IND-BORG-02', 'name' => 'Tingkat Efektivitas Kelembagaan Perangkat Daerah',      'opd' => 'BIRO-ORG-PB', 'target' => 85.0, 'real' => 86.0, 'real_2025' => 83.0, 'pol' => 'positif', 'is_iku' => false, 'level' => 'perangkat_daerah', 'sasaran_idx' => 14],
-                ['code' => 'IND-BAPP-03', 'name' => 'Indeks Pembangunan Manusia (IPM)',                       'opd' => 'BAPPEDA-PB',  'target' => 71.50,'real' => 72.10,'real_2025' => 70.80,'pol' => 'positif', 'is_iku' => true,  'level' => 'pemda',            'sasaran_idx' => 0],
+                ['code' => 'IND-BAPP-03', 'name' => 'Indeks Pembangunan Manusia (IPM)',                       'opd' => 'BAPPEDA-PB',  'target' => 71.50, 'real' => 72.10, 'real_2025' => 70.80, 'pol' => 'positif', 'is_iku' => true,  'level' => 'pemda',            'sasaran_idx' => 0],
                 ['code' => 'IND-BAPP-04', 'name' => 'Laju Pertumbuhan Ekonomi Non-Migas Daerah',             'opd' => 'BAPPEDA-PB',  'target' => 4.50, 'real' => 4.60, 'real_2025' => 4.20, 'pol' => 'positif', 'is_iku' => true,  'level' => 'pemda',            'sasaran_idx' => 2],
                 ['code' => 'IND-DISD-03', 'name' => 'Persentase Guru Menengah Bersertifikasi Pendidik',       'opd' => 'DISDIK-PB',   'target' => 80.0, 'real' => 81.0, 'real_2025' => 78.0, 'pol' => 'positif', 'is_iku' => false, 'level' => 'perangkat_daerah', 'sasaran_idx' => 0],
                 ['code' => 'IND-DINK-03', 'name' => 'Cakupan Fasilitas Kesehatan Berstandar Akreditasi',      'opd' => 'DINKES-PB',   'target' => 85.0, 'real' => 86.0, 'real_2025' => 82.0, 'pol' => 'positif', 'is_iku' => false, 'level' => 'perangkat_daerah', 'sasaran_idx' => 1],
@@ -294,7 +294,7 @@ class SakipComprehensiveSeeder extends Seeder
                 ['code' => 'IND-KOPR-02', 'name' => 'Persentase Pertumbuhan Volume Usaha Koperasi Binaan',    'opd' => 'DISKOP-PB',   'target' => 6.0,  'real' => 6.10, 'real_2025' => 5.80, 'pol' => 'positif', 'is_iku' => false, 'level' => 'perangkat_daerah', 'sasaran_idx' => 4],
                 ['code' => 'IND-DINS-02', 'name' => 'Cakupan Bantuan Sosial Tepat Sasaran',                  'opd' => 'DINSOS-PB',   'target' => 92.0, 'real' => 93.0, 'real_2025' => 90.0, 'pol' => 'positif', 'is_iku' => false, 'level' => 'perangkat_daerah', 'sasaran_idx' => 2],
                 ['code' => 'IND-SATP-02', 'name' => 'Persentase Penyelesaian Gangguan Trantibum',              'opd' => 'SATPOL-PB',   'target' => 88.0, 'real' => 89.0, 'real_2025' => 85.0, 'pol' => 'positif', 'is_iku' => false, 'level' => 'perangkat_daerah', 'sasaran_idx' => 8],
-                ['code' => 'IND-DINK-04', 'name' => 'Angka Kematian Ibu (AKI) per 100.000 KH',                'opd' => 'DINKES-PB',   'target' => 180.0,'real' => 177.0,'real_2025' => 182.0,'pol' => 'negatif', 'is_iku' => true,  'level' => 'pemda',            'sasaran_idx' => 1],
+                ['code' => 'IND-DINK-04', 'name' => 'Angka Kematian Ibu (AKI) per 100.000 KH',                'opd' => 'DINKES-PB',   'target' => 180.0, 'real' => 177.0, 'real_2025' => 182.0, 'pol' => 'negatif', 'is_iku' => true,  'level' => 'pemda',            'sasaran_idx' => 1],
 
                 // ── 15 Indikator Perlu Perhatian (< 100%) ──────────────────────────────
                 ['code' => 'IND-DISD-01', 'name' => 'Angka Partisipasi Kasar (APK) SMA/SMK',                 'opd' => 'DISDIK-PB',   'target' => 86.0, 'real' => 76.5, 'real_2025' => 74.0, 'pol' => 'positif', 'is_iku' => true,  'level' => 'pemda',            'sasaran_idx' => 0],
@@ -321,32 +321,32 @@ class SakipComprehensiveSeeder extends Seeder
                 $ind = Indicator::updateOrCreate(
                     ['code' => $spec['code']],
                     [
-                        'name'                  => $spec['name'],
-                        'is_iku'                => $spec['is_iku'],
-                        'level'                 => $spec['level'],
-                        'planning_period_id'    => $period->id,
+                        'name' => $spec['name'],
+                        'is_iku' => $spec['is_iku'],
+                        'level' => $spec['level'],
+                        'planning_period_id' => $period->id,
                         'owner_organization_id' => $ownerOpd?->id,
-                        'strategic_goal_id'     => $goal->id,
-                        'strategic_objective_id'=> $assignedSasaran->id,
-                        'measurement_unit_id'   => $unitPersen->id,
-                        'polarization'          => $spec['pol'],
-                        'frequency'             => 'quarterly',
-                        'iku_status'            => 'final',
-                        'status'                => 'active',
+                        'strategic_goal_id' => $goal->id,
+                        'strategic_objective_id' => $assignedSasaran->id,
+                        'measurement_unit_id' => $unitPersen->id,
+                        'polarization' => $spec['pol'],
+                        'frequency' => 'quarterly',
+                        'iku_status' => 'final',
+                        'status' => 'active',
                     ]
                 );
 
                 $ver = IndicatorVersion::updateOrCreate(
                     ['indicator_id' => $ind->id, 'version_number' => 1],
                     [
-                        'name'                => $ind->name,
-                        'definition'          => $ind->name,
-                        'frequency'           => 'quarterly',
+                        'name' => $ind->name,
+                        'definition' => $ind->name,
+                        'frequency' => 'quarterly',
                         'measurement_unit_id' => $unitPersen->id,
                     ]
                 );
 
-                if (!$ind->current_version_id) {
+                if (! $ind->current_version_id) {
                     $ind->update(['current_version_id' => $ver->id]);
                 }
 
@@ -364,13 +364,13 @@ class SakipComprehensiveSeeder extends Seeder
                     IndicatorTarget::updateOrCreate(
                         [
                             'indicator_version_id' => $ver->id,
-                            'organization_id'      => $ownerOpd?->id ?? $provinsi->id,
-                            'planning_period_id'   => $period->id,
-                            'year'                 => $yr,
+                            'organization_id' => $ownerOpd?->id ?? $provinsi->id,
+                            'planning_period_id' => $period->id,
+                            'year' => $yr,
                         ],
                         [
                             'target_value' => $targetYearVal,
-                            'status'       => 'approved',
+                            'status' => 'approved',
                         ]
                     );
                 }
@@ -379,18 +379,18 @@ class SakipComprehensiveSeeder extends Seeder
                 if (isset($twPeriods['TA-2025'])) {
                     Realization::updateOrCreate(
                         [
-                            'indicator_version_id'  => $ver->id,
-                            'organization_id'       => $ownerOpd?->id ?? $provinsi->id,
+                            'indicator_version_id' => $ver->id,
+                            'organization_id' => $ownerOpd?->id ?? $provinsi->id,
                             'measurement_period_id' => $twPeriods['TA-2025']->id,
                         ],
                         [
                             'planning_period_id' => $period->id,
-                            'value'              => $spec['real_2025'] ?? round($spec['real'] * 0.96, 2),
-                            'status'             => 'approved',
-                            'submitted_by'       => $adminId,
-                            'approved_by'        => $adminId,
-                            'submitted_at'       => now()->subDays(200),
-                            'approved_at'        => now()->subDays(190),
+                            'value' => $spec['real_2025'] ?? round($spec['real'] * 0.96, 2),
+                            'status' => 'approved',
+                            'submitted_by' => $adminId,
+                            'approved_by' => $adminId,
+                            'submitted_at' => now()->subDays(200),
+                            'approved_at' => now()->subDays(190),
                         ]
                     );
                 }
@@ -398,69 +398,69 @@ class SakipComprehensiveSeeder extends Seeder
                 // Realisasi TW II 2026
                 Realization::updateOrCreate(
                     [
-                        'indicator_version_id'  => $ver->id,
-                        'organization_id'       => $ownerOpd?->id ?? $provinsi->id,
+                        'indicator_version_id' => $ver->id,
+                        'organization_id' => $ownerOpd?->id ?? $provinsi->id,
                         'measurement_period_id' => $twPeriods['TW2-2026']->id,
                     ],
                     [
                         'planning_period_id' => $period->id,
-                        'value'              => $spec['real'],
-                        'status'             => 'approved',
-                        'submitted_by'       => $adminId,
-                        'approved_by'        => $adminId,
-                        'submitted_at'       => now()->subDays(30),
-                        'approved_at'        => now()->subDays(25),
+                        'value' => $spec['real'],
+                        'status' => 'approved',
+                        'submitted_by' => $adminId,
+                        'approved_by' => $adminId,
+                        'submitted_at' => now()->subDays(30),
+                        'approved_at' => now()->subDays(25),
                     ]
                 );
 
                 // Realisasi TW I 2026
                 Realization::updateOrCreate(
                     [
-                        'indicator_version_id'  => $ver->id,
-                        'organization_id'       => $ownerOpd?->id ?? $provinsi->id,
+                        'indicator_version_id' => $ver->id,
+                        'organization_id' => $ownerOpd?->id ?? $provinsi->id,
                         'measurement_period_id' => $twPeriods['TW1-2026']->id,
                     ],
                     [
                         'planning_period_id' => $period->id,
-                        'value'              => round($spec['real'] * 0.94, 2),
-                        'status'             => 'approved',
-                        'submitted_by'       => $adminId,
-                        'approved_by'        => $adminId,
-                        'submitted_at'       => now()->subDays(90),
-                        'approved_at'        => now()->subDays(85),
+                        'value' => round($spec['real'] * 0.94, 2),
+                        'status' => 'approved',
+                        'submitted_by' => $adminId,
+                        'approved_by' => $adminId,
+                        'submitted_at' => now()->subDays(90),
+                        'approved_at' => now()->subDays(85),
                     ]
                 );
             }
 
             // ── 7. Evaluasi SAKIP OPD Dinamis (Tabel evaluations & evaluation_scores) ─
             $sakipScoresBaseline = [
-                'BAPPEDA-PB'  => ['perencanaan' => 26.5, 'pengukuran' => 26.0, 'pelaporan' => 13.5, 'evaluasi' => 20.5], // 86.50 (A)
-                'INSP-PB'     => ['perencanaan' => 25.5, 'pengukuran' => 25.5, 'pelaporan' => 13.0, 'evaluasi' => 20.0], // 84.00 (A)
-                'DISDIK-PB'   => ['perencanaan' => 24.5, 'pengukuran' => 25.0, 'pelaporan' => 12.5, 'evaluasi' => 19.5], // 81.50 (A)
-                'DINKES-PB'   => ['perencanaan' => 24.0, 'pengukuran' => 24.5, 'pelaporan' => 12.5, 'evaluasi' => 19.5], // 80.50 (A)
-                'PUPR-PB'     => ['perencanaan' => 24.0, 'pengukuran' => 24.0, 'pelaporan' => 12.0, 'evaluasi' => 19.0], // 79.00 (BB)
-                'KOMINFO-PB'  => ['perencanaan' => 23.5, 'pengukuran' => 24.0, 'pelaporan' => 12.0, 'evaluasi' => 18.5], // 78.00 (BB)
-                'DISHUB-PB'   => ['perencanaan' => 23.0, 'pengukuran' => 23.5, 'pelaporan' => 11.5, 'evaluasi' => 18.0], // 76.00 (BB)
-                'DINSOS-PB'   => ['perencanaan' => 22.5, 'pengukuran' => 23.0, 'pelaporan' => 11.5, 'evaluasi' => 18.0], // 75.00 (BB)
-                'DPMPTSP-PB'  => ['perencanaan' => 22.0, 'pengukuran' => 22.5, 'pelaporan' => 11.0, 'evaluasi' => 17.5], // 73.00 (BB)
+                'BAPPEDA-PB' => ['perencanaan' => 26.5, 'pengukuran' => 26.0, 'pelaporan' => 13.5, 'evaluasi' => 20.5], // 86.50 (A)
+                'INSP-PB' => ['perencanaan' => 25.5, 'pengukuran' => 25.5, 'pelaporan' => 13.0, 'evaluasi' => 20.0], // 84.00 (A)
+                'DISDIK-PB' => ['perencanaan' => 24.5, 'pengukuran' => 25.0, 'pelaporan' => 12.5, 'evaluasi' => 19.5], // 81.50 (A)
+                'DINKES-PB' => ['perencanaan' => 24.0, 'pengukuran' => 24.5, 'pelaporan' => 12.5, 'evaluasi' => 19.5], // 80.50 (A)
+                'PUPR-PB' => ['perencanaan' => 24.0, 'pengukuran' => 24.0, 'pelaporan' => 12.0, 'evaluasi' => 19.0], // 79.00 (BB)
+                'KOMINFO-PB' => ['perencanaan' => 23.5, 'pengukuran' => 24.0, 'pelaporan' => 12.0, 'evaluasi' => 18.5], // 78.00 (BB)
+                'DISHUB-PB' => ['perencanaan' => 23.0, 'pengukuran' => 23.5, 'pelaporan' => 11.5, 'evaluasi' => 18.0], // 76.00 (BB)
+                'DINSOS-PB' => ['perencanaan' => 22.5, 'pengukuran' => 23.0, 'pelaporan' => 11.5, 'evaluasi' => 18.0], // 75.00 (BB)
+                'DPMPTSP-PB' => ['perencanaan' => 22.0, 'pengukuran' => 22.5, 'pelaporan' => 11.0, 'evaluasi' => 17.5], // 73.00 (BB)
                 'BIRO-ORG-PB' => ['perencanaan' => 21.5, 'pengukuran' => 22.0, 'pelaporan' => 11.0, 'evaluasi' => 17.0], // 71.50 (BB)
-                'DISKOP-PB'   => ['perencanaan' => 20.0, 'pengukuran' => 20.5, 'pelaporan' => 10.0, 'evaluasi' => 15.5], // 66.00 (B)
-                'SATPOL-PB'   => ['perencanaan' => 16.0, 'pengukuran' => 16.5, 'pelaporan' => 8.0,  'evaluasi' => 13.0], // 53.50 (CC)
+                'DISKOP-PB' => ['perencanaan' => 20.0, 'pengukuran' => 20.5, 'pelaporan' => 10.0, 'evaluasi' => 15.5], // 66.00 (B)
+                'SATPOL-PB' => ['perencanaan' => 16.0, 'pengukuran' => 16.5, 'pelaporan' => 8.0,  'evaluasi' => 13.0], // 53.50 (CC)
             ];
 
             foreach ($seededOpds as $code => $opd) {
                 $eval = Evaluation::updateOrCreate(
-                    ['organization_id' => $opd->id, 'title' => 'Evaluasi SAKIP ' . $opd->name . ' TA 2026'],
+                    ['organization_id' => $opd->id, 'title' => 'Evaluasi SAKIP '.$opd->name.' TA 2026'],
                     [
-                        'code'               => 'EVAL-' . $code . '-2026',
-                        'type'               => 'annual',
+                        'code' => 'EVAL-'.$code.'-2026',
+                        'type' => 'annual',
                         'planning_period_id' => $period->id,
-                        'evaluator_id'       => $adminId,
-                        'status'             => 'approved',
-                        'started_at'         => now()->subDays(60),
-                        'submitted_at'       => now()->subDays(45),
-                        'approved_by'        => $adminId,
-                        'approved_at'        => now()->subDays(40),
+                        'evaluator_id' => $adminId,
+                        'status' => 'approved',
+                        'started_at' => now()->subDays(60),
+                        'submitted_at' => now()->subDays(45),
+                        'approved_by' => $adminId,
+                        'approved_at' => now()->subDays(40),
                     ]
                 );
 
@@ -477,10 +477,10 @@ class SakipComprehensiveSeeder extends Seeder
                     EvaluationScore::updateOrCreate(
                         ['evaluation_id' => $eval->id, 'component' => $c['component']],
                         [
-                            'criterion'         => $c['component'],
-                            'score'             => $c['score'],
-                            'max_score'         => $c['max_score'],
-                            'weight'            => $c['weight'],
+                            'criterion' => $c['component'],
+                            'score' => $c['score'],
+                            'max_score' => $c['max_score'],
+                            'weight' => $c['weight'],
                             'evaluator_comment' => 'Penilaian sesuai bukti dokumen evaluasi AKIP.',
                         ]
                     );
@@ -491,19 +491,19 @@ class SakipComprehensiveSeeder extends Seeder
             $pemdaOrg = Organization::where('type', 'province')->first() ?? Organization::find(1);
             if ($pemdaOrg) {
                 $evalPemda2026 = Evaluation::updateOrCreate(
-                    ['organization_id' => $pemdaOrg->id, 'title' => 'Evaluasi SAKIP ' . $pemdaOrg->name . ' TA 2026'],
+                    ['organization_id' => $pemdaOrg->id, 'title' => 'Evaluasi SAKIP '.$pemdaOrg->name.' TA 2026'],
                     [
-                        'code'               => 'EVAL-PEMDA-2026',
-                        'type'               => 'annual',
+                        'code' => 'EVAL-PEMDA-2026',
+                        'type' => 'annual',
                         'planning_period_id' => $period->id,
-                        'evaluator_id'       => $adminId,
-                        'status'             => 'approved',
-                        'evaluation_status'  => 'Final',
-                        'lhe_file_path'      => 'lhe/sample-lhe-2025.pdf',
-                        'started_at'         => now()->subDays(60),
-                        'submitted_at'       => now()->subDays(45),
-                        'approved_by'        => $adminId,
-                        'approved_at'        => now()->subDays(40),
+                        'evaluator_id' => $adminId,
+                        'status' => 'approved',
+                        'evaluation_status' => 'Final',
+                        'lhe_file_path' => 'lhe/sample-lhe-2025.pdf',
+                        'started_at' => now()->subDays(60),
+                        'submitted_at' => now()->subDays(45),
+                        'approved_by' => $adminId,
+                        'approved_at' => now()->subDays(40),
                     ]
                 );
 
@@ -518,10 +518,10 @@ class SakipComprehensiveSeeder extends Seeder
                     EvaluationScore::updateOrCreate(
                         ['evaluation_id' => $evalPemda2026->id, 'component' => $c['component']],
                         [
-                            'criterion'         => $c['component'],
-                            'score'             => $c['score'],
-                            'max_score'         => $c['max_score'],
-                            'weight'            => $c['weight'],
+                            'criterion' => $c['component'],
+                            'score' => $c['score'],
+                            'max_score' => $c['max_score'],
+                            'weight' => $c['weight'],
                             'evaluator_comment' => 'Penilaian akuntabilitas kinerja instansi pemerintah daerah TA 2026.',
                         ]
                     );
@@ -540,30 +540,32 @@ class SakipComprehensiveSeeder extends Seeder
                 ['opd' => 'DINSOS-PB',   'title' => 'Penyaluran Bantuan Sosial Terintegrasi',   'progress' => 88.50, 'status' => 'active'],
                 ['opd' => 'DPMPTSP-PB',  'title' => 'Implementasi Layanan Perizinan OSS RBA',   'progress' => 91.00, 'status' => 'active'],
                 ['opd' => 'SATPOL-PB',   'title' => 'Operasi Penertiban Reklame Liar',          'progress' => 45.00, 'status' => 'active'],
-                ['opd' => 'DISKOP-PB',   'title' => 'Pelatihan Digitalisasi Manajemen Koperasi','progress' => 68.00, 'status' => 'active'],
+                ['opd' => 'DISKOP-PB',   'title' => 'Pelatihan Digitalisasi Manajemen Koperasi', 'progress' => 68.00, 'status' => 'active'],
                 ['opd' => 'BIRO-ORG-PB', 'title' => 'Evaluasi Kelembagaan dan Anjab ABK',       'progress' => 90.00, 'status' => 'active'],
             ];
 
-            $perfPeriod = \App\Models\PerformancePeriod::where('year', 2026)->first() ?? \App\Models\PerformancePeriod::first();
+            $perfPeriod = PerformancePeriod::where('year', 2026)->first() ?? PerformancePeriod::first();
 
             foreach ($renaksBaseline as $i => $item) {
                 $opd = $seededOpds[$item['opd']] ?? null;
-                if (!$opd) continue;
+                if (! $opd) {
+                    continue;
+                }
 
                 ActionPlan::updateOrCreate(
-                    ['code' => 'RENAKS-' . $item['opd'] . '-TW2-26'],
+                    ['code' => 'RENAKS-'.$item['opd'].'-TW2-26'],
                     [
-                        'title'                  => $item['title'],
-                        'activity'               => $item['title'],
-                        'description'            => 'Rencana aksi prioritas Triwulan II Tahun 2026.',
-                        'organization_id'        => $opd->id,
-                        'planning_period_id'     => $period->id,
-                        'performance_period_id'  => $perfPeriod?->id,
+                        'title' => $item['title'],
+                        'activity' => $item['title'],
+                        'description' => 'Rencana aksi prioritas Triwulan II Tahun 2026.',
+                        'organization_id' => $opd->id,
+                        'planning_period_id' => $period->id,
+                        'performance_period_id' => $perfPeriod?->id,
                         'strategic_objective_id' => $sasaranList[0]->id,
-                        'start_date'             => '2026-04-01',
-                        'end_date'               => '2026-06-30',
-                        'progress'               => $item['progress'],
-                        'status'                 => $item['status'],
+                        'start_date' => '2026-04-01',
+                        'end_date' => '2026-06-30',
+                        'progress' => $item['progress'],
+                        'status' => $item['status'],
                     ]
                 );
 
@@ -571,30 +573,30 @@ class SakipComprehensiveSeeder extends Seeder
                 MonitoringActionPlanOutput::updateOrCreate(
                     [
                         'organization_id' => $opd->id,
-                        'year'            => 2026,
-                        'order_no'        => 1,
+                        'year' => 2026,
+                        'order_no' => 1,
                     ],
                     [
-                        'sasaran_strategis'      => 'Meningkatnya Akuntabilitas Kinerja dan Kualitas Pelayanan Publik Perangkat Daerah',
-                        'indikator_sasaran'      => 'Indeks Reformasi Birokrasi dan SAKIP OPD',
+                        'sasaran_strategis' => 'Meningkatnya Akuntabilitas Kinerja dan Kualitas Pelayanan Publik Perangkat Daerah',
+                        'indikator_sasaran' => 'Indeks Reformasi Birokrasi dan SAKIP OPD',
                         'target_sasaran_tahunan' => 100.00,
-                        'program'                => 'Program Penyelenggaraan Kinerja dan Urusan Perangkat Daerah',
-                        'kegiatan'               => 'Pelaksanaan Rencana Aksi Prioritas Triwulan',
-                        'subkegiatan'            => $item['title'],
-                        'indikator_subkegiatan'  => 'Persentase Capaian Pelaksanaan ' . $item['title'],
-                        'satuan'                 => '%',
-                        'measurement_pattern'    => 'Positif',
-                        'target_output_tahunan'  => 100.00,
-                        'target_tw1'             => 100.00,
-                        'target_tw2'             => 100.00,
-                        'target_tw3'             => 100.00,
-                        'target_tw4'             => 100.00,
-                        'realisasi_tw1'          => min(100.0, round($item['progress'] * 0.95, 2)),
-                        'realisasi_tw2'          => $item['progress'],
-                        'realisasi_tw3'          => null,
-                        'realisasi_tw4'          => null,
-                        'person_in_charge'       => 'Sekretaris / Kepala Bidang Pengampu',
-                        'created_by'             => $adminId,
+                        'program' => 'Program Penyelenggaraan Kinerja dan Urusan Perangkat Daerah',
+                        'kegiatan' => 'Pelaksanaan Rencana Aksi Prioritas Triwulan',
+                        'subkegiatan' => $item['title'],
+                        'indikator_subkegiatan' => 'Persentase Capaian Pelaksanaan '.$item['title'],
+                        'satuan' => '%',
+                        'measurement_pattern' => 'Positif',
+                        'target_output_tahunan' => 100.00,
+                        'target_tw1' => 100.00,
+                        'target_tw2' => 100.00,
+                        'target_tw3' => 100.00,
+                        'target_tw4' => 100.00,
+                        'realisasi_tw1' => min(100.0, round($item['progress'] * 0.95, 2)),
+                        'realisasi_tw2' => $item['progress'],
+                        'realisasi_tw3' => null,
+                        'realisasi_tw4' => null,
+                        'person_in_charge' => 'Sekretaris / Kepala Bidang Pengampu',
+                        'created_by' => $adminId,
                     ]
                 );
 
@@ -604,30 +606,30 @@ class SakipComprehensiveSeeder extends Seeder
                 MonitoringActionPlanBudget::updateOrCreate(
                     [
                         'organization_id' => $opd->id,
-                        'year'            => 2026,
-                        'order_no'        => 1,
+                        'year' => 2026,
+                        'order_no' => 1,
                     ],
                     [
-                        'sasaran_strategis'      => 'Meningkatnya Efisiensi dan Efektivitas Pengelolaan Keuangan Daerah',
-                        'indikator_sasaran'      => 'Persentase Realisasi Anggaran Belanja Daerah',
+                        'sasaran_strategis' => 'Meningkatnya Efisiensi dan Efektivitas Pengelolaan Keuangan Daerah',
+                        'indikator_sasaran' => 'Persentase Realisasi Anggaran Belanja Daerah',
                         'target_sasaran_tahunan' => 100.00,
-                        'program'                => 'Program Penyelenggaraan Kinerja dan Urusan Perangkat Daerah',
-                        'kegiatan'               => 'Pelaksanaan Rencana Aksi Prioritas Triwulan',
-                        'subkegiatan'            => 'Anggaran ' . $item['title'],
-                        'indikator_subkegiatan'  => 'Serapan Anggaran Belanja Subkegiatan',
-                        'satuan'                 => 'Rupiah',
-                        'pagu_tahunan'           => $paguTw2 * 4,
-                        'pagu_tw1'               => $paguTw2,
-                        'pagu_tw2'               => $paguTw2,
-                        'pagu_tw3'               => $paguTw2,
-                        'pagu_tw4'               => $paguTw2,
-                        'realisasi_tw1'          => round($paguTw2 * 0.85, 2),
-                        'realisasi_tw2'          => $realisasiTw2,
-                        'realisasi_tw3'          => null,
-                        'realisasi_tw4'          => null,
+                        'program' => 'Program Penyelenggaraan Kinerja dan Urusan Perangkat Daerah',
+                        'kegiatan' => 'Pelaksanaan Rencana Aksi Prioritas Triwulan',
+                        'subkegiatan' => 'Anggaran '.$item['title'],
+                        'indikator_subkegiatan' => 'Serapan Anggaran Belanja Subkegiatan',
+                        'satuan' => 'Rupiah',
+                        'pagu_tahunan' => $paguTw2 * 4,
+                        'pagu_tw1' => $paguTw2,
+                        'pagu_tw2' => $paguTw2,
+                        'pagu_tw3' => $paguTw2,
+                        'pagu_tw4' => $paguTw2,
+                        'realisasi_tw1' => round($paguTw2 * 0.85, 2),
+                        'realisasi_tw2' => $realisasiTw2,
+                        'realisasi_tw3' => null,
+                        'realisasi_tw4' => null,
                         'penanggung_jawab_utama' => 'Bendahara Pengeluaran / PPK',
-                        'pengampu_teknis'        => 'Kasubag Keuangan',
-                        'created_by'             => $adminId,
+                        'pengampu_teknis' => 'Kasubag Keuangan',
+                        'created_by' => $adminId,
                     ]
                 );
             }

@@ -3,27 +3,16 @@
 namespace App\Services\Ai;
 
 use App\Models\Alert;
-use App\Models\Evaluation;
-use App\Models\EvaluationScore;
 use App\Models\Indicator;
-use App\Models\IndicatorTarget;
-use App\Models\KnowledgeDocument;
 use App\Models\MeasurementPeriod;
-use App\Models\MonitoringActionPlanBudget;
-use App\Models\MonitoringActionPlanOutput;
 use App\Models\Organization;
 use App\Models\PerformancePeriod;
 use App\Models\PkoEvaluation;
 use App\Models\PlanningDocument;
-use App\Models\PlanningPeriod;
-use App\Models\Realization;
-use App\Models\RealizationIkuItem;
-use App\Models\RealizationOpdItem;
 use App\Services\AchievementCalculator;
 use App\Services\AuthorizationService;
 use App\Services\OpdAnalyticsService;
 use App\Services\TrendPredictor;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -56,7 +45,7 @@ class AiContextBuilder
                     $year = (int) $m[0];
                 }
 
-                $combined = $mp->name . ' ' . $mp->code;
+                $combined = $mp->name.' '.$mp->code;
                 if (preg_match('/(?:Triwulan|TW)\s*([1-4]|I{1,3}|IV)/i', $combined, $m)) {
                     $twMap = [
                         '1' => 'TW I', '2' => 'TW II', '3' => 'TW III', '4' => 'TW IV',
@@ -116,56 +105,59 @@ class AiContextBuilder
         $totalOpd = $allOpds->count();
         $opdNames = $allOpds->pluck('name')->all();
 
-        // 2. IKU Pemda (Menu 4.2)
-        $ikuItems = RealizationIkuItem::orderBy('id')->get();
+        // 2. IKU OPD (Indikator Kinerja Utama)
+        $indicators = Indicator::query()
+            ->iku()
+            ->when(! $isAllProvinsi, fn ($q) => $q->whereIn('owner_organization_id', $scopedOrgIds))
+            ->get();
 
-        $ikuCount = $ikuItems->count();
+        $ikuCount = $indicators->count();
         $ikuSummary = [
             'total_indikator' => $ikuCount,
-            'items' => $ikuItems->map(fn ($i) => [
-                'indikator' => $i->indicator_name ?? '-',
-                'satuan'    => $i->unit ?? '-',
-                'pola'      => $i->measurement_pattern ?? 'Positif',
-                'target'    => is_array($i->targets) ? ($i->targets[$activeYear] ?? null) : null,
-                'realisasi' => is_array($i->realizations) ? ($i->realizations[$activeYear] ?? null) : null,
+            'items' => $indicators->map(fn ($i) => [
+                'indikator' => $i->name ?? '-',
+                'satuan' => '-',
+                'pola' => $i->polarization ?? 'Positif',
+                'target' => null,
+                'realisasi' => null,
             ])->all(),
         ];
 
         // 3. Rencana Aksi Triwulan Fisik (Menu 4.4)
         $actionPlansMatrix = $this->opdAnalytics->getActionPlansMatrix($activeYear, $activeTw, $orgId);
         $renaksSummary = [
-            'tahun'           => $activeYear,
-            'triwulan'        => $activeTw,
-            'total_kegiatan'  => (int) ($actionPlansMatrix['summary']['total_items'] ?? 0),
-            'on_track'        => (int) ($actionPlansMatrix['summary']['opd_summary']['tercapai'] ?? 0),
+            'tahun' => $activeYear,
+            'triwulan' => $activeTw,
+            'total_kegiatan' => (int) ($actionPlansMatrix['summary']['total_items'] ?? 0),
+            'on_track' => (int) ($actionPlansMatrix['summary']['opd_summary']['tercapai'] ?? 0),
             'perlu_perhatian' => (int) ($actionPlansMatrix['summary']['opd_summary']['perlu_perhatian'] ?? 0),
-            'terlambat'       => (int) ($actionPlansMatrix['summary']['opd_summary']['terlambat'] ?? 0),
-            'kritis'          => (int) ($actionPlansMatrix['summary']['opd_summary']['kritis'] ?? 0),
-            'tidak_dinilai'   => (int) ($actionPlansMatrix['summary']['opd_summary']['tidak_dinilai'] ?? 0),
-            'rata_capaian'    => (float) ($actionPlansMatrix['summary']['opd_summary']['rata_capaian'] ?? 0),
+            'terlambat' => (int) ($actionPlansMatrix['summary']['opd_summary']['terlambat'] ?? 0),
+            'kritis' => (int) ($actionPlansMatrix['summary']['opd_summary']['kritis'] ?? 0),
+            'tidak_dinilai' => (int) ($actionPlansMatrix['summary']['opd_summary']['tidak_dinilai'] ?? 0),
+            'rata_capaian' => (float) ($actionPlansMatrix['summary']['opd_summary']['rata_capaian'] ?? 0),
         ];
 
         // 4. Monitoring Anggaran Triwulan (Menu 4.5)
         $monitoringBudgetMatrix = $this->opdAnalytics->getMonitoringBudgetMatrix($activeYear, $activeTw, $orgId);
         $budgetSummary = [
-            'tahun'           => $activeYear,
-            'triwulan'        => $activeTw,
-            'total_pagu'      => (float) ($monitoringBudgetMatrix['summary']['total_pagu'] ?? 0),
+            'tahun' => $activeYear,
+            'triwulan' => $activeTw,
+            'total_pagu' => (float) ($monitoringBudgetMatrix['summary']['total_pagu'] ?? 0),
             'total_realisasi' => (float) ($monitoringBudgetMatrix['summary']['total_realisasi'] ?? 0),
-            'serapan_persen'  => (float) ($monitoringBudgetMatrix['summary']['serapan_persen'] ?? 0),
-            'tercapai'        => (int) ($monitoringBudgetMatrix['summary']['opd_summary']['tercapai'] ?? 0),
+            'serapan_persen' => (float) ($monitoringBudgetMatrix['summary']['serapan_persen'] ?? 0),
+            'tercapai' => (int) ($monitoringBudgetMatrix['summary']['opd_summary']['tercapai'] ?? 0),
             'perlu_perhatian' => (int) ($monitoringBudgetMatrix['summary']['opd_summary']['perlu_perhatian'] ?? 0),
-            'kritis'          => (int) ($monitoringBudgetMatrix['summary']['opd_summary']['kritis'] ?? 0),
-            'tidak_dinilai'   => (int) ($monitoringBudgetMatrix['summary']['opd_summary']['tidak_dinilai'] ?? 0),
+            'kritis' => (int) ($monitoringBudgetMatrix['summary']['opd_summary']['kritis'] ?? 0),
+            'tidak_dinilai' => (int) ($monitoringBudgetMatrix['summary']['opd_summary']['tidak_dinilai'] ?? 0),
         ];
 
         // 5. Dokumen Perencanaan SAKIP
         $docsQuery = PlanningDocument::query()
             ->when(! $isAllProvinsi, fn ($q) => $q->whereIn('organization_id', $scopedOrgIds));
 
-        $totalDocs     = $docsQuery->count();
+        $totalDocs = $docsQuery->count();
         $availableDocs = (clone $docsQuery)->whereNotNull('file_path')->count();
-        $approvedDocs  = (clone $docsQuery)->where('status', 'approved')->count();
+        $approvedDocs = (clone $docsQuery)->where('status', 'approved')->count();
 
         // 6. Evaluasi SAKIP & PKO PermenPANRB 22/2024
         $pkoEvaluations = PkoEvaluation::where('year', $activeYear)
@@ -196,12 +188,12 @@ class AiContextBuilder
                 $allAchievements[] = $ach;
                 if ($ach < 70) {
                     $problematicIndicators[] = [
-                        'indicator_id'   => $ind->id,
+                        'indicator_id' => $ind->id,
                         'indicator_code' => $ind->code,
-                        'indicator'      => $ind->name,
-                        'organization'   => $ind->ownerOrganization?->name ?? 'OPD',
-                        'achievement'    => $ach,
-                        'status'         => $ach < 60 ? 'Kritis' : 'Perlu Perhatian',
+                        'indicator' => $ind->name,
+                        'organization' => $ind->ownerOrganization?->name ?? 'OPD',
+                        'achievement' => $ach,
+                        'status' => $ach < 60 ? 'Kritis' : 'Perlu Perhatian',
                     ];
                 }
             }
@@ -209,25 +201,25 @@ class AiContextBuilder
         $avgAch = count($allAchievements) > 0 ? round(array_sum($allAchievements) / count($allAchievements), 2) : (float) ($renaksSummary['rata_capaian'] ?? 0);
 
         return [
-            'scope'                  => $scopeLabel,
-            'year'                   => $activeYear,
-            'triwulan'               => $activeTw,
-            'total_opd'              => $totalOpd,
-            'opd_list'               => $opdNames,
-            'opd_rows'               => $allOpds->map(fn ($o) => ['id' => $o->id, 'kode' => $o->code, 'nama' => $o->name])->all(),
-            'iku_summary'            => $ikuSummary,
-            'renaks_summary'         => $renaksSummary,
-            'renaks_opd_rows'        => $actionPlansMatrix['opd_rows'] ?? [],
-            'budget_summary'         => $budgetSummary,
-            'budget_opd_rows'        => $monitoringBudgetMatrix['opd_rows'] ?? [],
-            'total_docs'             => $totalDocs,
-            'available_docs'         => $availableDocs,
-            'approved_docs'          => $approvedDocs,
-            'avg_pko'                => $avgPko,
-            'open_alerts'            => $openAlerts,
+            'scope' => $scopeLabel,
+            'year' => $activeYear,
+            'triwulan' => $activeTw,
+            'total_opd' => $totalOpd,
+            'opd_list' => $opdNames,
+            'opd_rows' => $allOpds->map(fn ($o) => ['id' => $o->id, 'kode' => $o->code, 'nama' => $o->name])->all(),
+            'iku_summary' => $ikuSummary,
+            'renaks_summary' => $renaksSummary,
+            'renaks_opd_rows' => $actionPlansMatrix['opd_rows'] ?? [],
+            'budget_summary' => $budgetSummary,
+            'budget_opd_rows' => $monitoringBudgetMatrix['opd_rows'] ?? [],
+            'total_docs' => $totalDocs,
+            'available_docs' => $availableDocs,
+            'approved_docs' => $approvedDocs,
+            'avg_pko' => $avgPko,
+            'open_alerts' => $openAlerts,
             'problematic_indicators' => $problematicIndicators,
-            'average_achievement'    => $avgAch,
-            'generated_at'           => now()->toIso8601String(),
+            'average_achievement' => $avgAch,
+            'generated_at' => now()->toIso8601String(),
         ];
     }
 
@@ -294,30 +286,30 @@ class AiContextBuilder
         }
 
         return [
-            'scope'               => $fact['scope'],
-            'period'              => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
-            'year'                => $fact['year'],
-            'triwulan'            => $fact['triwulan'],
-            'total_opd'           => $fact['total_opd'],
-            'opd_list'            => $fact['opd_list'],
-            'data_empty'          => ($fact['total_opd'] === 0),
-            'realization_count'   => $fact['renaks_summary']['total_kegiatan'],
+            'scope' => $fact['scope'],
+            'period' => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
+            'year' => $fact['year'],
+            'triwulan' => $fact['triwulan'],
+            'total_opd' => $fact['total_opd'],
+            'opd_list' => $fact['opd_list'],
+            'data_empty' => ($fact['total_opd'] === 0),
+            'realization_count' => $fact['renaks_summary']['total_kegiatan'],
             'average_achievement' => $fact['renaks_summary']['rata_capaian'],
-            'good_count'          => $fact['renaks_summary']['on_track'],
-            'warning_count'       => $fact['renaks_summary']['perlu_perhatian'],
-            'critical_count'      => $fact['renaks_summary']['kritis'],
-            'opd_kritis'          => $opdKritisStr,
-            'opd_perhatian'       => $opdPerhatianStr,
-            'problems'            => $problems,
-            'open_alerts'         => $fact['open_alerts'],
-            'serapan_anggaran'    => $fact['budget_summary']['serapan_persen'],
-            'total_pagu'          => number_format($fact['budget_summary']['total_pagu'], 0, ',', '.'),
-            'total_realisasi'     => number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.'),
-            'total_docs'          => $fact['total_docs'],
-            'available_docs'      => $fact['available_docs'],
-            'approved_docs'       => $fact['approved_docs'],
-            'catatan_kendala'     => [],
-            'generated_at'        => $fact['generated_at'],
+            'good_count' => $fact['renaks_summary']['on_track'],
+            'warning_count' => $fact['renaks_summary']['perlu_perhatian'],
+            'critical_count' => $fact['renaks_summary']['kritis'],
+            'opd_kritis' => $opdKritisStr,
+            'opd_perhatian' => $opdPerhatianStr,
+            'problems' => $problems,
+            'open_alerts' => $fact['open_alerts'],
+            'serapan_anggaran' => $fact['budget_summary']['serapan_persen'],
+            'total_pagu' => number_format($fact['budget_summary']['total_pagu'], 0, ',', '.'),
+            'total_realisasi' => number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.'),
+            'total_docs' => $fact['total_docs'],
+            'available_docs' => $fact['available_docs'],
+            'approved_docs' => $fact['approved_docs'],
+            'catatan_kendala' => [],
+            'generated_at' => $fact['generated_at'],
         ];
     }
 
@@ -334,7 +326,7 @@ class AiContextBuilder
         $insights[] = "Cakupan Evaluasi: {$fact['scope']} ({$fact['year']} - {$fact['triwulan']}).";
         $insights[] = "Total Perangkat Daerah terdata aktif sebanyak {$fact['total_opd']} OPD.";
         $insights[] = "Rencana Aksi Fisik: {$fact['renaks_summary']['on_track']} OPD On Track, {$fact['renaks_summary']['perlu_perhatian']} Perlu Perhatian, {$fact['renaks_summary']['kritis']} Kritis.";
-        $insights[] = "Serapan Anggaran APBD: Tercatat {$fact['budget_summary']['serapan_persen']}% dari pagu Rp " . number_format($fact['budget_summary']['total_pagu'], 0, ',', '.') . " (Realisasi: Rp " . number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.') . ").";
+        $insights[] = "Serapan Anggaran APBD: Tercatat {$fact['budget_summary']['serapan_persen']}% dari pagu Rp ".number_format($fact['budget_summary']['total_pagu'], 0, ',', '.').' (Realisasi: Rp '.number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.').').';
         $insights[] = "Kelengkapan Dokumen SAKIP: {$fact['available_docs']} dari {$fact['total_docs']} dokumen telah diunggah resmi.";
 
         foreach (array_slice($fact['problematic_indicators'] ?? [], 0, 3) as $pInd) {
@@ -342,20 +334,20 @@ class AiContextBuilder
         }
 
         return [
-            'scope'            => $fact['scope'],
-            'period'           => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
-            'year'             => $fact['year'],
-            'triwulan'         => $fact['triwulan'],
-            'indicator'        => 'Seluruh Indikator Kinerja SAKIP',
-            'indicator_code'   => 'SAKIP-PAPBAR',
-            'insights'         => $insights,
-            'facts'            => $insights,
+            'scope' => $fact['scope'],
+            'period' => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
+            'year' => $fact['year'],
+            'triwulan' => $fact['triwulan'],
+            'indicator' => 'Seluruh Indikator Kinerja SAKIP',
+            'indicator_code' => 'SAKIP-PAPBAR',
+            'insights' => $insights,
+            'facts' => $insights,
             'serapan_anggaran' => $fact['budget_summary']['serapan_persen'],
-            'total_pagu'       => number_format($fact['budget_summary']['total_pagu'], 0, ',', '.'),
-            'total_realisasi'  => number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.'),
-            'rata_fisik'       => $fact['renaks_summary']['rata_capaian'],
-            'achievements'     => [$fact['renaks_summary']['rata_capaian'], $fact['budget_summary']['serapan_persen']],
-            'generated_at'     => $fact['generated_at'],
+            'total_pagu' => number_format($fact['budget_summary']['total_pagu'], 0, ',', '.'),
+            'total_realisasi' => number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.'),
+            'rata_fisik' => $fact['renaks_summary']['rata_capaian'],
+            'achievements' => [$fact['renaks_summary']['rata_capaian'], $fact['budget_summary']['serapan_persen']],
+            'generated_at' => $fact['generated_at'],
         ];
     }
 
@@ -390,19 +382,19 @@ class AiContextBuilder
         $opdTertinggalStr = ! empty($tertinggal) ? implode(', ', $tertinggal) : 'Seluruh OPD memiliki serapan di atas 70%';
 
         return [
-            'scope'                 => $fact['scope'],
-            'period'                => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
-            'year'                  => $fact['year'],
-            'triwulan'              => $fact['triwulan'],
-            'current_serapan'       => $serapanSekarang,
-            'projected_serapan'     => $proyeksiSerapan,
-            'prediction_data'       => $predResult,
-            'probabilitas_sukses'   => $serapanSekarang >= 75 ? 'Tinggi' : ($serapanSekarang >= 50 ? 'Sedang' : 'Rendah'),
-            'opd_tertinggal'        => $opdTertinggalStr,
+            'scope' => $fact['scope'],
+            'period' => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
+            'year' => $fact['year'],
+            'triwulan' => $fact['triwulan'],
+            'current_serapan' => $serapanSekarang,
+            'projected_serapan' => $proyeksiSerapan,
+            'prediction_data' => $predResult,
+            'probabilitas_sukses' => $serapanSekarang >= 75 ? 'Tinggi' : ($serapanSekarang >= 50 ? 'Sedang' : 'Rendah'),
+            'opd_tertinggal' => $opdTertinggalStr,
             'rekomendasi_akselerasi' => $serapanSekarang < 50
                 ? 'Lakukan percepatan pelaksanaan belanja barang/jasa dan pengadaan program prioritas daerah.'
                 : 'Pertahankan ritme penyerapan anggaran belanja operasional dan percepat pertanggungjawaban kas.',
-            'generated_at'          => $fact['generated_at'],
+            'generated_at' => $fact['generated_at'],
         ];
     }
 
@@ -436,18 +428,18 @@ class AiContextBuilder
         }
 
         return [
-            'scope'            => $fact['scope'],
-            'period'           => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
+            'scope' => $fact['scope'],
+            'period' => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
             'serapan_anggaran' => $fact['budget_summary']['serapan_persen'],
-            'total_pagu'       => number_format($fact['budget_summary']['total_pagu'], 0, ',', '.'),
-            'total_realisasi'  => number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.'),
-            'good_count'       => $fact['renaks_summary']['on_track'],
-            'warning_count'    => $fact['renaks_summary']['perlu_perhatian'],
-            'critical_count'   => $fact['renaks_summary']['kritis'],
-            'available_docs'   => $fact['available_docs'],
-            'total_docs'       => $fact['total_docs'],
-            'problems'         => $problems,
-            'generated_at'     => $fact['generated_at'],
+            'total_pagu' => number_format($fact['budget_summary']['total_pagu'], 0, ',', '.'),
+            'total_realisasi' => number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.'),
+            'good_count' => $fact['renaks_summary']['on_track'],
+            'warning_count' => $fact['renaks_summary']['perlu_perhatian'],
+            'critical_count' => $fact['renaks_summary']['kritis'],
+            'available_docs' => $fact['available_docs'],
+            'total_docs' => $fact['total_docs'],
+            'problems' => $problems,
+            'generated_at' => $fact['generated_at'],
         ];
     }
 
@@ -472,8 +464,8 @@ class AiContextBuilder
             $rRow = $renaksMap->get($opd['id']);
             $bRow = $budgetMap->get($opd['id']);
 
-            $fisikStr = $rRow && isset($rRow['capaian']) ? number_format((float) $rRow['capaian'], 1) . '% (' . ($rRow['status'] ?? '-') . ')' : 'Belum Terdata';
-            $budgetStr = $bRow && isset($bRow['serapan']) ? number_format((float) $bRow['serapan'], 1) . '% (' . ($bRow['status'] ?? '-') . ')' : 'Belum Terdata';
+            $fisikStr = $rRow && isset($rRow['capaian']) ? number_format((float) $rRow['capaian'], 1).'% ('.($rRow['status'] ?? '-').')' : 'Belum Terdata';
+            $budgetStr = $bRow && isset($bRow['serapan']) ? number_format((float) $bRow['serapan'], 1).'% ('.($bRow['status'] ?? '-').')' : 'Belum Terdata';
 
             $evalStatus = 'On Track';
             if (($rRow['status'] ?? '') === 'Kritis' || ($bRow['status'] ?? '') === 'Kritis') {
@@ -486,12 +478,12 @@ class AiContextBuilder
         }
 
         return [
-            'scope'        => $fact['scope'],
-            'period'       => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
-            'year'         => $fact['year'],
-            'triwulan'     => $fact['triwulan'],
-            'matrix'       => implode("\n", $tableLines),
-            'total_opd'    => $fact['total_opd'],
+            'scope' => $fact['scope'],
+            'period' => "Tahun Anggaran {$fact['year']} - {$fact['triwulan']}",
+            'year' => $fact['year'],
+            'triwulan' => $fact['triwulan'],
+            'matrix' => implode("\n", $tableLines),
+            'total_opd' => $fact['total_opd'],
             'generated_at' => $fact['generated_at'],
         ];
     }
@@ -507,10 +499,10 @@ class AiContextBuilder
         $user = Auth::user() ?? request()?->user();
         if (! $user) {
             return [
-                'scope'   => 'Tamu',
+                'scope' => 'Tamu',
                 'catatan' => 'Sesi tidak terotentikasi.',
-                'facts'   => ['Pengguna tidak terotentikasi.'],
-                'answer'  => 'Sesi pengguna tidak valid.',
+                'facts' => ['Pengguna tidak terotentikasi.'],
+                'answer' => 'Sesi pengguna tidak valid.',
             ];
         }
 
@@ -532,36 +524,36 @@ class AiContextBuilder
         $fact = $this->getWebsiteFactualData($targetOrgId);
 
         $facts = [];
-        $facts[] = "[LINGKUP HAK AKSES]: " . $fact['scope'];
-        $facts[] = "[PERIODE EVALUASI]: Tahun " . $fact['year'] . " - " . $fact['triwulan'];
-        $facts[] = "[DAFTAR PERANGKAT DAERAH]: Terdaftar " . $fact['total_opd'] . " Perangkat Daerah (OPD) aktif, antara lain: " . implode(', ', array_slice($fact['opd_list'], 0, 8)) . (count($fact['opd_list']) > 8 ? ', dan lainnya.' : '.');
-        $facts[] = "[INDIKATOR KINERJA UTAMA (IKU PEMDA)]: Tercatat " . $fact['iku_summary']['total_indikator'] . " Indikator Kinerja Utama Pemda pada Menu 4.2.";
-        $facts[] = "[RENCANA AKSI FISIK]: Total " . $fact['renaks_summary']['total_kegiatan'] . " kegiatan rencana aksi terdata. Status: " . $fact['renaks_summary']['on_track'] . " On Track, " . $fact['renaks_summary']['perlu_perhatian'] . " Perlu Perhatian, " . $fact['renaks_summary']['kritis'] . " Kritis, dan " . $fact['renaks_summary']['tidak_dinilai'] . " Tidak Dinilai.";
-        $facts[] = "[REALISASI ANGGARAN]: Serapan APBD saat ini tercatat " . $fact['budget_summary']['serapan_persen'] . "% dengan total pagu Rp " . number_format($fact['budget_summary']['total_pagu'], 0, ',', '.') . " dan total realisasi Rp " . number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.') . ".";
-        $facts[] = "[DOKUMEN SAKIP]: Sebanyak " . $fact['available_docs'] . " dari " . $fact['total_docs'] . " dokumen telah memiliki berkas fisik PDF terunggah pada modul Perencanaan Kinerja.";
-        $facts[] = "[EARLY WARNING SYSTEM]: Terdapat " . $fact['open_alerts'] . " peringatan aktif.";
+        $facts[] = '[LINGKUP HAK AKSES]: '.$fact['scope'];
+        $facts[] = '[PERIODE EVALUASI]: Tahun '.$fact['year'].' - '.$fact['triwulan'];
+        $facts[] = '[DAFTAR PERANGKAT DAERAH]: Terdaftar '.$fact['total_opd'].' Perangkat Daerah (OPD) aktif, antara lain: '.implode(', ', array_slice($fact['opd_list'], 0, 8)).(count($fact['opd_list']) > 8 ? ', dan lainnya.' : '.');
+        $facts[] = '[INDIKATOR KINERJA UTAMA (IKU PEMDA)]: Tercatat '.$fact['iku_summary']['total_indikator'].' Indikator Kinerja Utama Pemda pada Menu 4.2.';
+        $facts[] = '[RENCANA AKSI FISIK]: Total '.$fact['renaks_summary']['total_kegiatan'].' kegiatan rencana aksi terdata. Status: '.$fact['renaks_summary']['on_track'].' On Track, '.$fact['renaks_summary']['perlu_perhatian'].' Perlu Perhatian, '.$fact['renaks_summary']['kritis'].' Kritis, dan '.$fact['renaks_summary']['tidak_dinilai'].' Tidak Dinilai.';
+        $facts[] = '[REALISASI ANGGARAN]: Serapan APBD saat ini tercatat '.$fact['budget_summary']['serapan_persen'].'% dengan total pagu Rp '.number_format($fact['budget_summary']['total_pagu'], 0, ',', '.').' dan total realisasi Rp '.number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.').'.';
+        $facts[] = '[DOKUMEN SAKIP]: Sebanyak '.$fact['available_docs'].' dari '.$fact['total_docs'].' dokumen telah memiliki berkas fisik PDF terunggah pada modul Perencanaan Kinerja.';
+        $facts[] = '[EARLY WARNING SYSTEM]: Terdapat '.$fact['open_alerts'].' peringatan aktif.';
 
         $criticalIndicators = [];
         foreach (($fact['problematic_indicators'] ?? []) as $prob) {
-            $codeStr = !empty($prob['indicator_code']) ? " [{$prob['indicator_code']}]" : '';
-            $criticalIndicators[] = ($prob['indicator'] ?? 'Indikator') . $codeStr . ' (' . ($prob['organization'] ?? '-') . ')';
+            $codeStr = ! empty($prob['indicator_code']) ? " [{$prob['indicator_code']}]" : '';
+            $criticalIndicators[] = ($prob['indicator'] ?? 'Indikator').$codeStr.' ('.($prob['organization'] ?? '-').')';
         }
-        $criticalList = !empty($criticalIndicators) ? implode(', ', $criticalIndicators) : 'Tidak ada indikator kritis';
+        $criticalList = ! empty($criticalIndicators) ? implode(', ', $criticalIndicators) : 'Tidak ada indikator kritis';
 
         return [
-            'scope'              => $fact['scope'],
-            'user_name'          => $user->name,
-            'year'               => $fact['year'],
-            'triwulan'           => $fact['triwulan'],
-            'total_opd'          => $fact['total_opd'],
-            'opd_list'           => $fact['opd_list'],
-            'critical_list'      => $criticalList,
+            'scope' => $fact['scope'],
+            'user_name' => $user->name,
+            'year' => $fact['year'],
+            'triwulan' => $fact['triwulan'],
+            'total_opd' => $fact['total_opd'],
+            'opd_list' => $fact['opd_list'],
+            'critical_list' => $criticalList,
             'average_achievement' => $fact['average_achievement'] ?? 0,
-            'facts'              => $facts,
-            'answer'             => implode("\n\n", $facts),
-            'factual_data'       => $fact,
-            'history'            => $history ?? [],
-            'generated_at'       => $fact['generated_at'],
+            'facts' => $facts,
+            'answer' => implode("\n\n", $facts),
+            'factual_data' => $fact,
+            'history' => $history ?? [],
+            'generated_at' => $fact['generated_at'],
         ];
     }
 }

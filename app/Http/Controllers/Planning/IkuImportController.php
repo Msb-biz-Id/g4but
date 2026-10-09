@@ -32,9 +32,9 @@ class IkuImportController extends Controller
         session(['iku_import_preview' => $result]);
 
         return Inertia::render('Planning/Iku/ImportPreview', [
-            'validRows'  => $result['valid_rows'],
-            'errorRows'  => $result['error_rows'],
-            'totalRows'  => $result['total_rows'],
+            'validRows' => $result['valid_rows'],
+            'errorRows' => $result['error_rows'],
+            'totalRows' => $result['total_rows'],
         ]);
     }
 

@@ -12,21 +12,29 @@ class Indicator extends Model
     use SoftDeletes;
 
     // IKU Status workflow constants
-    const IKU_STATUS_DRAFT      = 'draft';
-    const IKU_STATUS_DIAJUKAN   = 'diajukan';
-    const IKU_STATUS_REVIEW     = 'review';
-    const IKU_STATUS_PERBAIKAN  = 'perbaikan';
-    const IKU_STATUS_FINAL      = 'final';
-    const IKU_STATUS_NONAKTIF   = 'nonaktif';
+    const IKU_STATUS_DRAFT = 'draft';
+
+    const IKU_STATUS_DIAJUKAN = 'diajukan';
+
+    const IKU_STATUS_REVIEW = 'review';
+
+    const IKU_STATUS_PERBAIKAN = 'perbaikan';
+
+    const IKU_STATUS_FINAL = 'final';
+
+    const IKU_STATUS_NONAKTIF = 'nonaktif';
 
     // Level constants
-    const LEVEL_PEMDA           = 'pemda';
+    const LEVEL_PEMDA = 'pemda';
+
     const LEVEL_PERANGKAT_DAERAH = 'perangkat_daerah';
 
     // Polarization constants
-    const POLARIZATION_POSITIF  = 'positif';
-    const POLARIZATION_NEGATIF  = 'negatif';
-    const POLARIZATION_STABIL   = 'stabil';
+    const POLARIZATION_POSITIF = 'positif';
+
+    const POLARIZATION_NEGATIF = 'negatif';
+
+    const POLARIZATION_STABIL = 'stabil';
 
     protected $fillable = [
         // Existing fields
@@ -44,8 +52,8 @@ class Indicator extends Model
     protected function casts(): array
     {
         return [
-            'is_iku'         => 'boolean',
-            'baseline_year'  => 'integer',
+            'is_iku' => 'boolean',
+            'baseline_year' => 'integer',
             'baseline_value' => 'float',
         ];
     }
@@ -178,14 +186,14 @@ class Indicator extends Model
      */
     public function ikuStatusLabel(): string
     {
-        return match($this->iku_status) {
-            self::IKU_STATUS_DRAFT      => 'Draft',
-            self::IKU_STATUS_DIAJUKAN   => 'Diajukan',
-            self::IKU_STATUS_REVIEW     => 'Review',
-            self::IKU_STATUS_PERBAIKAN  => 'Perbaikan',
-            self::IKU_STATUS_FINAL      => 'Final',
-            self::IKU_STATUS_NONAKTIF   => 'Nonaktif',
-            default                     => ucfirst($this->iku_status),
+        return match ($this->iku_status) {
+            self::IKU_STATUS_DRAFT => 'Draft',
+            self::IKU_STATUS_DIAJUKAN => 'Diajukan',
+            self::IKU_STATUS_REVIEW => 'Review',
+            self::IKU_STATUS_PERBAIKAN => 'Perbaikan',
+            self::IKU_STATUS_FINAL => 'Final',
+            self::IKU_STATUS_NONAKTIF => 'Nonaktif',
+            default => ucfirst($this->iku_status),
         };
     }
 
@@ -195,7 +203,7 @@ class Indicator extends Model
     public function getFormattedBaselineAttribute(): string
     {
         $val = $this->baseline_value !== null ? number_format((float) $this->baseline_value, 2, ',', '.') : null;
-        $yr  = $this->baseline_year;
+        $yr = $this->baseline_year;
 
         if ($val !== null && $yr) {
             return "{$val} ({$yr})";
@@ -208,4 +216,3 @@ class Indicator extends Model
         return '-';
     }
 }
-

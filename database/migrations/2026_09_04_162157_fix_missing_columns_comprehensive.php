@@ -92,9 +92,9 @@ return new class extends Migration
         });
 
         // Backfill performance_period_id dari planning_period_id yang ada
-        \DB::statement('UPDATE performance_agreements SET performance_period_id = planning_period_id WHERE performance_period_id IS NULL');
+        DB::statement('UPDATE performance_agreements SET performance_period_id = planning_period_id WHERE performance_period_id IS NULL');
         // Backfill name dari title yang ada
-        \DB::statement('UPDATE performance_agreements SET name = title WHERE name IS NULL');
+        DB::statement('UPDATE performance_agreements SET name = title WHERE name IS NULL');
 
         // ─── 2. Tabel pivot performance_agreement_indicator ───────────────────────
         if (! Schema::hasTable('performance_agreement_indicator')) {
@@ -159,8 +159,8 @@ return new class extends Migration
         });
 
         // Backfill action_plans
-        \DB::statement('UPDATE action_plans SET performance_period_id = planning_period_id WHERE performance_period_id IS NULL');
-        \DB::statement('UPDATE action_plans SET activity = title WHERE activity IS NULL');
+        DB::statement('UPDATE action_plans SET performance_period_id = planning_period_id WHERE performance_period_id IS NULL');
+        DB::statement('UPDATE action_plans SET activity = title WHERE activity IS NULL');
 
         // ─── 6. risks ─────────────────────────────────────────────────────────────
         Schema::table('risks', function (Blueprint $table) {
@@ -184,7 +184,7 @@ return new class extends Migration
         // performance_agreements
         Schema::table('performance_agreements', function (Blueprint $table) {
             $cols = ['performance_period_id', 'name', 'document_number', 'description',
-                     'submitted_by', 'submitted_at', 'locked_at', 'file_path', 'created_by', 'updated_by'];
+                'submitted_by', 'submitted_at', 'locked_at', 'file_path', 'created_by', 'updated_by'];
             foreach ($cols as $col) {
                 if (Schema::hasColumn('performance_agreements', $col)) {
                     $table->dropColumn($col);
@@ -197,28 +197,36 @@ return new class extends Migration
         // planning_documents
         Schema::table('planning_documents', function (Blueprint $table) {
             foreach (['updated_by', 'code'] as $col) {
-                if (Schema::hasColumn('planning_documents', $col)) $table->dropColumn($col);
+                if (Schema::hasColumn('planning_documents', $col)) {
+                    $table->dropColumn($col);
+                }
             }
         });
 
         // planning_trees
         Schema::table('planning_trees', function (Blueprint $table) {
             foreach (['created_by', 'updated_by'] as $col) {
-                if (Schema::hasColumn('planning_trees', $col)) $table->dropColumn($col);
+                if (Schema::hasColumn('planning_trees', $col)) {
+                    $table->dropColumn($col);
+                }
             }
         });
 
         // action_plans
         Schema::table('action_plans', function (Blueprint $table) {
             foreach (['performance_period_id', 'indicator_id', 'activity', 'target_value', 'created_by', 'updated_by'] as $col) {
-                if (Schema::hasColumn('action_plans', $col)) $table->dropColumn($col);
+                if (Schema::hasColumn('action_plans', $col)) {
+                    $table->dropColumn($col);
+                }
             }
         });
 
         // risks
         Schema::table('risks', function (Blueprint $table) {
             foreach (['performance_period_id', 'indicator_id', 'created_by', 'updated_by'] as $col) {
-                if (Schema::hasColumn('risks', $col)) $table->dropColumn($col);
+                if (Schema::hasColumn('risks', $col)) {
+                    $table->dropColumn($col);
+                }
             }
         });
     }

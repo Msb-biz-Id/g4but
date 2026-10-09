@@ -16,17 +16,27 @@ class RoleMenuAccessTest extends TestCase
     use RefreshDatabase;
 
     private User $superAdmin;
+
     private User $adminProvinsi;
+
     private User $adminOpd;
+
     private User $operatorOpd;
+
     private User $validatorOpd;
+
     private User $kepalaOpd;
+
     private User $evaluatorProvinsi;
+
     private User $inspektorat;
+
     private User $pimpinanProvinsi;
+
     private User $auditor;
 
     private Organization $provinsi;
+
     private Organization $opd;
 
     protected function setUp(): void
@@ -36,42 +46,42 @@ class RoleMenuAccessTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
 
         $this->provinsi = Organization::create([
-            'id'        => 1,
-            'code'      => 'PROV-PB',
-            'name'      => 'Pemerintah Provinsi Papua Barat',
-            'type'      => 'province',
+            'id' => 1,
+            'code' => 'PROV-PB',
+            'name' => 'Pemerintah Provinsi Papua Barat',
+            'type' => 'province',
             'is_active' => true,
         ]);
 
         $this->opd = Organization::create([
-            'code'      => 'DISDIK-PB',
-            'name'      => 'Dinas Pendidikan',
-            'type'      => 'opd',
+            'code' => 'DISDIK-PB',
+            'name' => 'Dinas Pendidikan',
+            'type' => 'opd',
             'is_active' => true,
         ]);
 
         PlanningPeriod::create([
-            'code'       => 'RPJMD-2025-2029',
-            'name'       => 'RPJMD 2025-2029',
-            'year'       => 2025,
+            'code' => 'RPJMD-2025-2029',
+            'name' => 'RPJMD 2025-2029',
+            'year' => 2025,
             'start_year' => 2025,
-            'end_year'   => 2029,
+            'end_year' => 2029,
             'start_date' => '2025-01-01',
-            'end_date'   => '2029-12-31',
-            'type'       => 'rpjmd',
-            'status'     => 'active',
+            'end_date' => '2029-12-31',
+            'type' => 'rpjmd',
+            'status' => 'active',
         ]);
 
-        $this->superAdmin        = $this->createUserWithRole(RoleEnum::SuperAdmin->value, $this->provinsi);
-        $this->adminProvinsi     = $this->createUserWithRole(RoleEnum::AdminProvinsi->value, $this->provinsi);
-        $this->adminOpd          = $this->createUserWithRole(RoleEnum::AdminOpd->value, $this->opd);
-        $this->operatorOpd       = $this->createUserWithRole(RoleEnum::OperatorOpd->value, $this->opd);
-        $this->validatorOpd      = $this->createUserWithRole(RoleEnum::ValidatorOpd->value, $this->opd);
-        $this->kepalaOpd         = $this->createUserWithRole(RoleEnum::KepalaOpd->value, $this->opd);
+        $this->superAdmin = $this->createUserWithRole(RoleEnum::SuperAdmin->value, $this->provinsi);
+        $this->adminProvinsi = $this->createUserWithRole(RoleEnum::AdminProvinsi->value, $this->provinsi);
+        $this->adminOpd = $this->createUserWithRole(RoleEnum::AdminOpd->value, $this->opd);
+        $this->operatorOpd = $this->createUserWithRole(RoleEnum::OperatorOpd->value, $this->opd);
+        $this->validatorOpd = $this->createUserWithRole(RoleEnum::ValidatorOpd->value, $this->opd);
+        $this->kepalaOpd = $this->createUserWithRole(RoleEnum::KepalaOpd->value, $this->opd);
         $this->evaluatorProvinsi = $this->createUserWithRole(RoleEnum::EvaluatorProvinsi->value, $this->provinsi);
-        $this->inspektorat       = $this->createUserWithRole(RoleEnum::Inspektorat->value, $this->provinsi);
-        $this->pimpinanProvinsi  = $this->createUserWithRole(RoleEnum::PimpinanProvinsi->value, $this->provinsi);
-        $this->auditor           = $this->createUserWithRole(RoleEnum::Auditor->value, $this->provinsi);
+        $this->inspektorat = $this->createUserWithRole(RoleEnum::Inspektorat->value, $this->provinsi);
+        $this->pimpinanProvinsi = $this->createUserWithRole(RoleEnum::PimpinanProvinsi->value, $this->provinsi);
+        $this->auditor = $this->createUserWithRole(RoleEnum::Auditor->value, $this->provinsi);
     }
 
     private function createUserWithRole(string $roleName, Organization $org): User

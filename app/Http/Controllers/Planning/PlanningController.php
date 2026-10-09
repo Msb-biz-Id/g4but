@@ -13,14 +13,15 @@ use App\Models\PerformancePeriod;
 use App\Models\PlanningDocument;
 use App\Models\PlanningTree;
 use App\Models\Risk;
+use App\Services\AuthorizationService;
+use App\Services\NotificationService;
+use App\Services\SakipDocumentService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use App\Services\NotificationService;
-use App\Services\SakipDocumentService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -28,7 +29,7 @@ class PlanningController extends Controller
 {
     public function __construct(
         private readonly NotificationService $notifications,
-        private readonly \App\Services\AuthorizationService $authorization,
+        private readonly AuthorizationService $authorization,
     ) {}
 
     public function index(Request $request): Response
@@ -104,21 +105,21 @@ class PlanningController extends Controller
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $documentTypes = [
-            'rpjmd'              => 'RPJMD',
-            'renstra'            => 'Renstra',
-            'rkpd'               => 'RKPD',
-            'renja'              => 'Renja',
-            'rkt'                => 'Rencana Kinerja Tahunan (RKT)',
+            'rpjmd' => 'RPJMD',
+            'renstra' => 'Renstra',
+            'rkpd' => 'RKPD',
+            'renja' => 'Renja',
+            'rkt' => 'Rencana Kinerja Tahunan (RKT)',
             'perjanjian_kinerja' => 'Perjanjian Kinerja (PK)',
-            'dpa'                => 'DPA',
-            'rencana_aksi'       => 'Rencana Aksi',
-            'pohon_kinerja'      => 'Pohon Kinerja',
-            'cascading'          => 'Cascading Kinerja',
-            'proses_bisnis'      => 'Proses Bisnis (Probis)',
-            'manajemen_risiko'   => 'Manajemen Risiko',
-            'crosscutting'       => 'Cross-cutting Kinerja',
-            'iku'                => 'IKU',
-            'pedoman_teknis'     => 'Pedoman Teknis Perencanaan',
+            'dpa' => 'DPA',
+            'rencana_aksi' => 'Rencana Aksi',
+            'pohon_kinerja' => 'Pohon Kinerja',
+            'cascading' => 'Cascading Kinerja',
+            'proses_bisnis' => 'Proses Bisnis (Probis)',
+            'manajemen_risiko' => 'Manajemen Risiko',
+            'crosscutting' => 'Cross-cutting Kinerja',
+            'iku' => 'IKU',
+            'pedoman_teknis' => 'Pedoman Teknis Perencanaan',
         ];
         $filters = $request->only(['type', 'status', 'organization', 'period']);
         $canApprove = $user->hasRole('Super Admin')
@@ -132,7 +133,6 @@ class PlanningController extends Controller
             || $user->hasPermission('planning:review')
             || $user->hasPermission('planning:approve')
             || $user->hasPermission('agreement:approve');
-
 
         return Inertia::render('Planning/Documents', compact(
             'documents', 'organizations', 'periods', 'documentTypes', 'filters', 'canApprove', 'canLock'
@@ -335,7 +335,7 @@ class PlanningController extends Controller
             DB::transaction(function () use ($document, $path) {
                 $document->update([
                     'file_path' => $path,
-                    'status'    => 'review',
+                    'status' => 'review',
                 ]);
             });
         } catch (\Throwable $e) {
@@ -396,10 +396,10 @@ class PlanningController extends Controller
 
         DB::transaction(function () use ($document, $reviewer) {
             $document->update([
-                'status'      => 'approved',
+                'status' => 'approved',
                 'approved_by' => $reviewer->id,
                 'approved_at' => now(),
-                'updated_by'  => $reviewer->id,
+                'updated_by' => $reviewer->id,
             ]);
         });
 
@@ -436,7 +436,7 @@ class PlanningController extends Controller
 
         DB::transaction(function () use ($document, $reviewer) {
             $document->update([
-                'status'     => 'revision',
+                'status' => 'revision',
                 'updated_by' => $reviewer->id,
             ]);
         });
@@ -483,7 +483,7 @@ class PlanningController extends Controller
     public function previewDocument(PlanningDocument $document)
     {
         $path = $document->file_path;
-        if (!$path) {
+        if (! $path) {
             abort(404, 'Berkas fisik untuk dokumen ini belum diunggah.');
         }
 
@@ -495,16 +495,16 @@ class PlanningController extends Controller
             return response()->file(Storage::disk('public')->path($path));
         }
 
-        if (file_exists(storage_path('app/private/' . $path))) {
-            return response()->file(storage_path('app/private/' . $path));
+        if (file_exists(storage_path('app/private/'.$path))) {
+            return response()->file(storage_path('app/private/'.$path));
         }
 
-        if (file_exists(storage_path('app/' . $path))) {
-            return response()->file(storage_path('app/' . $path));
+        if (file_exists(storage_path('app/'.$path))) {
+            return response()->file(storage_path('app/'.$path));
         }
 
-        if (file_exists(storage_path('app/public/' . $path))) {
-            return response()->file(storage_path('app/public/' . $path));
+        if (file_exists(storage_path('app/public/'.$path))) {
+            return response()->file(storage_path('app/public/'.$path));
         }
 
         abort(404, 'Berkas fisik untuk dokumen ini tidak ditemukan di server.');
@@ -513,7 +513,7 @@ class PlanningController extends Controller
     public function downloadDocument(PlanningDocument $document)
     {
         $path = $document->file_path;
-        if (!$path) {
+        if (! $path) {
             abort(404, 'Berkas fisik untuk dokumen ini belum diunggah.');
         }
 
@@ -528,18 +528,18 @@ class PlanningController extends Controller
         }
 
         // 3. Cek berkas fisik langsung di storage_path private
-        if (file_exists(storage_path('app/private/' . $path))) {
-            return response()->download(storage_path('app/private/' . $path), basename($path));
+        if (file_exists(storage_path('app/private/'.$path))) {
+            return response()->download(storage_path('app/private/'.$path), basename($path));
         }
 
         // 4. Cek berkas fisik langsung di storage_path app
-        if (file_exists(storage_path('app/' . $path))) {
-            return response()->download(storage_path('app/' . $path), basename($path));
+        if (file_exists(storage_path('app/'.$path))) {
+            return response()->download(storage_path('app/'.$path), basename($path));
         }
 
         // 5. Cek berkas fisik langsung di storage_path public
-        if (file_exists(storage_path('app/public/' . $path))) {
-            return response()->download(storage_path('app/public/' . $path), basename($path));
+        if (file_exists(storage_path('app/public/'.$path))) {
+            return response()->download(storage_path('app/public/'.$path), basename($path));
         }
 
         // Jika tidak ada berkas fisik yang terunggah
@@ -614,13 +614,13 @@ class PlanningController extends Controller
     public function storeAgreement(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'organization_id'      => 'required|exists:organizations,id',
+            'organization_id' => 'required|exists:organizations,id',
             'performance_period_id' => 'required|exists:performance_periods,id',
-            'name'                 => 'required|string|max:300',
-            'document_number'      => 'nullable|string|max:100',
-            'description'          => 'nullable|string|max:1000',
-            'indicator_ids'        => 'nullable|array',
-            'indicator_ids.*'      => 'exists:indicators,id',
+            'name' => 'required|string|max:300',
+            'document_number' => 'nullable|string|max:100',
+            'description' => 'nullable|string|max:1000',
+            'indicator_ids' => 'nullable|array',
+            'indicator_ids.*' => 'exists:indicators,id',
         ]);
 
         $this->authorization->canAccessOrganization($request->user(), (int) $data['organization_id'])
@@ -630,7 +630,7 @@ class PlanningController extends Controller
         DB::transaction(function () use ($data, &$agreement) {
             $agreement = Agreement::create([
                 ...$data,
-                'status'     => 'submitted',
+                'status' => 'submitted',
                 'created_by' => Auth::id(),
             ]);
 
@@ -655,13 +655,13 @@ class PlanningController extends Controller
             ?: abort(403, 'Di luar lingkup organisasi Anda.');
 
         $data = $request->validate([
-            'organization_id'      => 'required|exists:organizations,id',
+            'organization_id' => 'required|exists:organizations,id',
             'performance_period_id' => 'required|exists:performance_periods,id',
-            'name'                 => 'required|string|max:300',
-            'document_number'      => 'nullable|string|max:100',
-            'description'          => 'nullable|string|max:1000',
-            'indicator_ids'        => 'nullable|array',
-            'indicator_ids.*'      => 'exists:indicators,id',
+            'name' => 'required|string|max:300',
+            'document_number' => 'nullable|string|max:100',
+            'description' => 'nullable|string|max:1000',
+            'indicator_ids' => 'nullable|array',
+            'indicator_ids.*' => 'exists:indicators,id',
         ]);
 
         $this->authorization->canAccessOrganization($request->user(), (int) $data['organization_id'])
@@ -719,10 +719,10 @@ class PlanningController extends Controller
 
         DB::transaction(function () use ($agreement, $reviewer) {
             $agreement->update([
-                'status'      => 'approved',
+                'status' => 'approved',
                 'approved_by' => $reviewer->id,
                 'approved_at' => now(),
-                'updated_by'  => $reviewer->id,
+                'updated_by' => $reviewer->id,
             ]);
         });
 
@@ -758,7 +758,7 @@ class PlanningController extends Controller
 
         DB::transaction(function () use ($agreement, $reviewer) {
             $agreement->update([
-                'status'     => 'revision',
+                'status' => 'revision',
                 'updated_by' => $reviewer->id,
             ]);
         });
@@ -814,7 +814,7 @@ class PlanningController extends Controller
             DB::transaction(function () use ($agreement, $path) {
                 $agreement->update([
                     'file_path' => $path,
-                    'status'    => 'submitted',
+                    'status' => 'submitted',
                 ]);
             });
         } catch (\Throwable $e) {
@@ -870,13 +870,13 @@ class PlanningController extends Controller
         if ($request->organization) {
             $query->where(function ($q) use ($request) {
                 $q->where('organization_id', $request->organization)
-                  ->orWhereHas('organization', fn ($sub) => $sub->where('code', $request->organization));
+                    ->orWhereHas('organization', fn ($sub) => $sub->where('code', $request->organization));
             });
         }
         if ($request->period) {
             $query->where(function ($q) use ($request) {
                 $q->where('performance_period_id', $request->period)
-                  ->orWhere('planning_period_id', $request->period);
+                    ->orWhere('planning_period_id', $request->period);
             });
         }
         if ($request->status) {
@@ -1037,12 +1037,12 @@ class PlanningController extends Controller
 
         // Tree Levels sesuai model Penjenjangan Kinerja PermenPAN-RB 89/2021
         $treeLevels = [
-            'visi'                => 'Visi / Tujuan',
-            'outcome'             => 'Sasaran Strategis',
-            'csf'                 => 'Strategic Outcome',
-            'kondisi_antara'      => 'Tactical Outcome',
+            'visi' => 'Visi / Tujuan',
+            'outcome' => 'Sasaran Strategis',
+            'csf' => 'Strategic Outcome',
+            'kondisi_antara' => 'Tactical Outcome',
             'kondisi_operasional' => 'Operational Outcome',
-            'output'              => 'Output / Kegiatan',
+            'output' => 'Output / Kegiatan',
         ];
 
         // Query simpul akar (Pohon Kinerja Utama)
@@ -1147,12 +1147,12 @@ class PlanningController extends Controller
         $filters = $request->only(['organization', 'period']);
 
         $treeLevels = [
-            'visi'                => 'Visi / Tujuan',
-            'outcome'             => 'Sasaran Strategis',
-            'csf'                 => 'Strategic Outcome',
-            'kondisi_antara'      => 'Tactical Outcome',
+            'visi' => 'Visi / Tujuan',
+            'outcome' => 'Sasaran Strategis',
+            'csf' => 'Strategic Outcome',
+            'kondisi_antara' => 'Tactical Outcome',
             'kondisi_operasional' => 'Operational Outcome',
-            'output'              => 'Output / Kegiatan',
+            'output' => 'Output / Kegiatan',
         ];
 
         $descendantIds = $this->getDescendantIds($tree);
@@ -1208,12 +1208,12 @@ class PlanningController extends Controller
         $filters = $request->only(['organization', 'period']);
 
         $treeLevels = [
-            'visi'                => 'Visi / Tujuan',
-            'outcome'             => 'Sasaran Strategis',
-            'csf'                 => 'Strategic Outcome',
-            'kondisi_antara'      => 'Tactical Outcome',
+            'visi' => 'Visi / Tujuan',
+            'outcome' => 'Sasaran Strategis',
+            'csf' => 'Strategic Outcome',
+            'kondisi_antara' => 'Tactical Outcome',
             'kondisi_operasional' => 'Operational Outcome',
-            'output'              => 'Output / Kegiatan',
+            'output' => 'Output / Kegiatan',
         ];
 
         $query = PlanningTree::with(['indicator', 'organization:id,code,name,short_name', 'allChildren'])
@@ -1384,19 +1384,19 @@ class PlanningController extends Controller
         $this->authorize('manage-planning-docs');
 
         $validated = $request->validate([
-            'file'                   => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
-            'organization_id'        => ['required', 'integer', 'exists:organizations,id'],
-            'performance_period_id'  => ['nullable', 'integer', 'exists:planning_periods,id'],
-            'label'                  => ['nullable', 'string', 'max:255'],
+            'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'organization_id' => ['required', 'integer', 'exists:organizations,id'],
+            'performance_period_id' => ['nullable', 'integer', 'exists:planning_periods,id'],
+            'label' => ['nullable', 'string', 'max:255'],
         ], [
             'file.mimes' => 'Format tidak diizinkan. Gunakan PDF, JPG, atau PNG.',
-            'file.max'   => 'Ukuran file maksimal 10 MB.',
+            'file.max' => 'Ukuran file maksimal 10 MB.',
         ]);
 
         $this->authorization->canAccessOrganization($request->user(), (int) $validated['organization_id'])
             ?: abort(403, 'Di luar lingkup organisasi Anda.');
 
-        $path  = $request->file('file')->store('planning-trees/static', 'local');
+        $path = $request->file('file')->store('planning-trees/static', 'local');
         $label = $validated['label'] ?? $request->file('file')->getClientOriginalName();
 
         // Simpan ke node root OPD (atau buat jika belum ada) — cari node level pertama untuk OPD ini
@@ -1415,14 +1415,14 @@ class PlanningController extends Controller
         } else {
             // Tidak ada node root — simpan sebagai node placeholder
             PlanningTree::create([
-                'organization_id'       => $validated['organization_id'],
+                'organization_id' => $validated['organization_id'],
                 'performance_period_id' => $validated['performance_period_id'] ?? null,
-                'level'                 => 'tujuan',
-                'code'                  => 'STATIC',
-                'name'                  => 'Pohon Kinerja (Berkas Statis)',
-                'static_file_path'      => $path,
-                'static_file_label'     => $label,
-                'created_by'            => $request->user()->id,
+                'level' => 'tujuan',
+                'code' => 'STATIC',
+                'name' => 'Pohon Kinerja (Berkas Statis)',
+                'static_file_path' => $path,
+                'static_file_label' => $label,
+                'created_by' => $request->user()->id,
             ]);
         }
 
@@ -1440,13 +1440,13 @@ class PlanningController extends Controller
             'toTree.organization',
             'performancePeriod',
         ])
-        ->when(! $isProvincialAdmin, function ($q) use ($accessibleOrgIds) {
-            $q->where(function ($sub) use ($accessibleOrgIds) {
-                $sub->whereHas('fromTree', fn ($t) => $t->whereIn('organization_id', $accessibleOrgIds)->orWhere('organization_id', 1))
-                    ->orWhereHas('toTree', fn ($t) => $t->whereIn('organization_id', $accessibleOrgIds)->orWhere('organization_id', 1));
-            });
-        })
-        ->latest();
+            ->when(! $isProvincialAdmin, function ($q) use ($accessibleOrgIds) {
+                $q->where(function ($sub) use ($accessibleOrgIds) {
+                    $sub->whereHas('fromTree', fn ($t) => $t->whereIn('organization_id', $accessibleOrgIds)->orWhere('organization_id', 1))
+                        ->orWhereHas('toTree', fn ($t) => $t->whereIn('organization_id', $accessibleOrgIds)->orWhere('organization_id', 1));
+                });
+            })
+            ->latest();
 
         if ($request->period) {
             $query->where('performance_period_id', $request->period);
@@ -1533,8 +1533,8 @@ class PlanningController extends Controller
             'organization',
             'relatedOrganization',
         ])
-        ->when(! $isProvincialAdmin, fn ($q) => $q->where(fn ($sub) => $sub->whereIn('organization_id', $accessibleOrgIds)->orWhereIn('related_organization_id', $accessibleOrgIds)))
-        ->latest();
+            ->when(! $isProvincialAdmin, fn ($q) => $q->where(fn ($sub) => $sub->whereIn('organization_id', $accessibleOrgIds)->orWhereIn('related_organization_id', $accessibleOrgIds)))
+            ->latest();
 
         if ($request->period) {
             $query->where('performance_period_id', $request->period);
@@ -1804,7 +1804,7 @@ class PlanningController extends Controller
         // Default: PDF
         $pdf = Pdf::loadView('reports.tree-pdf', [
             'trees' => $trees,
-            'org'   => $org,
+            'org' => $org,
             'generatedAt' => now()->format('d-m-Y H:i'),
         ])->setPaper('a4', 'landscape');
 
@@ -1835,20 +1835,20 @@ class PlanningController extends Controller
         }
 
         $treeLevels = [
-            'visi'                => 'Visi / Tujuan',
-            'outcome'             => 'Sasaran Strategis',
-            'csf'                 => 'Strategic Outcome',
-            'kondisi_antara'      => 'Tactical Outcome',
+            'visi' => 'Visi / Tujuan',
+            'outcome' => 'Sasaran Strategis',
+            'csf' => 'Strategic Outcome',
+            'kondisi_antara' => 'Tactical Outcome',
             'kondisi_operasional' => 'Operational Outcome',
-            'output'              => 'Output / Kegiatan',
+            'output' => 'Output / Kegiatan',
         ];
 
         $organizations = Organization::query()
             ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
-        $periods       = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
-        $filters       = $request->only(['organization', 'period']);
+        $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
+        $filters = $request->only(['organization', 'period']);
 
         $query = PlanningTree::with([
             'indicator',
@@ -1863,8 +1863,8 @@ class PlanningController extends Controller
             $query->where('performance_period_id', $request->period);
         }
 
-        $tree   = $query->orderBy('sort_order')->get();
-        $org    = $request->organization ? Organization::find($request->organization) : null;
+        $tree = $query->orderBy('sort_order')->get();
+        $org = $request->organization ? Organization::find($request->organization) : null;
         $period = $request->period ? PerformancePeriod::find($request->period) : null;
 
         return Inertia::render('Planning/TreesPrint', compact(
@@ -1878,6 +1878,7 @@ class PlanningController extends Controller
         foreach ($node->children as $child) {
             $count += 1 + $this->countDescendants($child);
         }
+
         return $count;
     }
 
@@ -1890,6 +1891,7 @@ class PlanningController extends Controller
         foreach ($node->children as $child) {
             $max = max($max, $this->getMaxDepth($child, $currentDepth + 1));
         }
+
         return $max;
     }
 
@@ -1900,6 +1902,7 @@ class PlanningController extends Controller
             $ids[] = $child->id;
             $ids = array_merge($ids, $this->getDescendantIds($child));
         }
+
         return $ids;
     }
 

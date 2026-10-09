@@ -5,8 +5,6 @@ namespace Tests\Feature;
 use App\Models\Evaluation;
 use App\Models\Organization;
 use App\Models\PkoEvaluation;
-use App\Models\PkoIndicator;
-use App\Models\PlanningPeriod;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +17,9 @@ class EvaluasiKinerjaVisualTest extends TestCase
     use RefreshDatabase;
 
     private User $superAdmin;
+
     private Organization $pemda;
+
     private Organization $opd;
 
     protected function setUp(): void

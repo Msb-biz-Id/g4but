@@ -22,9 +22,9 @@ class Risk extends Model
             $rawTitle = $risk->getAttributes()['title'] ?? null;
             $rawEvent = $risk->getAttributes()['risk_event'] ?? null;
 
-            if (empty($rawTitle) && !empty($rawEvent)) {
+            if (empty($rawTitle) && ! empty($rawEvent)) {
                 $risk->setAttribute('title', $rawEvent);
-            } elseif (empty($rawEvent) && !empty($rawTitle)) {
+            } elseif (empty($rawEvent) && ! empty($rawTitle)) {
                 $risk->setAttribute('risk_event', $rawTitle);
             }
 
@@ -34,9 +34,9 @@ class Risk extends Model
         });
 
         static::updating(function (Risk $risk) {
-            if ($risk->isDirty('risk_event') && !$risk->isDirty('title')) {
+            if ($risk->isDirty('risk_event') && ! $risk->isDirty('title')) {
                 $risk->setAttribute('title', $risk->getAttributes()['risk_event'] ?? $risk->risk_event);
-            } elseif ($risk->isDirty('title') && !$risk->isDirty('risk_event')) {
+            } elseif ($risk->isDirty('title') && ! $risk->isDirty('risk_event')) {
                 $risk->setAttribute('risk_event', $risk->getAttributes()['title'] ?? $risk->title);
             }
         });
@@ -45,7 +45,7 @@ class Risk extends Model
     public function setRiskEventAttribute($value): void
     {
         $this->attributes['risk_event'] = $value;
-        if (!isset($this->attributes['title']) || $this->attributes['title'] === null || $this->attributes['title'] === '') {
+        if (! isset($this->attributes['title']) || $this->attributes['title'] === null || $this->attributes['title'] === '') {
             $this->attributes['title'] = $value;
         }
     }
@@ -53,19 +53,19 @@ class Risk extends Model
     public function setTitleAttribute($value): void
     {
         $this->attributes['title'] = $value;
-        if (!isset($this->attributes['risk_event']) || $this->attributes['risk_event'] === null || $this->attributes['risk_event'] === '') {
+        if (! isset($this->attributes['risk_event']) || $this->attributes['risk_event'] === null || $this->attributes['risk_event'] === '') {
             $this->attributes['risk_event'] = $value;
         }
     }
 
     public function getRiskEventAttribute($value): string
     {
-        return !empty($value) ? (string) $value : (string) ($this->attributes['title'] ?? '');
+        return ! empty($value) ? (string) $value : (string) ($this->attributes['title'] ?? '');
     }
 
     public function getTitleAttribute($value): string
     {
-        return !empty($value) ? (string) $value : (string) ($this->attributes['risk_event'] ?? '');
+        return ! empty($value) ? (string) $value : (string) ($this->attributes['risk_event'] ?? '');
     }
 
     public function organization(): BelongsTo

@@ -29,21 +29,21 @@ class PdfService
 
         $candidates = [];
 
-        if (!empty($configLogo)) {
+        if (! empty($configLogo)) {
             $parsedPath = parse_url($configLogo, PHP_URL_PATH) ?? $configLogo;
-            $cleanPath  = ltrim($parsedPath, '/\\');
+            $cleanPath = ltrim($parsedPath, '/\\');
 
             // Jika file di folder storage (misal /storage/uploads/logo.png)
             if (str_starts_with($cleanPath, 'storage/')) {
                 $storageRel = substr($cleanPath, 8);
-                $candidates[] = storage_path('app/public/' . $storageRel);
+                $candidates[] = storage_path('app/public/'.$storageRel);
             }
 
             // Jika berformat .webp, prioritaskan versi .png saudara kandungnya jika ada
             if (str_ends_with(strtolower($cleanPath), '.webp')) {
                 $pngVersion = preg_replace('/\.webp$/i', '.png', $cleanPath);
                 $candidates[] = public_path($pngVersion);
-                $candidates[] = storage_path('app/public/' . $pngVersion);
+                $candidates[] = storage_path('app/public/'.$pngVersion);
             }
 
             $candidates[] = public_path($cleanPath);
@@ -63,7 +63,7 @@ class PdfService
         $candidates[] = public_path('images/logo.webp');
 
         foreach ($candidates as $filePath) {
-            if (empty($filePath) || !file_exists($filePath) || !is_file($filePath)) {
+            if (empty($filePath) || ! file_exists($filePath) || ! is_file($filePath)) {
                 continue;
             }
 
@@ -76,7 +76,8 @@ class PdfService
             if ($data !== false && strlen($data) > 0) {
                 // Jika ekstensi sudah jpg/jpeg, return langsung
                 if (in_array($ext, ['jpg', 'jpeg'], true)) {
-                    self::$cachedLogoBase64 = 'data:image/jpeg;base64,' . base64_encode($data);
+                    self::$cachedLogoBase64 = 'data:image/jpeg;base64,'.base64_encode($data);
+
                     return self::$cachedLogoBase64;
                 }
 
@@ -97,8 +98,9 @@ class PdfService
                         imagedestroy($im);
                         imagedestroy($canvas);
 
-                        if (!empty($jpegData)) {
-                            self::$cachedLogoBase64 = 'data:image/jpeg;base64,' . base64_encode($jpegData);
+                        if (! empty($jpegData)) {
+                            self::$cachedLogoBase64 = 'data:image/jpeg;base64,'.base64_encode($jpegData);
+
                             return self::$cachedLogoBase64;
                         }
                     }
@@ -106,7 +108,8 @@ class PdfService
 
                 // Fallback jika GD tidak tersedia
                 $mime = $ext === 'png' ? 'image/png' : 'image/jpeg';
-                self::$cachedLogoBase64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+                self::$cachedLogoBase64 = 'data:'.$mime.';base64,'.base64_encode($data);
+
                 return self::$cachedLogoBase64;
             }
         }

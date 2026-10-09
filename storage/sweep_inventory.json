@@ -1,0 +1,29 @@
+{
+  "deleted_tokens": [
+    "RealizationRpjmdItem",
+    "realization_rpjmd_items",
+    "realization_rpjmd",
+    "RpjmdAnalyticsService",
+    "RealizationIkuItem",
+    "realization_iku_items",
+    "getSakipPemdaMatrix",
+    "getCanonicalPemdaDefinitions",
+    "isProvincialAdmin",
+    "isProvincialLevel",
+    "is_bappeda",
+    "is_pilot_project",
+    "Admin Provinsi",
+    "Evaluator Provinsi",
+    "Pimpinan Provinsi",
+    "Inspektorat",
+    "LKIP Pemda",
+    "SAKIP Pemda",
+    "PKO Pemda"
+  ],
+  "baseline": {
+    "git_branch": "restructure/rumah-besar-opd",
+    "npm_build": "PASSED",
+    "php_test": "341 passed, 4 failed, 1 skipped",
+    "storage_backup": "storage_backup_baseline"
+  }
+}

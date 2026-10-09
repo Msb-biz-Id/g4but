@@ -75,7 +75,6 @@ class NotificationController extends Controller
         return back();
     }
 
-
     public function markAllRead(Request $request): RedirectResponse
     {
         $this->authorize('view-notifications');

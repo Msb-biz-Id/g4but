@@ -7,16 +7,20 @@ use App\Models\AiInsight;
 use App\Models\AiOpdQuota;
 use App\Models\AiPromptTemplate;
 use App\Models\AiUseLog;
+use App\Models\AppConfig;
 use App\Models\Indicator;
 use App\Models\MeasurementPeriod;
 use App\Models\Organization;
-use App\Models\AppConfig;
 use App\Services\Ai\AiContextBuilder;
 use App\Services\Ai\AiQuotaService;
 use App\Services\Ai\AiService;
 use App\Services\AuditService;
+use App\Services\PdfService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -32,9 +36,9 @@ class AiController extends Controller
     {
         $this->authorize('use-ai');
 
-        $user   = request()->user();
-        $orgId  = AiQuotaService::resolveOrganizationId($user);
-        $kuota  = $orgId ? $this->quotaService->infoKuota($orgId) : null;
+        $user = request()->user();
+        $orgId = AiQuotaService::resolveOrganizationId($user);
+        $kuota = $orgId ? $this->quotaService->infoKuota($orgId) : null;
 
         // P3-C: Untuk admin lintas-OPD, kirim daftar OPD yang dapat dipilih
         $isLintasOpd = $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi');
@@ -46,7 +50,7 @@ class AiController extends Controller
             : $user->organizations()->get(['organizations.id', 'name', 'short_name', 'code']);
 
         return Inertia::render('Ai/Index', [
-            'periods'    => MeasurementPeriod::query()
+            'periods' => MeasurementPeriod::query()
                 ->orderByDesc('end_date')
                 ->get(['id', 'code', 'name', 'type']),
             'indicators' => Indicator::query()
@@ -54,25 +58,25 @@ class AiController extends Controller
                 ->with('currentVersion:id,indicator_id,name')
                 ->orderBy('code')
                 ->get(['id', 'code', 'is_iku']),
-            'provider'   => app()->runningUnitTests()
+            'provider' => app()->runningUnitTests()
                 ? (string) config('ekasuari.ai.provider', 'mock')
                 : (string) (AppConfig::value('ai.provider') ?: config('ekasuari.ai.provider')),
-            'logs'       => AiUseLog::query()
+            'logs' => AiUseLog::query()
                 ->with('user:id,name')
                 ->latest('id')
                 ->limit(10)
                 ->get(),
-            'insights'   => AiInsight::query()
+            'insights' => AiInsight::query()
                 ->with(['user:id,name', 'reviewer:id,name'])
                 ->latest('id')
                 ->limit(15)
                 ->get(),
-            'canManage'      => $user->can('manage-ai'),
-            'isLintasOpd'    => $isLintasOpd,
-            'organizations'  => $organizations,
+            'canManage' => $user->can('manage-ai'),
+            'isLintasOpd' => $isLintasOpd,
+            'organizations' => $organizations,
             // P1-F + P3-A: Info kuota untuk ditampilkan di UI (BR-AI-009)
-            'kuotaHarian'    => $kuota,
-            'aiResult'       => session('ai_result'),
+            'kuotaHarian' => $kuota,
+            'aiResult' => session('ai_result'),
         ]);
     }
 
@@ -86,12 +90,12 @@ class AiController extends Controller
         $this->authorize('use-ai');
 
         $validated = $request->validate([
-            'period_id'       => ['nullable', 'exists:measurement_periods,id'],
+            'period_id' => ['nullable', 'exists:measurement_periods,id'],
             'organization_id' => ['nullable', 'exists:organizations,id'],
         ]);
 
-        $user   = $request->user();
-        $orgId  = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
+        $user = $request->user();
+        $orgId = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
         $periodId = $validated['period_id'] ?? null;
 
         // ── P1-F: Cek kuota harian OPD (BR-AI-009) ───────────────────────────
@@ -99,14 +103,14 @@ class AiController extends Controller
             $kuotaCheck = $this->quotaService->check($orgId);
             if (! $kuotaCheck['ok']) {
                 // MOD-AI-004: Catat kejadian RATE_LIMITED ke log (BR-AI-008)
-                \App\Models\AiUseLog::create([
-                    'user_id'         => $request->user()->id,
+                AiUseLog::create([
+                    'user_id' => $request->user()->id,
                     'organization_id' => $orgId,
-                    'feature'         => 'executive_summary',
-                    'provider'        => 'none',
-                    'status'          => 'rate_limited',
-                    'error_message'   => $kuotaCheck['pesan'],
-                    'latency_ms'      => 0,
+                    'feature' => 'executive_summary',
+                    'provider' => 'none',
+                    'status' => 'rate_limited',
+                    'error_message' => $kuotaCheck['pesan'],
+                    'latency_ms' => 0,
                 ]);
 
                 return back()->with('error', $kuotaCheck['pesan']);
@@ -156,13 +160,13 @@ class AiController extends Controller
         $this->authorize('use-ai');
 
         $validated = $request->validate([
-            'period_id'       => ['nullable', 'exists:measurement_periods,id'],
+            'period_id' => ['nullable', 'exists:measurement_periods,id'],
             'organization_id' => ['nullable', 'exists:organizations,id'],
-            'indicator_id'    => ['nullable', 'exists:indicators,id'],
+            'indicator_id' => ['nullable', 'exists:indicators,id'],
         ]);
 
-        $user     = $request->user();
-        $orgId    = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
+        $user = $request->user();
+        $orgId = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
         $periodId = $validated['period_id'] ?? null;
 
         $context = $this->contextBuilder->insightContext($validated['indicator_id'] ?? null, $orgId, $periodId);
@@ -188,12 +192,12 @@ class AiController extends Controller
         $this->authorize('use-ai');
 
         $validated = $request->validate([
-            'period_id'       => ['nullable', 'exists:measurement_periods,id'],
+            'period_id' => ['nullable', 'exists:measurement_periods,id'],
             'organization_id' => ['nullable', 'exists:organizations,id'],
         ]);
 
-        $user     = $request->user();
-        $orgId    = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
+        $user = $request->user();
+        $orgId = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
         $periodId = $validated['period_id'] ?? null;
 
         // Cek kuota juga untuk rekomendasi
@@ -231,13 +235,13 @@ class AiController extends Controller
         $this->authorize('use-ai');
 
         $validated = $request->validate([
-            'period_id'       => ['nullable', 'exists:measurement_periods,id'],
+            'period_id' => ['nullable', 'exists:measurement_periods,id'],
             'organization_id' => ['nullable', 'exists:organizations,id'],
-            'indicator_id'    => ['nullable', 'exists:indicators,id'],
+            'indicator_id' => ['nullable', 'exists:indicators,id'],
         ]);
 
-        $user     = $request->user();
-        $orgId    = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
+        $user = $request->user();
+        $orgId = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
         $periodId = $validated['period_id'] ?? null;
 
         if ($orgId !== null) {
@@ -259,7 +263,7 @@ class AiController extends Controller
                 periode: $context['period'] ?? null,
             );
         } catch (\Throwable $e) {
-            return back()->with('error', 'Pemanggilan AI Prediksi gagal: ' . $e->getMessage());
+            return back()->with('error', 'Pemanggilan AI Prediksi gagal: '.$e->getMessage());
         }
 
         if ($orgId !== null) {
@@ -274,12 +278,12 @@ class AiController extends Controller
         $this->authorize('use-ai');
 
         $validated = $request->validate([
-            'period_id'       => ['nullable', 'exists:measurement_periods,id'],
+            'period_id' => ['nullable', 'exists:measurement_periods,id'],
             'organization_id' => ['nullable', 'exists:organizations,id'],
         ]);
 
-        $user     = $request->user();
-        $orgId    = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
+        $user = $request->user();
+        $orgId = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
         $periodId = $validated['period_id'] ?? null;
 
         $context = $this->contextBuilder->opdStatusContext($orgId, $periodId);
@@ -294,24 +298,24 @@ class AiController extends Controller
                 periode: $context['period'] ?? null,
             );
         } catch (\Throwable $e) {
-            return back()->with('error', 'Pemanggilan analisis status OPD gagal: ' . $e->getMessage());
+            return back()->with('error', 'Pemanggilan analisis status OPD gagal: '.$e->getMessage());
         }
 
         return back()->with('ai_result', $result)->with('success', 'Status kinerja per OPD berhasil dievaluasi.');
     }
 
-    public function chat(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function chat(Request $request): RedirectResponse|JsonResponse
     {
         $this->authorize('use-ai');
 
         $validated = $request->validate([
-            'message'          => ['required', 'string', 'max:1000'],
-            'history'          => ['nullable', 'array', 'max:20'],
-            'history.*.role'   => ['required_with:history', 'string', 'in:user,assistant'],
+            'message' => ['required', 'string', 'max:1000'],
+            'history' => ['nullable', 'array', 'max:20'],
+            'history.*.role' => ['required_with:history', 'string', 'in:user,assistant'],
             'history.*.content' => ['required_with:history', 'string', 'max:2000'],
         ]);
 
-        $user  = $request->user();
+        $user = $request->user();
         $orgId = AiQuotaService::resolveOrganizationId($user);
 
         // Cek kuota harian OPD (Super Admin dan Admin Provinsi memiliki akses bebas kuota/unlimited)
@@ -325,6 +329,7 @@ class AiController extends Controller
                         'message' => $kuotaCheck['pesan'],
                     ], 429);
                 }
+
                 return back()->with('error', $kuotaCheck['pesan']);
             }
         }
@@ -346,14 +351,16 @@ class AiController extends Controller
                     'message' => $e->getMessage(),
                 ], 422);
             }
+
             return back()->with('error', $e->getMessage());
         } catch (\Throwable $e) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Layanan Asisten AI sedang tidak dapat dijangkau: ' . $e->getMessage(),
+                    'message' => 'Layanan Asisten AI sedang tidak dapat dijangkau: '.$e->getMessage(),
                 ], 500);
             }
+
             return back()->with('error', 'Pemanggilan API AI gagal: '.$e->getMessage());
         }
 
@@ -378,7 +385,7 @@ class AiController extends Controller
     {
         $this->authorize('use-ai');
 
-        $user  = request()->user();
+        $user = request()->user();
         $orgId = AiQuotaService::resolveOrganizationId($user);
 
         if ($orgId !== null) {
@@ -396,7 +403,7 @@ class AiController extends Controller
         }
 
         try {
-            $summary        = $this->ai->generate('executive_summary', '', $context, sources: $sources, organizationId: $orgId, periode: $context['period'] ?? null);
+            $summary = $this->ai->generate('executive_summary', '', $context, sources: $sources, organizationId: $orgId, periode: $context['period'] ?? null);
             $recommendation = $this->ai->generate('recommendation', '', $context, sources: $sources, organizationId: $orgId, periode: $context['period'] ?? null);
         } catch (\Throwable $e) {
             return back()->with('error', 'Pemanggilan API AI gagal: '.$e->getMessage());
@@ -413,11 +420,11 @@ class AiController extends Controller
             .$recommendation['output']."\n\n"
             .'Sumber: realisasi & target tervalidasi sesuai hak akses.';
 
-        $result                 = $summary;
-        $result['output']       = $brief;
-        $result['status']       = 'executive_brief';
+        $result = $summary;
+        $result['output'] = $brief;
+        $result['status'] = 'executive_brief';
         $result['generated_at'] = now()->toIso8601String();
-        $result['insight_id']   = $recommendation['insight_id'];
+        $result['insight_id'] = $recommendation['insight_id'];
 
         app(AuditService::class)->log('ai_executive_brief', 'ai_insight', $recommendation['insight_id']);
 
@@ -438,21 +445,21 @@ class AiController extends Controller
 
         $validated = $request->validate([
             'decision' => ['required', 'in:accepted,rejected'],
-            'rating'   => ['nullable', 'integer', 'between:1,5'],
-            'comment'  => ['nullable', 'string', 'max:1000'],
+            'rating' => ['nullable', 'integer', 'between:1,5'],
+            'comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $insight->update([
-            'status'         => $validated['decision'],
-            'rating'         => $validated['rating'] ?? null,
+            'status' => $validated['decision'],
+            'rating' => $validated['rating'] ?? null,
             'review_comment' => $validated['comment'] ?? null,
-            'reviewed_by'    => $request->user()->id,
-            'reviewed_at'    => now(),
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
         ]);
 
         app(AuditService::class)->log('ai_insight_reviewed', 'ai_insight', $insight->id, null, [
             'decision' => $validated['decision'],
-            'rating'   => $validated['rating'] ?? null,
+            'rating' => $validated['rating'] ?? null,
         ]);
 
         return back()->with(
@@ -476,7 +483,7 @@ class AiController extends Controller
                 ->orderBy('feature')
                 ->orderBy('version')
                 ->get(),
-            'features'  => [
+            'features' => [
                 ['value' => 'executive_summary', 'label' => 'Executive Summary'],
                 ['value' => 'insight',           'label' => 'Performance Insight'],
                 ['value' => 'recommendation',    'label' => 'Recommendation Draft'],
@@ -494,7 +501,7 @@ class AiController extends Controller
 
         $validated = $request->validate([
             'feature' => ['required', 'in:executive_summary,insight,recommendation,chat'],
-            'name'    => ['nullable', 'string', 'max:200'],
+            'name' => ['nullable', 'string', 'max:200'],
             'content' => ['required', 'string', 'min:10', 'max:4000'],
         ]);
 
@@ -567,23 +574,23 @@ class AiController extends Controller
                     ->first();
 
                 return [
-                    'id'             => $org->id,
-                    'name'           => $org->name,
-                    'short_name'     => $org->short_name,
-                    'code'           => $org->code,
+                    'id' => $org->id,
+                    'name' => $org->name,
+                    'short_name' => $org->short_name,
+                    'code' => $org->code,
                     'kuota_hari_ini' => $quota ? [
                         'kuota_maksimal' => $quota->kuota_maksimal,
-                        'terpakai'       => $quota->terpakai,
-                        'sisa'           => $quota->sisa(),
+                        'terpakai' => $quota->terpakai,
+                        'sisa' => $quota->sisa(),
                     ] : null,
-                    'kuota_default'  => $defaultQuota,
+                    'kuota_default' => $defaultQuota,
                 ];
             });
 
         return Inertia::render('Ai/Quota', [
             'organizations' => $organizations,
             'kuota_default' => $defaultQuota,
-            'today'         => $today,
+            'today' => $today,
         ]);
     }
 
@@ -603,7 +610,7 @@ class AiController extends Controller
         $quota = AiOpdQuota::updateOrCreate(
             [
                 'organization_id' => $organization->id,
-                'tanggal'         => today()->toDateString(),
+                'tanggal' => today()->toDateString(),
             ],
             [
                 'kuota_maksimal' => $validated['kuota_maksimal'],
@@ -616,9 +623,9 @@ class AiController extends Controller
             $quota->id,
             null,
             [
-                'organization'   => $organization->name,
+                'organization' => $organization->name,
                 'kuota_maksimal' => $validated['kuota_maksimal'],
-                'tanggal'        => today()->toDateString(),
+                'tanggal' => today()->toDateString(),
             ]
         );
 
@@ -637,11 +644,11 @@ class AiController extends Controller
         $this->authorize('use-ai');
 
         $validated = $request->validate([
-            'title'       => ['required', 'string'],
-            'feature'     => ['nullable', 'string'],
-            'scope'       => ['nullable', 'string'],
-            'output'      => ['required', 'string'],
-            'raw_output'  => ['nullable', 'string'],
+            'title' => ['required', 'string'],
+            'feature' => ['nullable', 'string'],
+            'scope' => ['nullable', 'string'],
+            'output' => ['required', 'string'],
+            'raw_output' => ['nullable', 'string'],
             'parsed_json' => ['nullable', 'string'],
         ]);
 
@@ -654,23 +661,23 @@ class AiController extends Controller
 
         // Ekstraksi parsed structured data untuk summary eksekutif
         $parsed = null;
-        if (!empty($validated['parsed_json'])) {
+        if (! empty($validated['parsed_json'])) {
             $decoded = json_decode($validated['parsed_json'], true);
-            if (is_array($decoded) && (!empty($decoded['ringkasan']) || !empty($decoded['perhatian']) || !empty($decoded['rekomendasi']))) {
+            if (is_array($decoded) && (! empty($decoded['ringkasan']) || ! empty($decoded['perhatian']) || ! empty($decoded['rekomendasi']))) {
                 $parsed = $decoded;
             }
         }
 
-        if (!$parsed && !empty($validated['raw_output'])) {
-            $parsed = app(\App\Services\Ai\AiService::class)->parseExecutiveSummaryJson($validated['raw_output']);
+        if (! $parsed && ! empty($validated['raw_output'])) {
+            $parsed = app(AiService::class)->parseExecutiveSummaryJson($validated['raw_output']);
         }
 
-        if (!$parsed) {
-            $parsed = app(\App\Services\Ai\AiService::class)->parseExecutiveSummaryJson($output);
+        if (! $parsed) {
+            $parsed = app(AiService::class)->parseExecutiveSummaryJson($output);
         }
 
         // Fallback ekstraksi jika output berupa teks hasil getFormattedOutputText()
-        if (!$parsed && (str_contains($output, 'Catatan Perhatian Khusus:') || str_contains($output, 'Rekomendasi Tindak Lanjut:'))) {
+        if (! $parsed && (str_contains($output, 'Catatan Perhatian Khusus:') || str_contains($output, 'Rekomendasi Tindak Lanjut:'))) {
             $parts = preg_split('/(?=Catatan Perhatian Khusus:|Rekomendasi Tindak Lanjut:)/i', $output);
             $ringkasan = '';
             $perhatian = [];
@@ -681,7 +688,7 @@ class AiController extends Controller
                     $lines = explode("\n", substr($partTrimmed, strlen('Catatan Perhatian Khusus:')));
                     foreach ($lines as $l) {
                         $c = trim(ltrim(trim($l), '-•* '));
-                        if (!empty($c) && !str_starts_with(strtolower($c), 'sumber:')) {
+                        if (! empty($c) && ! str_starts_with(strtolower($c), 'sumber:')) {
                             $perhatian[] = ['catatan' => $c];
                         }
                     }
@@ -689,19 +696,19 @@ class AiController extends Controller
                     $lines = explode("\n", substr($partTrimmed, strlen('Rekomendasi Tindak Lanjut:')));
                     foreach ($lines as $l) {
                         $c = trim(ltrim(trim($l), '-•* '));
-                        if (!empty($c) && !str_starts_with(strtolower($c), 'sumber:')) {
+                        if (! empty($c) && ! str_starts_with(strtolower($c), 'sumber:')) {
                             $rekomendasi[] = ['tindakan' => $c];
                         }
                     }
                 } else {
                     $cleanPart = preg_replace('/Sumber:\s*analisis\s*otomatis.*$/i', '', $partTrimmed);
-                    $ringkasan .= ($ringkasan ? "\n\n" : '') . trim($cleanPart);
+                    $ringkasan .= ($ringkasan ? "\n\n" : '').trim($cleanPart);
                 }
             }
-            if (!empty($ringkasan) || !empty($perhatian) || !empty($rekomendasi)) {
+            if (! empty($ringkasan) || ! empty($perhatian) || ! empty($rekomendasi)) {
                 $parsed = [
-                    'ringkasan'   => trim($ringkasan),
-                    'perhatian'   => $perhatian,
+                    'ringkasan' => trim($ringkasan),
+                    'perhatian' => $perhatian,
                     'rekomendasi' => $rekomendasi,
                 ];
             }
@@ -709,29 +716,30 @@ class AiController extends Controller
 
         $formattedContent = $this->formatOutputForPdf($output);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.ai-report', [
-            'title'            => $title,
-            'feature'          => $feature,
-            'scope'            => $scope,
-            'output'           => $output,
-            'parsed'           => $parsed,
+        $pdf = Pdf::loadView('pdf.ai-report', [
+            'title' => $title,
+            'feature' => $feature,
+            'scope' => $scope,
+            'output' => $output,
+            'parsed' => $parsed,
             'formattedContent' => $formattedContent,
-            'userName'         => $user->name,
-            'generatedAt'      => $generatedAt,
-            'logoBase64'       => \App\Services\PdfService::getLogoBase64(),
-            'provinceName'     => \App\Services\PdfService::getProvinceName(),
-            'appName'          => \App\Services\PdfService::getAppName(),
+            'userName' => $user->name,
+            'generatedAt' => $generatedAt,
+            'logoBase64' => PdfService::getLogoBase64(),
+            'provinceName' => PdfService::getProvinceName(),
+            'appName' => PdfService::getAppName(),
         ])->setPaper('a4', 'portrait');
 
-        $slug = \Illuminate\Support\Str::slug($feature . '-' . now()->format('Ymd-His'));
+        $slug = Str::slug($feature.'-'.now()->format('Ymd-His'));
+
         return $pdf->download("laporan-analisis-ai-{$slug}.pdf");
     }
 
     private function formatOutputForPdf(string $text): string
     {
         // Jika teks masih dalam format JSON mentah, konversi ke narasi terstruktur terlebih dahulu
-        if (\App\Services\Ai\AiService::isJsonLike($text)) {
-            $text = \App\Services\Ai\AiService::convertJsonStringToNarrative($text);
+        if (AiService::isJsonLike($text)) {
+            $text = AiService::convertJsonStringToNarrative($text);
         }
 
         $text = str_replace(["\r\n", "\r"], "\n", $text);
@@ -755,11 +763,12 @@ class AiController extends Controller
                 array_pop($rawCells);
                 $cells = array_map('trim', $rawCells);
 
-                if (!$inTable) {
+                if (! $inTable) {
                     $inTable = true;
                     $tableRows = [];
                 }
                 $tableRows[] = $cells;
+
                 continue;
             } else {
                 if ($inTable) {
@@ -771,43 +780,49 @@ class AiController extends Controller
 
             if ($trimmed === '') {
                 $html .= '<div style="height: 5px;"></div>';
+
                 continue;
             }
 
             // Divider line
             if (preg_match('/^[\-=]{3,}$/', $trimmed)) {
                 $html .= '<hr style="border: none; border-top: 1px solid #cbd5e1; margin: 6px 0;" />';
+
                 continue;
             }
 
             // Section title (starts with ### or contains — Pemerintah or 1. PILAR)
             if (str_starts_with($trimmed, '###') || preg_match('/^[0-9]+\.\s+PILAR/i', $trimmed) || str_contains($trimmed, ' — Pemerintah')) {
                 $clean = ltrim($trimmed, '#- ');
-                $html .= '<div class="section-title">' . htmlspecialchars($clean, ENT_QUOTES, 'UTF-8') . '</div>';
+                $html .= '<div class="section-title">'.htmlspecialchars($clean, ENT_QUOTES, 'UTF-8').'</div>';
+
                 continue;
             }
 
             // Callout / Alert
             if (str_starts_with(strtolower($trimmed), 'kesimpulan') || str_starts_with(strtolower($trimmed), 'catatan') || str_starts_with(strtolower($trimmed), 'sumber:')) {
-                $html .= '<div class="callout-box"><strong>' . $this->formatMarkdownInline($trimmed) . '</strong></div>';
+                $html .= '<div class="callout-box"><strong>'.$this->formatMarkdownInline($trimmed).'</strong></div>';
+
                 continue;
             }
 
             // Numbered list
             if (preg_match('/^([0-9]+)\.\s+(.+)$/', $trimmed, $m)) {
-                $html .= '<div class="list-item"><span class="list-num">' . $m[1] . '.</span><span class="list-text">' . $this->formatMarkdownInline($m[2]) . '</span></div>';
+                $html .= '<div class="list-item"><span class="list-num">'.$m[1].'.</span><span class="list-text">'.$this->formatMarkdownInline($m[2]).'</span></div>';
+
                 continue;
             }
 
             // Bullet list
             if (str_starts_with($trimmed, '-') || str_starts_with($trimmed, '•') || str_starts_with($trimmed, '*')) {
                 $clean = ltrim($trimmed, '-•* ');
-                $html .= '<div class="list-item"><span class="list-bullet">•</span><span class="list-text">' . $this->formatMarkdownInline($clean) . '</span></div>';
+                $html .= '<div class="list-item"><span class="list-bullet">•</span><span class="list-text">'.$this->formatMarkdownInline($clean).'</span></div>';
+
                 continue;
             }
 
             // Regular paragraph
-            $html .= '<p class="paragraph">' . $this->formatMarkdownInline($trimmed) . '</p>';
+            $html .= '<p class="paragraph">'.$this->formatMarkdownInline($trimmed).'</p>';
         }
 
         if ($inTable) {
@@ -822,6 +837,7 @@ class AiController extends Controller
         $escaped = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
         $escaped = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $escaped);
         $escaped = preg_replace('/\*(.+?)\*/', '<em>$1</em>', $escaped);
+
         return $escaped;
     }
 
@@ -833,17 +849,18 @@ class AiController extends Controller
         $html = '<table class="data-table"><thead><tr>';
         $header = array_shift($rows);
         foreach ($header as $th) {
-            $html .= '<th>' . $this->formatMarkdownInline($th) . '</th>';
+            $html .= '<th>'.$this->formatMarkdownInline($th).'</th>';
         }
         $html .= '</tr></thead><tbody>';
         foreach ($rows as $row) {
             $html .= '<tr>';
             foreach ($row as $td) {
-                $html .= '<td>' . $this->formatMarkdownInline($td) . '</td>';
+                $html .= '<td>'.$this->formatMarkdownInline($td).'</td>';
             }
             $html .= '</tr>';
         }
         $html .= '</tbody></table>';
+
         return $html;
     }
 }

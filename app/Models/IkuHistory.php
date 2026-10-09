@@ -25,18 +25,24 @@ class IkuHistory extends Model
     {
         return [
             'previous_data' => 'array',
-            'new_data'      => 'array',
-            'created_at'    => 'datetime',
+            'new_data' => 'array',
+            'created_at' => 'datetime',
         ];
     }
 
     // Action constants
-    const ACTION_CREATE     = 'create';
-    const ACTION_UPDATE     = 'update';
-    const ACTION_SUBMIT     = 'submit';
-    const ACTION_REVIEW     = 'review';
-    const ACTION_RETURN     = 'return';
-    const ACTION_FINALIZE   = 'finalize';
+    const ACTION_CREATE = 'create';
+
+    const ACTION_UPDATE = 'update';
+
+    const ACTION_SUBMIT = 'submit';
+
+    const ACTION_REVIEW = 'review';
+
+    const ACTION_RETURN = 'return';
+
+    const ACTION_FINALIZE = 'finalize';
+
     const ACTION_DEACTIVATE = 'deactivate';
 
     public function indicator(): BelongsTo

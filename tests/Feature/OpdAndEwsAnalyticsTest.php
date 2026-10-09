@@ -14,6 +14,7 @@ class OpdAndEwsAnalyticsTest extends TestCase
     use RefreshDatabase;
 
     private OpdAnalyticsService $opdService;
+
     private EarlyWarningAnalyticsService $ewsService;
 
     protected function setUp(): void
@@ -99,7 +100,7 @@ class OpdAndEwsAnalyticsTest extends TestCase
         $this->assertArrayHasKey('rata_capaian', $matrix['summary']);
 
         $this->assertIsArray($matrix['rows']);
-        if (!empty($matrix['rows'])) {
+        if (! empty($matrix['rows'])) {
             $first = $matrix['rows'][0];
             $this->assertArrayHasKey('indikator', $first);
             $this->assertArrayHasKey('target', $first);
@@ -128,7 +129,7 @@ class OpdAndEwsAnalyticsTest extends TestCase
         $this->assertArrayHasKey('kritis', $result['summary']);
 
         $this->assertIsArray($result['rows']);
-        if (!empty($result['rows'])) {
+        if (! empty($result['rows'])) {
             $firstOpd = $result['rows'][0];
             $this->assertArrayHasKey('id', $firstOpd);
             $this->assertArrayHasKey('perangkat_daerah', $firstOpd);
@@ -164,7 +165,7 @@ class OpdAndEwsAnalyticsTest extends TestCase
         $this->assertArrayHasKey('predikat_BB', $eval['summary']);
 
         $this->assertIsArray($eval['rows']);
-        if (!empty($eval['rows'])) {
+        if (! empty($eval['rows'])) {
             $row = $eval['rows'][0];
             $this->assertArrayHasKey('perencanaan', $row);
             $this->assertArrayHasKey('pengukuran', $row);
@@ -208,7 +209,7 @@ class OpdAndEwsAnalyticsTest extends TestCase
         $this->assertArrayHasKey('top_10', $pko['opd_pko']);
         $this->assertArrayHasKey('attention_10', $pko['opd_pko']);
 
-        if (!empty($pko['opd_pko']['rows'])) {
+        if (! empty($pko['opd_pko']['rows'])) {
             $first = $pko['opd_pko']['rows'][0];
             $this->assertArrayHasKey('nilai_pko', $first);
             $this->assertArrayHasKey('predikat', $first);
@@ -259,7 +260,7 @@ class OpdAndEwsAnalyticsTest extends TestCase
         $this->assertArrayHasKey('late_renaksi_count', $risk['summary']);
 
         $this->assertIsArray($risk['rows']);
-        if (!empty($risk['rows'])) {
+        if (! empty($risk['rows'])) {
             $first = $risk['rows'][0];
             $this->assertArrayHasKey('risk_score', $first);
             $this->assertArrayHasKey('risk_level', $first);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppConfig;
+use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -14,10 +15,10 @@ class SettingsController extends Controller
 {
     /** Kunci yang diizinkan untuk upload aset file. */
     private const ASSET_KEYS = [
-        'app_logo'          => ['dest' => 'logo.webp',              'public' => '/logo.webp'],
-        'app_favicon'       => ['dest' => 'favicon.ico',           'public' => '/favicon.ico'],
-        'ui_headline_image' => ['dest' => 'images/hero-banner.webp','public' => '/images/hero-banner.webp'],
-        'ui_login_image'    => ['dest' => 'images/login-bg.webp',   'public' => '/images/login-bg.webp'],
+        'app_logo' => ['dest' => 'logo.webp',              'public' => '/logo.webp'],
+        'app_favicon' => ['dest' => 'favicon.ico',           'public' => '/favicon.ico'],
+        'ui_headline_image' => ['dest' => 'images/hero-banner.webp', 'public' => '/images/hero-banner.webp'],
+        'ui_login_image' => ['dest' => 'images/login-bg.webp',   'public' => '/images/login-bg.webp'],
     ];
 
     public function index(Request $request): Response
@@ -25,11 +26,11 @@ class SettingsController extends Controller
         $this->authorize('config:manage');
 
         $configs = AppConfig::orderBy('group')->orderBy('key')->get();
-        $groups  = $configs->pluck('group')->unique()->filter()->values()->toArray();
+        $groups = $configs->pluck('group')->unique()->filter()->values()->toArray();
 
         return Inertia::render('Settings/Index', [
-            'configs'   => $configs,
-            'groups'    => $groups,
+            'configs' => $configs,
+            'groups' => $groups,
             'canManage' => $request->user()->hasPermissionTo('config:manage'),
         ]);
     }
@@ -81,7 +82,7 @@ class SettingsController extends Controller
         Cache::forget('app_configs.all');
         Cache::forget('app_config_all');
 
-        app(\App\Services\AuditService::class)->log(
+        app(AuditService::class)->log(
             'config_batch_updated', 'app_config', null, null,
             ['keys' => $updatedKeys]
         );
@@ -115,12 +116,13 @@ class SettingsController extends Controller
             Cache::forget('app_general_config');
         }
 
-        app(\App\Services\AuditService::class)->log(
+        app(AuditService::class)->log(
             'config_updated', 'app_config', $configModel->id, null,
             ['key' => $configModel->key, 'value' => $val]
         );
 
         $label = $configModel->label ?: $configModel->key;
+
         return back()->with('success', "Konfigurasi '{$label}' berhasil disimpan.");
     }
 
@@ -137,12 +139,13 @@ class SettingsController extends Controller
         Cache::forget('app_theme_config');
         Cache::forget('app_general_config');
 
-        app(\App\Services\AuditService::class)->log(
+        app(AuditService::class)->log(
             'config_reset', 'app_config', $configModel->id, null,
             ['key' => $configModel->key]
         );
 
         $label = $configModel->label ?: $configModel->key;
+
         return back()->with('success', "Konfigurasi '{$label}' dikembalikan ke nilai default.");
     }
 
@@ -151,11 +154,11 @@ class SettingsController extends Controller
         $this->authorize('config:manage');
 
         $request->validate([
-            'asset_key' => 'required|string|in:' . implode(',', array_keys(self::ASSET_KEYS)),
-            'file'      => 'required|file|mimes:jpg,jpeg,png,gif,ico,svg,webp|max:3072',
+            'asset_key' => 'required|string|in:'.implode(',', array_keys(self::ASSET_KEYS)),
+            'file' => 'required|file|mimes:jpg,jpeg,png,gif,ico,svg,webp|max:3072',
         ]);
 
-        $key  = $request->input('asset_key');
+        $key = $request->input('asset_key');
         $meta = self::ASSET_KEYS[$key];
         $dest = public_path($meta['dest']);
 
@@ -170,13 +173,13 @@ class SettingsController extends Controller
 
         // Perbarui nilai di app_configs (tambah cache-bust querystring)
         AppConfig::where('key', $key)->update([
-            'value'      => $meta['public'] . '?v=' . time(),
+            'value' => $meta['public'].'?v='.time(),
             'updated_at' => now(),
         ]);
 
         Cache::forget('app_general_config');
 
-        app(\App\Services\AuditService::class)->log(
+        app(AuditService::class)->log(
             'asset_uploaded', 'app_config', null, null, ['key' => $key]
         );
 

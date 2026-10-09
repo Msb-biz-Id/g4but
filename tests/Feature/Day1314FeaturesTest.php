@@ -210,7 +210,7 @@ class Day1314FeaturesTest extends TestCase
 
         $this->assertTrue(
             $response->status() === 429 || ($response->status() === 302 && session('errors')?->has('email')),
-            "Percobaan login ke-6 seharusnya di-throttle."
+            'Percobaan login ke-6 seharusnya di-throttle.'
         );
     }
 

@@ -84,7 +84,7 @@ return new class extends Migration
             ];
             foreach ($foreignsToDrop as $fk) {
                 if (Schema::hasColumn('indicators', $fk)) {
-                    $table->dropForeign(['indicators_' . $fk . '_foreign']);
+                    $table->dropForeign(['indicators_'.$fk.'_foreign']);
                 }
             }
 

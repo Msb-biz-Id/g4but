@@ -18,7 +18,7 @@ class SyncAndExportOpdUsers extends Command
     {
         $this->info('1. Menjalankan sinkronisasi akun pengguna untuk seluruh OPD & Biro...');
 
-        $seeder = new SyncAllOpdUsersSeeder();
+        $seeder = new SyncAllOpdUsersSeeder;
         $seeder->setCommand($this);
         $seeder->run();
 

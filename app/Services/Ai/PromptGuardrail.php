@@ -2,6 +2,8 @@
 
 namespace App\Services\Ai;
 
+use App\Services\AuditService;
+
 /**
  * Backend-controlled guardrail layer (BRD FR-PG-001..012, RULE-015..019).
  *
@@ -76,6 +78,7 @@ class PromptGuardrail
         foreach (self::INJECTION_PATTERNS as $pattern) {
             if (preg_match($pattern, $lower)) {
                 $this->logThreat($message, 'injection_pattern_detected');
+
                 return $this->refuse('Permintaan ditolak demi keamanan (terdeteksi potensi manipulasi instruksi / prompt injection).');
             }
         }
@@ -83,6 +86,7 @@ class PromptGuardrail
         foreach (self::ALWAYS_REFUSE_KEYWORDS as $keyword => $response) {
             if (str_contains($lower, $keyword)) {
                 $this->logThreat($message, 'sensitive_keyword:'.$keyword);
+
                 return $this->refuse($response);
             }
         }
@@ -98,8 +102,8 @@ class PromptGuardrail
     private function logThreat(string $message, string $reason): void
     {
         try {
-            if (class_exists(\App\Services\AuditService::class)) {
-                app(\App\Services\AuditService::class)->log(
+            if (class_exists(AuditService::class)) {
+                app(AuditService::class)->log(
                     'prompt_injection_blocked',
                     'ai_guardrail',
                     null,

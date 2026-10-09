@@ -67,7 +67,7 @@ class UserController extends Controller
         $format = $request->query('format', 'xlsx');
 
         if ($format === 'csv') {
-            $tempPath = tempnam(sys_get_temp_dir(), 'ekasuari_users_') . '.csv';
+            $tempPath = tempnam(sys_get_temp_dir(), 'ekasuari_users_').'.csv';
             $this->exportService->exportToCsv($tempPath, $currentUser);
 
             return response()->download($tempPath, 'daftar_akun_ekasuari.csv', [
@@ -75,7 +75,7 @@ class UserController extends Controller
             ])->deleteFileAfterSend(true);
         }
 
-        $tempPath = tempnam(sys_get_temp_dir(), 'ekasuari_users_') . '.xlsx';
+        $tempPath = tempnam(sys_get_temp_dir(), 'ekasuari_users_').'.xlsx';
         $this->exportService->exportToXlsx($tempPath, $currentUser);
 
         return response()->download($tempPath, 'daftar_akun_ekasuari.xlsx', [

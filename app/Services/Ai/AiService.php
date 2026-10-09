@@ -8,6 +8,7 @@ use App\Models\AiPromptTemplate;
 use App\Models\AiRequest;
 use App\Models\AiUseLog;
 use App\Models\AppConfig;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,11 +23,11 @@ class AiService
 {
     private const FEATURE_TITLES = [
         'executive_summary' => 'Executive Summary',
-        'insight'           => 'Analisis Insight Kinerja',
-        'prediction'        => 'Prediksi Capaian Akhir Tahun',
-        'recommendation'    => 'Rekomendasi Tindak Lanjut',
-        'opd_status'        => 'Status Kinerja per OPD',
-        'chat'              => 'AI Asisten e-KASUARI',
+        'insight' => 'Analisis Insight Kinerja',
+        'prediction' => 'Prediksi Capaian Akhir Tahun',
+        'recommendation' => 'Rekomendasi Tindak Lanjut',
+        'opd_status' => 'Status Kinerja per OPD',
+        'chat' => 'AI Asisten e-KASUARI',
     ];
 
     /**
@@ -34,7 +35,7 @@ class AiService
      */
     private const DEFAULT_TEMPLATES = [
         'executive_summary' => [
-            'name'    => 'Executive Summary',
+            'name' => 'Executive Summary',
             'content' => <<<'PROMPT'
 Anda adalah Analis SAKIP Eksekutif Pemerintah Provinsi Papua Barat.
 Tugas Anda adalah menyusun Laporan Ringkasan Eksekutif Akuntabilitas Kinerja yang 100% berbasis DATA RESMI SISTEM e-KASUARI berikut.
@@ -62,7 +63,7 @@ ATURAN KETAT ANTI-HALUSINASI (WAJIB DIPATUHI):
 PROMPT,
         ],
         'insight' => [
-            'name'    => 'Analisis Insight Kinerja',
+            'name' => 'Analisis Insight Kinerja',
             'content' => <<<'PROMPT'
 Anda adalah Analis Kinerja SAKIP Pemerintah Provinsi Papua Barat.
 Analisis insight deviasi capaian kinerja fisik vs realisasi anggaran belanja untuk {scope} pada {period}.
@@ -86,7 +87,7 @@ ATURAN KETAT ANTI-HALUSINASI:
 PROMPT,
         ],
         'prediction' => [
-            'name'    => 'Prediksi Capaian Akhir Tahun',
+            'name' => 'Prediksi Capaian Akhir Tahun',
             'content' => <<<'PROMPT'
 Anda adalah Analis Prediktif Akuntabilitas Kinerja Pemerintah Provinsi Papua Barat.
 Lakukan telaah proyeksi probabilitas ketercapaian target akhir tahun untuk {scope} pada {period}.
@@ -111,7 +112,7 @@ ATURAN KETAT ANTI-HALUSINASI:
 PROMPT,
         ],
         'recommendation' => [
-            'name'    => 'Rekomendasi Tindak Lanjut',
+            'name' => 'Rekomendasi Tindak Lanjut',
             'content' => <<<'PROMPT'
 Anda adalah Tenaga Ahli Penguatan Akuntabilitas Kinerja Pemerintah Provinsi Papua Barat.
 Susun butir-butir Rekomendasi Tindak Lanjut Strategis dan Taktis berdasarkan hasil evaluasi {scope} ({period}).
@@ -136,7 +137,7 @@ ATURAN KETAT ANTI-HALUSINASI:
 PROMPT,
         ],
         'opd_status' => [
-            'name'    => 'Status Kinerja per OPD',
+            'name' => 'Status Kinerja per OPD',
             'content' => <<<'PROMPT'
 Anda adalah Analis Kinerja Organisasi Pemerintah Provinsi Papua Barat.
 Sajikan telaah komparasi status capaian fisik dan serapan anggaran Perangkat Daerah untuk {scope} pada {period}.
@@ -154,7 +155,7 @@ ATURAN KETAT ANTI-HALUSINASI:
 PROMPT,
         ],
         'chat' => [
-            'name'    => 'Chat Assistant',
+            'name' => 'Chat Assistant',
             'content' => <<<'PROMPT'
 Anda adalah AI Asisten SAKIP Pemerintah Provinsi Papua Barat (e-KASUARI).
 Tugas Anda: Menjawab pertanyaan pengguna secara formal, profesional, objektif, dan faktual berdasarkan DATA RESMI TERVERIFIKASI berikut.
@@ -203,29 +204,29 @@ PROMPT,
             throw new \RuntimeException($guard['response']);
         }
         $contextData['generated_at'] ??= now()->toIso8601String();
-        $contextData['user_query']   = $promptContext;
+        $contextData['user_query'] = $promptContext;
 
         $template = $this->resolveTemplate($feature);
-        $prompt   = $this->renderTemplate($template->content, $contextData);
-        $prompt  .= PHP_EOL.'---'.PHP_EOL.$promptContext;
+        $prompt = $this->renderTemplate($template->content, $contextData);
+        $prompt .= PHP_EOL.'---'.PHP_EOL.$promptContext;
 
         $provider = $this->resolveProvider();
-        $started  = microtime(true);
+        $started = microtime(true);
 
         // ── Panggil Provider — TANPA silent fallback (BR-AI-008) ─────────────
-        $result      = $provider->generate($feature, $prompt, $contextData);
-        $status      = 'success';
+        $result = $provider->generate($feature, $prompt, $contextData);
+        $status = 'success';
         $providerName = (string) ($result['provider_used'] ?? $provider->name());
-        $error       = null;
+        $error = null;
 
         $latency = (int) round((microtime(true) - $started) * 1000);
-        $userId  = auth()->id() ?? request()?->user()?->id ?? \App\Models\User::first()?->id ?? 1;
+        $userId = auth()->id() ?? request()?->user()?->id ?? User::first()?->id ?? 1;
 
         // ── Output Guardrail (FR-PG-007, RULE-019) ────────────────────────────
         $outputCheck = $this->guardrail->inspectOutput($result['output'], ['feature' => $feature]);
         if (! $outputCheck['ok']) {
             $result['output'] = 'Respons tidak dapat ditampilkan karena tidak lolos validasi keamanan output.';
-            $status           = 'blocked';
+            $status = 'blocked';
         } else {
             $result['output'] = $this->guardrail->label($result['output']);
         }
@@ -236,18 +237,18 @@ PROMPT,
             $outputParsed = $this->parseExecutiveSummaryJson($result['output']);
             if ($outputParsed) {
                 // Konversi teks mentah JSON ke narasi eksekutif agar tidak ada string JSON yang tampil
-                $formattedText = $outputParsed['ringkasan'] . "\n\n";
+                $formattedText = $outputParsed['ringkasan']."\n\n";
                 if (! empty($outputParsed['perhatian'])) {
                     $formattedText .= "Catatan Perhatian Khusus:\n";
                     foreach ($outputParsed['perhatian'] as $p) {
-                        $formattedText .= "- " . ($p['catatan'] ?? '') . "\n";
+                        $formattedText .= '- '.($p['catatan'] ?? '')."\n";
                     }
                     $formattedText .= "\n";
                 }
                 if (! empty($outputParsed['rekomendasi'])) {
                     $formattedText .= "Rekomendasi Tindak Lanjut:\n";
                     foreach ($outputParsed['rekomendasi'] as $r) {
-                        $formattedText .= "- " . ($r['tindakan'] ?? '') . "\n";
+                        $formattedText .= '- '.($r['tindakan'] ?? '')."\n";
                     }
                 }
                 $result['output'] = trim($formattedText);
@@ -265,62 +266,62 @@ PROMPT,
         }
 
         $aiRequest = AiRequest::create([
-            'user_id'        => $userId,
-            'feature'        => $feature,
-            'status'         => $status === 'success' ? 'completed' : 'failed',
-            'context'        => $contextData,
-            'prompt'         => ['prompt' => $prompt, 'template' => $template->code.'@v'.$template->version],
-            'response'       => ['output' => $result['output'], 'provider' => $providerName],
-            'model'          => $providerName,
-            'latency_ms'     => $latency,
+            'user_id' => $userId,
+            'feature' => $feature,
+            'status' => $status === 'success' ? 'completed' : 'failed',
+            'context' => $contextData,
+            'prompt' => ['prompt' => $prompt, 'template' => $template->code.'@v'.$template->version],
+            'response' => ['output' => $result['output'], 'provider' => $providerName],
+            'model' => $providerName,
+            'latency_ms' => $latency,
             'failure_reason' => $error,
         ]);
 
         $log = AiUseLog::create([
-            'user_id'         => $userId,
+            'user_id' => $userId,
             'organization_id' => $organizationId,
-            'periode'         => $periode,
-            'feature'         => $feature,
-            'provider'        => $providerName,
+            'periode' => $periode,
+            'feature' => $feature,
+            'provider' => $providerName,
             'prompt_template' => $template->code.'@v'.$template->version,
-            'context_ref'     => $sources,
-            'prompt'          => $prompt,
-            'output'          => $result['output'],
-            'status'          => $status,
-            'error_message'   => $error,
-            'latency_ms'      => $latency,
+            'context_ref' => $sources,
+            'prompt' => $prompt,
+            'output' => $result['output'],
+            'status' => $status,
+            'error_message' => $error,
+            'latency_ms' => $latency,
         ]);
 
         $title = (self::FEATURE_TITLES[$feature] ?? ucfirst($feature)).' — '.now()->format('Y-m-d H:i');
 
         $insight = AiInsight::create([
             'ai_request_id' => $aiRequest->id,
-            'user_id'       => $userId,
-            'insight_type'  => $feature,
-            'title'         => $title,
-            'content'       => [
-                'output'         => $result['output'],
-                'output_parsed'  => $outputParsed,
-                'provider'       => $providerName,
-                'status'         => $status,
-                'template'       => $template->code.'@v'.$template->version,
-                'generated_at'   => $contextData['generated_at'],
+            'user_id' => $userId,
+            'insight_type' => $feature,
+            'title' => $title,
+            'content' => [
+                'output' => $result['output'],
+                'output_parsed' => $outputParsed,
+                'provider' => $providerName,
+                'status' => $status,
+                'template' => $template->code.'@v'.$template->version,
+                'generated_at' => $contextData['generated_at'],
                 'prompt_context' => $promptContext,
             ],
-            'source_refs'   => $sources,
-            'status'        => 'generated',
+            'source_refs' => $sources,
+            'status' => 'generated',
         ]);
 
         return [
-            'output'        => $result['output'],
+            'output' => $result['output'],
             'output_parsed' => $outputParsed,
-            'provider'      => $providerName,
-            'status'        => $status,
-            'sources'       => $sources,
-            'generated_at'  => $contextData['generated_at'],
-            'log_id'        => $log->id,
-            'insight_id'    => $insight->id,
-            'request_id'    => $aiRequest->id,
+            'provider' => $providerName,
+            'status' => $status,
+            'sources' => $sources,
+            'generated_at' => $contextData['generated_at'],
+            'log_id' => $log->id,
+            'insight_id' => $insight->id,
+            'request_id' => $aiRequest->id,
         ];
     }
 
@@ -395,8 +396,8 @@ PROMPT,
 
             if (! empty($ringkasanText) || ! empty($perhatianList) || ! empty($rekomendasiList)) {
                 return [
-                    'ringkasan'   => trim($ringkasanText) ?: 'Ringkasan eksekutif akuntabilitas kinerja Pemerintah Provinsi Papua Barat.',
-                    'perhatian'   => $perhatianList,
+                    'ringkasan' => trim($ringkasanText) ?: 'Ringkasan eksekutif akuntabilitas kinerja Pemerintah Provinsi Papua Barat.',
+                    'perhatian' => $perhatianList,
                     'rekomendasi' => $rekomendasiList,
                 ];
             }
@@ -415,12 +416,12 @@ PROMPT,
                 if (is_array($p)) {
                     $perhatian[] = [
                         'indikator_id' => $p['indikator_id'] ?? null,
-                        'catatan'      => (string) ($p['catatan'] ?? $p['kendala'] ?? $p['masalah'] ?? reset($p) ?? ''),
+                        'catatan' => (string) ($p['catatan'] ?? $p['kendala'] ?? $p['masalah'] ?? reset($p) ?? ''),
                     ];
                 } elseif (is_scalar($p) && trim((string) $p) !== '') {
                     $perhatian[] = [
                         'indikator_id' => null,
-                        'catatan'      => trim((string) $p),
+                        'catatan' => trim((string) $p),
                     ];
                 }
             }
@@ -433,12 +434,12 @@ PROMPT,
                 if (is_array($r)) {
                     $rekomendasi[] = [
                         'indikator_id' => $r['indikator_id'] ?? null,
-                        'tindakan'     => (string) ($r['tindakan'] ?? $r['rekomendasi'] ?? $r['saran'] ?? reset($r) ?? ''),
+                        'tindakan' => (string) ($r['tindakan'] ?? $r['rekomendasi'] ?? $r['saran'] ?? reset($r) ?? ''),
                     ];
                 } elseif (is_scalar($r) && trim((string) $r) !== '') {
                     $rekomendasi[] = [
                         'indikator_id' => null,
-                        'tindakan'     => trim((string) $r),
+                        'tindakan' => trim((string) $r),
                     ];
                 }
             }
@@ -446,8 +447,8 @@ PROMPT,
 
         if ($ringkasan !== null) {
             return [
-                'ringkasan'   => (string) $ringkasan,
-                'perhatian'   => $perhatian,
+                'ringkasan' => (string) $ringkasan,
+                'perhatian' => $perhatian,
                 'rekomendasi' => $rekomendasi,
             ];
         }
@@ -455,8 +456,8 @@ PROMPT,
         // Variasi 3: JSON objek lain yang tetap dapat diekstrak
         if (! empty($perhatian) || ! empty($rekomendasi)) {
             return [
-                'ringkasan'   => self::convertJsonToNarrative($decoded),
-                'perhatian'   => $perhatian,
+                'ringkasan' => self::convertJsonToNarrative($decoded),
+                'perhatian' => $perhatian,
                 'rekomendasi' => $rekomendasi,
             ];
         }
@@ -478,6 +479,7 @@ PROMPT,
 
         if (str_starts_with($trimmed, '{') && str_ends_with($trimmed, '}')) {
             $data = json_decode($trimmed, true);
+
             return is_array($data);
         }
 
@@ -522,8 +524,8 @@ PROMPT,
                 $isList = array_is_list($value);
 
                 if ($isList) {
-                    $prefix = $level === 0 ? "### " : "";
-                    $output .= $prefix . $title . "\n";
+                    $prefix = $level === 0 ? '### ' : '';
+                    $output .= $prefix.$title."\n";
 
                     foreach ($value as $item) {
                         if (is_array($item)) {
@@ -531,25 +533,25 @@ PROMPT,
                                 return is_scalar($v) ? trim((string) $v) : '';
                             }, $item)));
                             if ($flatItem !== '') {
-                                $output .= "- " . $flatItem . "\n";
+                                $output .= '- '.$flatItem."\n";
                             }
                         } elseif (is_scalar($item) && trim((string) $item) !== '') {
-                            $output .= "- " . trim((string) $item) . "\n";
+                            $output .= '- '.trim((string) $item)."\n";
                         }
                     }
                     $output .= "\n";
                 } else {
-                    $prefix = $level === 0 ? "### " : "";
-                    $output .= $prefix . $title . "\n\n";
-                    $output .= self::convertJsonToNarrative($value, $level + 1) . "\n";
+                    $prefix = $level === 0 ? '### ' : '';
+                    $output .= $prefix.$title."\n\n";
+                    $output .= self::convertJsonToNarrative($value, $level + 1)."\n";
                 }
             } elseif (is_scalar($value)) {
                 $valStr = trim((string) $value);
                 if ($valStr !== '') {
                     if ($level === 0) {
-                        $output .= "### " . $title . "\n" . $valStr . "\n\n";
+                        $output .= '### '.$title."\n".$valStr."\n\n";
                     } else {
-                        $output .= $title . ": " . $valStr . "\n\n";
+                        $output .= $title.': '.$valStr."\n\n";
                     }
                 }
             }
@@ -562,6 +564,7 @@ PROMPT,
     {
         $spaced = preg_replace('/([a-z])([A-Z])/', '$1 $2', $key);
         $spaced = str_replace(['_', '-'], ' ', $spaced ?? $key);
+
         return ucwords(strtolower($spaced));
     }
 
@@ -581,12 +584,12 @@ PROMPT,
             $default = self::DEFAULT_TEMPLATES[$feature] ?? self::DEFAULT_TEMPLATES['chat'];
 
             return AiPromptTemplate::create([
-                'code'       => 'tmpl-'.$feature,
-                'name'       => $default['name'],
-                'feature'    => $feature,
-                'version'    => 1,
-                'content'    => $default['content'],
-                'is_active'  => true,
+                'code' => 'tmpl-'.$feature,
+                'name' => $default['name'],
+                'feature' => $feature,
+                'version' => 1,
+                'content' => $default['content'],
+                'is_active' => true,
                 'created_by' => request()->user()?->id,
             ]);
         });
@@ -622,12 +625,12 @@ PROMPT,
                 ->update(['is_active' => false]);
 
             return AiPromptTemplate::create([
-                'code'       => 'tmpl-'.$feature.'-v'.$version,
-                'name'       => $name ?: (self::DEFAULT_TEMPLATES[$feature]['name'] ?? ucfirst($feature)),
-                'feature'    => $feature,
-                'version'    => $version,
-                'content'    => $content,
-                'is_active'  => true,
+                'code' => 'tmpl-'.$feature.'-v'.$version,
+                'name' => $name ?: (self::DEFAULT_TEMPLATES[$feature]['name'] ?? ucfirst($feature)),
+                'feature' => $feature,
+                'version' => $version,
+                'content' => $content,
+                'is_active' => true,
                 'created_by' => request()->user()?->id,
             ]);
         });
@@ -657,7 +660,7 @@ PROMPT,
     public function renderTemplate(string $template, array $context): string
     {
         return preg_replace_callback('/\{+([a-z_.]+)\}+/i', function (array $matches) use ($context) {
-            $key   = $matches[1];
+            $key = $matches[1];
             $value = data_get($context, $key);
 
             if ($value === null) {
@@ -677,18 +680,18 @@ PROMPT,
                 foreach ($value as $item) {
                     if (is_array($item)) {
                         if (isset($item['catatan'])) {
-                            $lines[] = '- ' . $item['catatan'];
+                            $lines[] = '- '.$item['catatan'];
                         } elseif (isset($item['tindakan'])) {
-                            $lines[] = '- ' . $item['tindakan'];
+                            $lines[] = '- '.$item['tindakan'];
                         } elseif (isset($item['indicator'])) {
                             $lines[] = sprintf('- %s (%s): %s', $item['indicator'], $item['organization'] ?? 'OPD', $item['status'] ?? '-');
                         } else {
-                            $lines[] = '- ' . implode(', ', array_slice(array_map('strval', $item), 0, 4));
+                            $lines[] = '- '.implode(', ', array_slice(array_map('strval', $item), 0, 4));
                         }
                     } else {
                         $itemStr = trim((string) $item);
-                        if (!str_starts_with($itemStr, '-')) {
-                            $itemStr = '- ' . $itemStr;
+                        if (! str_starts_with($itemStr, '-')) {
+                            $itemStr = '- '.$itemStr;
                         }
                         $lines[] = $itemStr;
                     }

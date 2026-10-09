@@ -1571,11 +1571,11 @@ export default function Dashboard({
                     </div>
                 </div>
 
-                {/* 4. Capaian IKU Pemda */}
+                {/* 4. Capaian IKU */}
                 <Link
-                    href={route('measurement.realization.iku')}
+                    href={route('planning.iku.index')}
                     className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 flex flex-col justify-between hover:border-blue-400 hover:shadow-md transition group select-none relative"
-                    title="Capaian Indikator Kinerja Utama Pemerintah Daerah. Klik untuk rincian."
+                    title="Capaian Indikator Kinerja Utama. Klik untuk rincian."
                 >
                     <div>
                         <div className="flex items-center justify-between">
@@ -1734,14 +1734,14 @@ export default function Dashboard({
                     </div>
                 </Card>
                 <Card
-                    title={`Status IKU Pemerintah Daerah (${iku_status.total} IKU)`}
+                    title={`Status IKU (${iku_status.total} IKU)`}
                     action="Lihat Detail"
-                    actionHref={route('measurement.realization.iku')}
+                    actionHref={route('planning.iku.index')}
                 >
                     <Link
-                        href={route('measurement.realization.iku')}
+                        href={route('planning.iku.index')}
                         className="block cursor-pointer"
-                        title="Klik untuk membuka detail realisasi IKU Pemda"
+                        title="Klik untuk membuka detail IKU"
                     >
                         <DonutChart data={iku_status} label="IKU" />
                     </Link>
@@ -1775,14 +1775,14 @@ export default function Dashboard({
                     </div>
                 </Card>
                 <Card
-                    title="Tren IKU Pemerintah Daerah"
+                    title="Tren IKU"
                     action="Lihat Detail"
-                    actionHref={route('measurement.realization.iku')}
+                    actionHref={route('planning.iku.index')}
                 >
                     <Link
-                        href={route('measurement.realization.iku')}
+                        href={route('planning.iku.index')}
                         className="block cursor-pointer"
-                        title="Klik untuk membuka detail realisasi IKU Pemda"
+                        title="Klik untuk membuka detail IKU"
                     >
                         <TrendChart data={iku_trend} />
                     </Link>

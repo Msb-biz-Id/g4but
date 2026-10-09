@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 interface MeasurementNavProps {
-    activeTab: 'rpjmd' | 'iku' | 'opd' | 'output' | 'budget';
+    activeTab: 'opd' | 'output' | 'budget';
     userIsSpBappeda?: boolean;
     exportPdfUrl?: string | null;
 }
@@ -25,26 +25,10 @@ export default function MeasurementNav({ activeTab, userIsSpBappeda, exportPdfUr
 
     const tabs = [
         {
-            id: 'rpjmd',
-            label: 'Realisasi RPJMD',
-            role: 'SP/Bappeda',
-            roleTitle: 'Pengampu Modul: Admin Provinsi & Bappeda',
-            href: route('measurement.realization.rpjmd'),
-            icon: FileSpreadsheet,
-        },
-        {
-            id: 'iku',
-            label: 'Capaian IKU PEMDA',
-            role: 'SP/Bappeda',
-            roleTitle: 'Pengampu Modul: Admin Provinsi & Bappeda',
-            href: route('measurement.realization.iku'),
-            icon: Target,
-        },
-        {
             id: 'opd',
             label: 'Realisasi Kinerja PD',
-            role: 'Masing2 PD',
-            roleTitle: 'Pengampu Modul: Masing-masing Perangkat Daerah',
+            role: 'Masing2 Unit',
+            roleTitle: 'Pengampu Modul: OPD / Sekretariat / Bidang',
             href: route('measurement.realization.opd'),
             icon: Building2,
         },

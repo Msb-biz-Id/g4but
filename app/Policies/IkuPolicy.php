@@ -39,8 +39,12 @@ class IkuPolicy
 
     public function update(User $user, Indicator $iku): bool
     {
-        if (! $iku->canBeEdited()) return false;
-        if ($this->isBappeda($user)) return true;
+        if (! $iku->canBeEdited()) {
+            return false;
+        }
+        if ($this->isBappeda($user)) {
+            return true;
+        }
 
         return $this->isAdminOpd($user) && $this->ownsIku($user, $iku);
     }
@@ -49,8 +53,12 @@ class IkuPolicy
 
     public function submit(User $user, Indicator $iku): bool
     {
-        if (! $iku->canBeSubmitted()) return false;
-        if ($this->isBappeda($user)) return true;
+        if (! $iku->canBeSubmitted()) {
+            return false;
+        }
+        if ($this->isBappeda($user)) {
+            return true;
+        }
 
         return $this->isAdminOpd($user) && $this->ownsIku($user, $iku);
     }

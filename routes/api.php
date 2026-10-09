@@ -12,9 +12,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // IKU Cascade Dropdown API — digunakan oleh form 4-step wizard
     Route::prefix('iku')->name('api.iku.')->group(function () {
-        Route::get('/goals',        [IkuApiController::class, 'goals'])->name('goals');
-        Route::get('/objectives',   [IkuApiController::class, 'objectives'])->name('objectives');
+        Route::get('/goals', [IkuApiController::class, 'goals'])->name('goals');
+        Route::get('/objectives', [IkuApiController::class, 'objectives'])->name('objectives');
         Route::get('/period-years', [IkuApiController::class, 'periodYears'])->name('period-years');
     });
 });
-

@@ -16,17 +16,17 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     private const MAP = [
-        'tujuan'   => 'outcome',
-        'sasaran'  => 'csf',
-        'program'  => 'kondisi_antara',
+        'tujuan' => 'outcome',
+        'sasaran' => 'csf',
+        'program' => 'kondisi_antara',
         'kegiatan' => 'kondisi_operasional',
     ];
 
     private const REVERSE = [
-        'outcome'              => 'tujuan',
-        'csf'                  => 'sasaran',
-        'kondisi_antara'       => 'program',
-        'kondisi_operasional'  => 'kegiatan',
+        'outcome' => 'tujuan',
+        'csf' => 'sasaran',
+        'kondisi_antara' => 'program',
+        'kondisi_operasional' => 'kegiatan',
     ];
 
     public function up(): void

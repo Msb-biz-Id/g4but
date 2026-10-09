@@ -19,7 +19,6 @@ use Inertia\Response;
 
 class PlanningDocumentController extends Controller
 {
-
     // ── BR-004: Whitelist tipe dokumen (baseline MOD-001 & MOD-003) ─────────
     private const ALLOWED_TYPES = [
         'rpjmd', 'renstra', 'rkpd', 'renja', 'rkt',
@@ -38,32 +37,33 @@ class PlanningDocumentController extends Controller
 
     // BR-004: Format file dan ukuran maksimum
     private const ALLOWED_MIMES = 'pdf,xlsx,xls,docx,doc,pptx,ppt,zip';
-    private const MAX_FILE_KB   = 20480; // 20 MB
+
+    private const MAX_FILE_KB = 20480; // 20 MB
 
     // Label tampilan frontend
     public const TYPE_LABELS = [
-        'rpjmd'              => 'RPJMD',
-        'renstra'            => 'Renstra',
-        'rkpd'               => 'RKPD',
-        'renja'              => 'Renja',
-        'rkt'                => 'Rencana Kinerja Tahunan (RKT)',
+        'rpjmd' => 'RPJMD',
+        'renstra' => 'Renstra',
+        'rkpd' => 'RKPD',
+        'renja' => 'Renja',
+        'rkt' => 'Rencana Kinerja Tahunan (RKT)',
         'perjanjian_kinerja' => 'Perjanjian Kinerja (PK)',
-        'dpa'                => 'DPA',
-        'rencana_aksi'       => 'Rencana Aksi',
-        'pohon_kinerja'      => 'Pohon Kinerja',
-        'cascading'          => 'Cascading Kinerja',
-        'proses_bisnis'      => 'Proses Bisnis (Probis)',
-        'manajemen_risiko'   => 'Manajemen Risiko',
-        'crosscutting'       => 'Cross-cutting Kinerja',
-        'iku'                => 'IKU',
-        'target_indikator'   => 'Target Indikator',
-        'laporan_kinerja'    => 'Laporan Kinerja (LKjIP)',
-        'laporan_realisasi'  => 'Laporan Realisasi',
-        'evaluasi_sakip'     => 'Evaluasi SAKIP (LHE)',
-        'pk'                 => 'Perjanjian Kinerja (PK)',
-        'lkjip'              => 'Laporan Kinerja (LKjIP)',
-        'lhe'                => 'Evaluasi SAKIP (LHE)',
-        'pedoman_teknis'     => 'Pedoman Teknis Perencanaan',
+        'dpa' => 'DPA',
+        'rencana_aksi' => 'Rencana Aksi',
+        'pohon_kinerja' => 'Pohon Kinerja',
+        'cascading' => 'Cascading Kinerja',
+        'proses_bisnis' => 'Proses Bisnis (Probis)',
+        'manajemen_risiko' => 'Manajemen Risiko',
+        'crosscutting' => 'Cross-cutting Kinerja',
+        'iku' => 'IKU',
+        'target_indikator' => 'Target Indikator',
+        'laporan_kinerja' => 'Laporan Kinerja (LKjIP)',
+        'laporan_realisasi' => 'Laporan Realisasi',
+        'evaluasi_sakip' => 'Evaluasi SAKIP (LHE)',
+        'pk' => 'Perjanjian Kinerja (PK)',
+        'lkjip' => 'Laporan Kinerja (LKjIP)',
+        'lhe' => 'Evaluasi SAKIP (LHE)',
+        'pedoman_teknis' => 'Pedoman Teknis Perencanaan',
     ];
 
     public function __construct(
@@ -71,7 +71,6 @@ class PlanningDocumentController extends Controller
         private readonly AuditService $audit,
         private readonly NotificationService $notifications,
     ) {}
-
 
     public function index(Request $request): Response
     {
@@ -105,13 +104,13 @@ class PlanningDocumentController extends Controller
             ->withQueryString();
 
         return Inertia::render('Planning/Documents/Index', [
-            'documents'     => $docs,
-            'filters'       => $request->only(['type', 'organization_id', 'year', 'status', 'periode_type']),
+            'documents' => $docs,
+            'filters' => $request->only(['type', 'organization_id', 'year', 'status', 'periode_type']),
             'organizations' => Organization::query()
                 ->whereIn('id', $accessibleOrgIds)
                 ->orderBy('code')
                 ->get(['id', 'code', 'name', 'type']),
-            'types'    => collect(self::TYPE_LABELS)
+            'types' => collect(self::TYPE_LABELS)
                 ->except(['pk', 'lkjip', 'lhe'])
                 ->map(fn ($label, $value) => compact('value', 'label'))
                 ->values(),
@@ -154,7 +153,7 @@ class PlanningDocumentController extends Controller
             || ($validated['periode_type'] ?? '') === 'lima_tahunan';
 
         $startYear = (int) ($validated['start_year'] ?? $validated['year']);
-        $endYear   = (int) ($validated['end_year'] ?? ($isLimaTahunan ? $startYear + 4 : $startYear));
+        $endYear = (int) ($validated['end_year'] ?? ($isLimaTahunan ? $startYear + 4 : $startYear));
         if ($isLimaTahunan && $endYear <= $startYear) {
             $endYear = $startYear + 4;
         }
@@ -162,11 +161,11 @@ class PlanningDocumentController extends Controller
         $doc = PlanningDocument::create([
             ...$validated,
             'performance_period_id' => $perfPeriod?->id,
-            'start_year'  => $startYear,
-            'end_year'    => $endYear,
-            'file_path'   => $filePath,
-            'status'      => 'review',
-            'created_by'  => $request->user()->id,
+            'start_year' => $startYear,
+            'end_year' => $endYear,
+            'file_path' => $filePath,
+            'status' => 'review',
+            'created_by' => $request->user()->id,
         ]);
 
         $this->audit->log('create', 'planning_document', $doc->id, $validated['organization_id'] ?? null);
@@ -212,12 +211,12 @@ class PlanningDocumentController extends Controller
 
         if ($isLimaTahunan) {
             $startYear = (int) ($validated['start_year'] ?? $validated['year']);
-            $endYear   = (int) ($validated['end_year'] ?? ($startYear + 4));
+            $endYear = (int) ($validated['end_year'] ?? ($startYear + 4));
             if ($endYear <= $startYear) {
                 $endYear = $startYear + 4;
             }
             $validated['start_year'] = $startYear;
-            $validated['end_year']   = $endYear;
+            $validated['end_year'] = $endYear;
         }
 
         $document->update($validated);
@@ -259,7 +258,7 @@ class PlanningDocumentController extends Controller
         }
 
         $document->update([
-            'status'      => 'approved',
+            'status' => 'approved',
             'approved_by' => $reviewer->id,
             'approved_at' => now(),
         ]);
@@ -305,24 +304,24 @@ class PlanningDocumentController extends Controller
     private function validateDocument(Request $request, ?int $ignoreId = null): array
     {
         $validated = $request->validate([
-            'type'            => ['required', 'string', Rule::in(self::ALLOWED_TYPES)],
-            'title'           => ['required', 'string', 'max:255'],
+            'type' => ['required', 'string', Rule::in(self::ALLOWED_TYPES)],
+            'title' => ['required', 'string', 'max:255'],
             'organization_id' => ['required', 'integer', 'exists:organizations,id'],
-            'year'            => ['required', 'integer', 'min:2000', 'max:2099'],
-            'description'     => ['nullable', 'string', 'max:2000'],
+            'year' => ['required', 'integer', 'min:2000', 'max:2099'],
+            'description' => ['nullable', 'string', 'max:2000'],
             // G-17: Super Admin bisa set manual, otherwise otomatis
-            'periode_type'    => ['nullable', 'string', Rule::in(['5_tahunan', 'tahunan'])],
+            'periode_type' => ['nullable', 'string', Rule::in(['5_tahunan', 'tahunan'])],
             // File wajib saat create, opsional saat update — BR-004
-            'file'            => [
+            'file' => [
                 $ignoreId ? 'nullable' : 'required',
                 'file',
-                'mimes:' . self::ALLOWED_MIMES,
-                'max:'   . self::MAX_FILE_KB,
+                'mimes:'.self::ALLOWED_MIMES,
+                'max:'.self::MAX_FILE_KB,
             ],
         ], [
-            'type.in'       => 'Tipe dokumen tidak valid. Pilih dari 12 jenis yang tersedia.',
-            'file.mimes'    => 'Format tidak diizinkan. Gunakan PDF, Excel, Word, PowerPoint, atau ZIP.',
-            'file.max'      => 'Ukuran file maksimal 20 MB.',
+            'type.in' => 'Tipe dokumen tidak valid. Pilih dari 12 jenis yang tersedia.',
+            'file.mimes' => 'Format tidak diizinkan. Gunakan PDF, Excel, Word, PowerPoint, atau ZIP.',
+            'file.max' => 'Ukuran file maksimal 20 MB.',
             'file.required' => 'File dokumen wajib diunggah.',
         ]);
 

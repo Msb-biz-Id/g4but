@@ -9,8 +9,8 @@ return new class extends Migration
     {
         $templates = [
             [
-                'code'    => 'tmpl-executive_summary',
-                'name'    => 'Executive Summary',
+                'code' => 'tmpl-executive_summary',
+                'name' => 'Executive Summary',
                 'feature' => 'executive_summary',
                 'version' => 2,
                 'content' => <<<'PROMPT'
@@ -41,8 +41,8 @@ PROMPT,
                 'is_active' => true,
             ],
             [
-                'code'    => 'tmpl-insight',
-                'name'    => 'Analisis Insight Kinerja',
+                'code' => 'tmpl-insight',
+                'name' => 'Analisis Insight Kinerja',
                 'feature' => 'insight',
                 'version' => 2,
                 'content' => <<<'PROMPT'
@@ -69,8 +69,8 @@ PROMPT,
                 'is_active' => true,
             ],
             [
-                'code'    => 'tmpl-prediction',
-                'name'    => 'Prediksi Capaian Akhir Tahun',
+                'code' => 'tmpl-prediction',
+                'name' => 'Prediksi Capaian Akhir Tahun',
                 'feature' => 'prediction',
                 'version' => 2,
                 'content' => <<<'PROMPT'
@@ -98,8 +98,8 @@ PROMPT,
                 'is_active' => true,
             ],
             [
-                'code'    => 'tmpl-recommendation',
-                'name'    => 'Rekomendasi Tindak Lanjut',
+                'code' => 'tmpl-recommendation',
+                'name' => 'Rekomendasi Tindak Lanjut',
                 'feature' => 'recommendation',
                 'version' => 2,
                 'content' => <<<'PROMPT'
@@ -127,8 +127,8 @@ PROMPT,
                 'is_active' => true,
             ],
             [
-                'code'    => 'tmpl-opd_status',
-                'name'    => 'Status Kinerja per OPD',
+                'code' => 'tmpl-opd_status',
+                'name' => 'Status Kinerja per OPD',
                 'feature' => 'opd_status',
                 'version' => 2,
                 'content' => <<<'PROMPT'
@@ -149,8 +149,8 @@ PROMPT,
                 'is_active' => true,
             ],
             [
-                'code'    => 'tmpl-chat',
-                'name'    => 'AI Asisten e-KASUARI',
+                'code' => 'tmpl-chat',
+                'name' => 'AI Asisten e-KASUARI',
                 'feature' => 'chat',
                 'version' => 2,
                 'content' => <<<'PROMPT'

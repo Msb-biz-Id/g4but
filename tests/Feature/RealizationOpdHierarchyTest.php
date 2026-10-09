@@ -8,6 +8,7 @@ use App\Models\RealizationOpdItem;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\OpdAnalyticsService;
+use App\Services\PerformanceMeasurementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,7 +17,9 @@ class RealizationOpdHierarchyTest extends TestCase
     use RefreshDatabase;
 
     private User $superAdmin;
+
     private User $opdUser;
+
     private Organization $org;
 
     protected function setUp(): void
@@ -461,11 +464,12 @@ class RealizationOpdHierarchyTest extends TestCase
             foreach ($years as $yr) {
                 $t = isset($targets[$yr]) ? (float) $targets[$yr] : null;
                 $r = isset($realizations[$yr]) ? (float) $realizations[$yr] : null;
-                $ach = \App\Services\PerformanceMeasurementService::calculateAchievement($t, $r, 'Positif');
-                $status = \App\Services\PerformanceMeasurementService::determineStatus($ach, $t, $r);
+                $ach = PerformanceMeasurementService::calculateAchievement($t, $r, 'Positif');
+                $status = PerformanceMeasurementService::determineStatus($ach, $t, $r);
                 $calcs[$yr] = ['achievement' => $ach, 'status' => $status['status']];
             }
             $ind['calculations'] = $calcs;
+
             return $ind;
         }, $child->objective_indicators_list);
 

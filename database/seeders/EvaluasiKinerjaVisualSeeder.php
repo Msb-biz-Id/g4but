@@ -76,18 +76,18 @@ class EvaluasiKinerjaVisualSeeder extends Seeder
 
         // 3. SAKIP OPD (Tahun 2025) - 100% Sesuai Gambar
         $opdBaseline = [
-            'BAPPEDA-PB'  => ['perencanaan' => 26.50, 'pengukuran' => 25.50, 'pelaporan' => 13.00, 'evaluasi' => 21.50], // 86.50 (BAIK)
-            'INSP-PB'     => ['perencanaan' => 25.50, 'pengukuran' => 25.00, 'pelaporan' => 13.00, 'evaluasi' => 20.50], // 84.00 (BAIK)
-            'DISDIK-PB'   => ['perencanaan' => 24.50, 'pengukuran' => 25.00, 'pelaporan' => 12.50, 'evaluasi' => 19.50], // 81.50 (BAIK) - 100% Sesuai Screenshot
-            'DINKES-PB'   => ['perencanaan' => 24.50, 'pengukuran' => 24.50, 'pelaporan' => 12.50, 'evaluasi' => 19.00], // 80.50 (BAIK)
-            'PUPR-PB'     => ['perencanaan' => 24.00, 'pengukuran' => 24.00, 'pelaporan' => 12.00, 'evaluasi' => 19.00], // 79.00 (BUTUH PERBAIKAN)
-            'KOMINFO-PB'  => ['perencanaan' => 23.50, 'pengukuran' => 24.00, 'pelaporan' => 12.00, 'evaluasi' => 18.50], // 78.00 (BUTUH PERBAIKAN)
-            'DISHUB-PB'   => ['perencanaan' => 23.00, 'pengukuran' => 23.50, 'pelaporan' => 11.50, 'evaluasi' => 18.00], // 76.00 (BUTUH PERBAIKAN)
-            'DINSOS-PB'   => ['perencanaan' => 22.50, 'pengukuran' => 23.00, 'pelaporan' => 11.50, 'evaluasi' => 18.00], // 75.00 (BUTUH PERBAIKAN)
-            'DPMPTSP-PB'  => ['perencanaan' => 22.00, 'pengukuran' => 22.50, 'pelaporan' => 11.00, 'evaluasi' => 17.50], // 73.00 (BUTUH PERBAIKAN)
+            'BAPPEDA-PB' => ['perencanaan' => 26.50, 'pengukuran' => 25.50, 'pelaporan' => 13.00, 'evaluasi' => 21.50], // 86.50 (BAIK)
+            'INSP-PB' => ['perencanaan' => 25.50, 'pengukuran' => 25.00, 'pelaporan' => 13.00, 'evaluasi' => 20.50], // 84.00 (BAIK)
+            'DISDIK-PB' => ['perencanaan' => 24.50, 'pengukuran' => 25.00, 'pelaporan' => 12.50, 'evaluasi' => 19.50], // 81.50 (BAIK) - 100% Sesuai Screenshot
+            'DINKES-PB' => ['perencanaan' => 24.50, 'pengukuran' => 24.50, 'pelaporan' => 12.50, 'evaluasi' => 19.00], // 80.50 (BAIK)
+            'PUPR-PB' => ['perencanaan' => 24.00, 'pengukuran' => 24.00, 'pelaporan' => 12.00, 'evaluasi' => 19.00], // 79.00 (BUTUH PERBAIKAN)
+            'KOMINFO-PB' => ['perencanaan' => 23.50, 'pengukuran' => 24.00, 'pelaporan' => 12.00, 'evaluasi' => 18.50], // 78.00 (BUTUH PERBAIKAN)
+            'DISHUB-PB' => ['perencanaan' => 23.00, 'pengukuran' => 23.50, 'pelaporan' => 11.50, 'evaluasi' => 18.00], // 76.00 (BUTUH PERBAIKAN)
+            'DINSOS-PB' => ['perencanaan' => 22.50, 'pengukuran' => 23.00, 'pelaporan' => 11.50, 'evaluasi' => 18.00], // 75.00 (BUTUH PERBAIKAN)
+            'DPMPTSP-PB' => ['perencanaan' => 22.00, 'pengukuran' => 22.50, 'pelaporan' => 11.00, 'evaluasi' => 17.50], // 73.00 (BUTUH PERBAIKAN)
             'BIRO-ORG-PB' => ['perencanaan' => 21.50, 'pengukuran' => 22.00, 'pelaporan' => 11.00, 'evaluasi' => 17.00], // 71.50 (BUTUH PERBAIKAN)
-            'DISKOP-PB'   => ['perencanaan' => 20.00, 'pengukuran' => 20.50, 'pelaporan' => 10.00, 'evaluasi' => 15.50], // 66.00 (BUTUH PERBAIKAN)
-            'SATPOL-PB'   => ['perencanaan' => 16.00, 'pengukuran' => 16.50, 'pelaporan' => 8.00,  'evaluasi' => 13.00], // 53.50 (KURANG)
+            'DISKOP-PB' => ['perencanaan' => 20.00, 'pengukuran' => 20.50, 'pelaporan' => 10.00, 'evaluasi' => 15.50], // 66.00 (BUTUH PERBAIKAN)
+            'SATPOL-PB' => ['perencanaan' => 16.00, 'pengukuran' => 16.50, 'pelaporan' => 8.00,  'evaluasi' => 13.00], // 53.50 (KURANG)
         ];
 
         foreach ($opdBaseline as $code => $scores) {
@@ -96,12 +96,12 @@ class EvaluasiKinerjaVisualSeeder extends Seeder
                 continue;
             }
 
-            $evalOpd = Evaluation::withTrashed()->firstOrNew(['code' => 'EVAL-' . $code . '-2025']);
+            $evalOpd = Evaluation::withTrashed()->firstOrNew(['code' => 'EVAL-'.$code.'-2025']);
             $evalOpd->fill([
                 'organization_id' => $opd->id,
                 'planning_period_id' => $period2025->id,
                 'type' => 'annual',
-                'title' => 'Evaluasi SAKIP ' . $opd->name . ' TA 2025',
+                'title' => 'Evaluasi SAKIP '.$opd->name.' TA 2025',
                 'status' => 'approved',
                 'evaluation_status' => 'Final',
                 'lhe_file_path' => 'lhe/sample-lhe-2025.pdf',
@@ -193,12 +193,12 @@ class EvaluasiKinerjaVisualSeeder extends Seeder
                 continue;
             }
 
-            $evalOpd2026 = Evaluation::withTrashed()->firstOrNew(['code' => 'EVAL-' . $code . '-2026']);
+            $evalOpd2026 = Evaluation::withTrashed()->firstOrNew(['code' => 'EVAL-'.$code.'-2026']);
             $evalOpd2026->fill([
                 'organization_id' => $opd->id,
                 'planning_period_id' => $period2026->id,
                 'type' => 'annual',
-                'title' => 'Evaluasi SAKIP ' . $opd->name . ' TA 2026',
+                'title' => 'Evaluasi SAKIP '.$opd->name.' TA 2026',
                 'status' => 'approved',
                 'evaluation_status' => 'Final',
                 'lhe_file_path' => 'lhe/sample-lhe-2025.pdf',

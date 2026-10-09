@@ -45,48 +45,48 @@ class ActionPlan extends Model
     {
         static::creating(function (ActionPlan $plan) {
             if (empty($plan->code)) {
-                $plan->code = 'AP-' . strtoupper(uniqid());
+                $plan->code = 'AP-'.strtoupper(uniqid());
             }
 
             $rawTitle = $plan->getAttributes()['title'] ?? null;
             $rawActivity = $plan->getAttributes()['activity'] ?? null;
 
-            if (empty($rawTitle) && !empty($rawActivity)) {
+            if (empty($rawTitle) && ! empty($rawActivity)) {
                 $plan->setAttribute('title', $rawActivity);
-            } elseif (empty($rawActivity) && !empty($rawTitle)) {
+            } elseif (empty($rawActivity) && ! empty($rawTitle)) {
                 $plan->setAttribute('activity', $rawTitle);
             }
 
             $planningPeriodId = $plan->getAttributes()['planning_period_id'] ?? null;
             $perfPeriodId = $plan->getAttributes()['performance_period_id'] ?? null;
 
-            if (empty($planningPeriodId) && !empty($perfPeriodId)) {
+            if (empty($planningPeriodId) && ! empty($perfPeriodId)) {
                 $plan->setAttribute('planning_period_id', $perfPeriodId);
             }
-            if (empty($perfPeriodId) && !empty($planningPeriodId)) {
+            if (empty($perfPeriodId) && ! empty($planningPeriodId)) {
                 $plan->setAttribute('performance_period_id', $planningPeriodId);
             }
         });
 
         static::updating(function (ActionPlan $plan) {
-            if ($plan->isDirty('activity') && !$plan->isDirty('title')) {
+            if ($plan->isDirty('activity') && ! $plan->isDirty('title')) {
                 $plan->setAttribute('title', $plan->getAttributes()['activity'] ?? $plan->activity);
-            } elseif ($plan->isDirty('title') && !$plan->isDirty('activity')) {
+            } elseif ($plan->isDirty('title') && ! $plan->isDirty('activity')) {
                 $plan->setAttribute('activity', $plan->getAttributes()['title'] ?? $plan->title);
             } else {
                 $rawTitle = $plan->getAttributes()['title'] ?? null;
                 $rawActivity = $plan->getAttributes()['activity'] ?? null;
 
-                if (empty($rawTitle) && !empty($rawActivity)) {
+                if (empty($rawTitle) && ! empty($rawActivity)) {
                     $plan->setAttribute('title', $rawActivity);
-                } elseif (empty($rawActivity) && !empty($rawTitle)) {
+                } elseif (empty($rawActivity) && ! empty($rawTitle)) {
                     $plan->setAttribute('activity', $rawTitle);
                 }
             }
 
-            if ($plan->isDirty('performance_period_id') && !$plan->isDirty('planning_period_id')) {
+            if ($plan->isDirty('performance_period_id') && ! $plan->isDirty('planning_period_id')) {
                 $plan->setAttribute('planning_period_id', $plan->performance_period_id);
-            } elseif ($plan->isDirty('planning_period_id') && !$plan->isDirty('performance_period_id')) {
+            } elseif ($plan->isDirty('planning_period_id') && ! $plan->isDirty('performance_period_id')) {
                 $plan->setAttribute('performance_period_id', $plan->planning_period_id);
             }
         });
@@ -95,7 +95,7 @@ class ActionPlan extends Model
     public function setActivityAttribute($value): void
     {
         $this->attributes['activity'] = $value;
-        if (!isset($this->attributes['title']) || $this->attributes['title'] === null || $this->attributes['title'] === '') {
+        if (! isset($this->attributes['title']) || $this->attributes['title'] === null || $this->attributes['title'] === '') {
             $this->attributes['title'] = $value;
         }
     }
@@ -103,19 +103,19 @@ class ActionPlan extends Model
     public function setTitleAttribute($value): void
     {
         $this->attributes['title'] = $value;
-        if (!isset($this->attributes['activity']) || $this->attributes['activity'] === null || $this->attributes['activity'] === '') {
+        if (! isset($this->attributes['activity']) || $this->attributes['activity'] === null || $this->attributes['activity'] === '') {
             $this->attributes['activity'] = $value;
         }
     }
 
     public function getActivityAttribute($value): string
     {
-        return !empty($value) ? (string) $value : (string) ($this->attributes['title'] ?? '');
+        return ! empty($value) ? (string) $value : (string) ($this->attributes['title'] ?? '');
     }
 
     public function getTitleAttribute($value): string
     {
-        return !empty($value) ? (string) $value : (string) ($this->attributes['activity'] ?? '');
+        return ! empty($value) ? (string) $value : (string) ($this->attributes['activity'] ?? '');
     }
 
     public function organization(): BelongsTo

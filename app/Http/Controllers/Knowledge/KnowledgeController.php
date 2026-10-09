@@ -57,34 +57,34 @@ class KnowledgeController extends Controller
 
     public const KATEGORI = [
         'regulasi' => [
-            'label'       => 'Dokumen Regulasi & SOP',
-            'icon'        => 'FileText',
+            'label' => 'Dokumen Regulasi & SOP',
+            'icon' => 'FileText',
             'description' => 'Mencakup Peraturan Daerah, Peraturan Gubernur, Pedoman Teknis SAKIP, dan Standar Operasional Prosedur (SOP)',
-            'types'       => ['regulation', 'guideline', 'sop'],
+            'types' => ['regulation', 'guideline', 'sop'],
         ],
         'panduan' => [
-            'label'       => 'Panduan & Edukasi',
-            'icon'        => 'GraduationCap',
+            'label' => 'Panduan & Edukasi',
+            'icon' => 'GraduationCap',
             'description' => 'Mencakup Video Tutorial Interaktif, Panduan Tata Cara Sistem, dan Tanya Jawab (FAQ) SAKIP',
-            'types'       => ['video_tutorial', 'tutorial', 'faq'],
+            'types' => ['video_tutorial', 'tutorial', 'faq'],
         ],
         'publikasi' => [
-            'label'       => 'Publikasi & Layanan',
-            'icon'        => 'Newspaper',
+            'label' => 'Publikasi & Layanan',
+            'icon' => 'Newspaper',
             'description' => 'Mencakup Berita & Pengumuman Kinerja Daerah serta Tautan Aplikasi Pendukung',
-            'types'       => ['news', 'external_link'],
+            'types' => ['news', 'external_link'],
         ],
     ];
 
     public const TYPE_LABEL = [
-        'regulation'     => 'Regulasi',
-        'guideline'      => 'Pedoman',
-        'sop'            => 'SOP',
+        'regulation' => 'Regulasi',
+        'guideline' => 'Pedoman',
+        'sop' => 'SOP',
         'video_tutorial' => 'Video Tutorial',
-        'tutorial'       => 'Tutorial',
-        'faq'            => 'FAQ',
-        'news'           => 'Berita/Pengumuman',
-        'external_link'  => 'Tautan Aplikasi Pendukung',
+        'tutorial' => 'Tutorial',
+        'faq' => 'FAQ',
+        'news' => 'Berita/Pengumuman',
+        'external_link' => 'Tautan Aplikasi Pendukung',
     ];
 
     /**
@@ -92,10 +92,10 @@ class KnowledgeController extends Controller
      */
     public function publicIndex(Request $request): Response
     {
-        $kategori     = $request->string('kategori')->trim()->toString() ?: null;
+        $kategori = $request->string('kategori')->trim()->toString() ?: null;
         $documentType = $request->string('document_type')->trim()->toString() ?: null;
-        $category     = $request->string('category')->trim()->toString() ?: null;
-        $search       = $request->string('search')->trim()->toString() ?: null;
+        $category = $request->string('category')->trim()->toString() ?: null;
+        $search = $request->string('search')->trim()->toString() ?: null;
 
         // Auto-assign kategori jika document_type dipilih tapi kategori belum di-set
         if ($documentType && ! $kategori) {
@@ -144,29 +144,29 @@ class KnowledgeController extends Controller
             ->withQueryString();
 
         $kategoriList = collect(self::KATEGORI)->map(fn ($v, $k) => [
-            'key'         => $k,
-            'label'       => $v['label'],
-            'icon'        => $v['icon'],
+            'key' => $k,
+            'label' => $v['label'],
+            'icon' => $v['icon'],
             'description' => $v['description'] ?? '',
-            'subItems'    => collect($v['types'])->map(fn ($t) => [
-                'key'   => $t,
+            'subItems' => collect($v['types'])->map(fn ($t) => [
+                'key' => $t,
                 'label' => self::TYPE_LABEL[$t] ?? ucfirst($t),
             ])->values()->all(),
         ])->values()->all();
 
         return Inertia::render('Knowledge/PublicIndex', [
-            'documents'    => $documents,
-            'kategori'     => $kategori,
-            'activeType'   => $documentType,
+            'documents' => $documents,
+            'kategori' => $kategori,
+            'activeType' => $documentType,
             'kategoriList' => $kategoriList,
-            'filters'      => [
-                'search'        => $search,
+            'filters' => [
+                'search' => $search,
                 'document_type' => $documentType,
-                'category'      => $category,
-                'per_page'      => $request->input('per_page'),
-                'kategori'      => $kategori,
+                'category' => $category,
+                'per_page' => $request->input('per_page'),
+                'kategori' => $kategori,
             ],
-            'categories'   => KnowledgeDocument::query()
+            'categories' => KnowledgeDocument::query()
                 ->where('status', 'published')
                 ->where('access', 'public')
                 ->whereNotNull('category')

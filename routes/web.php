@@ -175,23 +175,8 @@ Route::middleware('auth')->group(function () {
         Route::get('realizations/{realization}/evidences/{evidence}/download', [EvidenceController::class, 'download'])->name('evidences.download');
         Route::delete('realizations/{realization}/evidences/{evidence}', [EvidenceController::class, 'destroy'])->name('evidences.destroy');
 
-        // Pengukuran Kinerja (Modul 4: Poin 4.1 s/d 4.5)
+        // Pengukuran Kinerja (Modul 4)
         Route::prefix('measurement')->name('measurement.')->group(function () {
-            // 4.1 Realisasi RPJMD (SP/Bappeda)
-            Route::get('realization/rpjmd', [PerformanceMeasurementController::class, 'rpjmdIndex'])->name('realization.rpjmd');
-            Route::post('realization/rpjmd', [PerformanceMeasurementController::class, 'rpjmdStore'])->name('realization.rpjmd.store');
-            Route::post('realization/rpjmd/update-mission', [PerformanceMeasurementController::class, 'rpjmdUpdateMission'])->name('realization.rpjmd.update-mission');
-            Route::put('realization/rpjmd/{item}', [PerformanceMeasurementController::class, 'rpjmdUpdate'])->name('realization.rpjmd.update');
-            Route::delete('realization/rpjmd/{item}', [PerformanceMeasurementController::class, 'rpjmdDestroy'])->name('realization.rpjmd.destroy');
-            Route::post('realization/rpjmd/batch', [PerformanceMeasurementController::class, 'rpjmdBatch'])->name('realization.rpjmd.batch');
-
-            // 4.2 Realisasi IKU (SP/Bappeda)
-            Route::get('realization/iku', [PerformanceMeasurementController::class, 'ikuIndex'])->name('realization.iku');
-            Route::post('realization/iku', [PerformanceMeasurementController::class, 'ikuStore'])->name('realization.iku.store');
-            Route::put('realization/iku/{item}', [PerformanceMeasurementController::class, 'ikuUpdate'])->name('realization.iku.update');
-            Route::delete('realization/iku/{item}', [PerformanceMeasurementController::class, 'ikuDestroy'])->name('realization.iku.destroy');
-            Route::post('realization/iku/batch', [PerformanceMeasurementController::class, 'ikuBatch'])->name('realization.iku.batch');
-
             // 4.3 Realisasi OPD (Masing2 PD)
             Route::get('realization/opd', [PerformanceMeasurementController::class, 'opdIndex'])->name('realization.opd');
             Route::post('realization/opd', [PerformanceMeasurementController::class, 'opdStore'])->name('realization.opd.store');
@@ -214,8 +199,6 @@ Route::middleware('auth')->group(function () {
             Route::post('monitoring/budget/batch', [PerformanceMeasurementController::class, 'budgetBatch'])->name('monitoring.budget.batch');
 
             // Export PDF
-            Route::get('realization/rpjmd/export-pdf', [PerformanceMeasurementController::class, 'rpjmdExportPdf'])->name('realization.rpjmd.export-pdf');
-            Route::get('realization/iku/export-pdf', [PerformanceMeasurementController::class, 'ikuExportPdf'])->name('realization.iku.export-pdf');
             Route::get('realization/opd/export-pdf', [PerformanceMeasurementController::class, 'opdExportPdf'])->name('realization.opd.export-pdf');
             Route::get('monitoring/output/export-pdf', [PerformanceMeasurementController::class, 'outputExportPdf'])->name('monitoring.output.export-pdf');
             Route::get('monitoring/budget/export-pdf', [PerformanceMeasurementController::class, 'budgetExportPdf'])->name('monitoring.budget.export-pdf');
@@ -368,7 +351,6 @@ Route::middleware('auth')->group(function () {
             Route::get('agreements/{agreement}/download', [PlanningController::class, 'downloadAgreement'])->name('agreements.download');
             Route::delete('agreements/{agreement}', [PlanningController::class, 'destroyAgreement'])->name('agreements.destroy');
 
-
             // Action Plans (Rencana Aksi)
             Route::get('action-plans', [PlanningController::class, 'actionPlans'])->name('action-plans.index');
             Route::post('action-plans', [PlanningController::class, 'storeActionPlan'])->name('action-plans.store');
@@ -397,18 +379,18 @@ Route::middleware('auth')->group(function () {
 
             // ── IKU (Indikator Kinerja Utama) — FINAL SPEC ────────────────────────
             Route::prefix('iku')->name('iku.')->group(function () {
-                Route::get('/',           [IkuController::class, 'index'])->name('index');
-                Route::get('/create',     [IkuController::class, 'create'])->name('create');
-                Route::post('/',          [IkuController::class, 'store'])->name('store');
-                Route::get('/{iku}',      [IkuController::class, 'show'])->name('show');
+                Route::get('/', [IkuController::class, 'index'])->name('index');
+                Route::get('/create', [IkuController::class, 'create'])->name('create');
+                Route::post('/', [IkuController::class, 'store'])->name('store');
+                Route::get('/{iku}', [IkuController::class, 'show'])->name('show');
                 Route::get('/{iku}/edit', [IkuController::class, 'edit'])->name('edit');
-                Route::put('/{iku}',      [IkuController::class, 'update'])->name('update');
-                Route::delete('/{iku}',   [IkuController::class, 'destroy'])->name('destroy');
+                Route::put('/{iku}', [IkuController::class, 'update'])->name('update');
+                Route::delete('/{iku}', [IkuController::class, 'destroy'])->name('destroy');
 
                 // Workflow transitions
-                Route::post('/{iku}/submit',   [IkuController::class, 'submit'])->name('submit');
-                Route::post('/{iku}/review',   [IkuController::class, 'review'])->name('review');
-                Route::post('/{iku}/return',   [IkuController::class, 'returnRevision'])->name('return');
+                Route::post('/{iku}/submit', [IkuController::class, 'submit'])->name('submit');
+                Route::post('/{iku}/review', [IkuController::class, 'review'])->name('review');
+                Route::post('/{iku}/return', [IkuController::class, 'returnRevision'])->name('return');
                 Route::post('/{iku}/finalize', [IkuController::class, 'finalize'])->name('finalize');
                 Route::post('/{iku}/deactivate', [IkuController::class, 'deactivate'])->name('deactivate');
 
@@ -418,11 +400,10 @@ Route::middleware('auth')->group(function () {
                 Route::get('/{iku}/export/pdf', [IkuController::class, 'exportPdf'])->name('export.pdf');
 
                 // Import
-                Route::post('/import/upload',    [IkuImportController::class, 'upload'])->name('import.upload');
-                Route::post('/import/commit',    [IkuImportController::class, 'commit'])->name('import.commit');
-                Route::get('/import/template',   [IkuImportController::class, 'downloadTemplate'])->name('import.template');
+                Route::post('/import/upload', [IkuImportController::class, 'upload'])->name('import.upload');
+                Route::post('/import/commit', [IkuImportController::class, 'commit'])->name('import.commit');
+                Route::get('/import/template', [IkuImportController::class, 'downloadTemplate'])->name('import.template');
             });
-
 
             // Risks (Manajemen Risiko) — FR-PLN-016
             Route::get('risks', [PlanningController::class, 'risks'])->name('risks.index');
@@ -514,7 +495,6 @@ Route::prefix('laporan')->name('laporan.publik.')->group(function () {
     Route::get('{id}/download', [PublicLaporanController::class, 'download'])->name('download');
 });
 
-
 // WhatsApp Webhook — public endpoint, verified via X-Webhook-Secret header (FR-WA-001)
 Route::post('/whatsapp/webhook', WhatsappWebhookController::class)->name('whatsapp.webhook');
 
@@ -576,8 +556,8 @@ Route::get('/sitemap.xml', function () {
         ->orderByDesc('updated_at')
         ->get();
 
-    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
 
     // Beranda
     $xml .= "    <url>\n";

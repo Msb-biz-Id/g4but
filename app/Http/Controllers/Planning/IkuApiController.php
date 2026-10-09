@@ -26,8 +26,8 @@ class IkuApiController extends Controller
     {
         $request->validate([
             'period_id' => ['required', 'integer', 'exists:planning_periods,id'],
-            'level'     => ['nullable', 'string'],
-            'org_id'    => ['nullable', 'integer'],
+            'level' => ['nullable', 'string'],
+            'org_id' => ['nullable', 'integer'],
         ]);
 
         $periodId = $request->integer('period_id');
@@ -97,7 +97,7 @@ class IkuApiController extends Controller
 
         // Coba ambil start_year / end_year, atau year jika kolom berbeda
         $startYear = $period->start_year ?? $period->year ?? null;
-        $endYear   = $period->end_year ?? $period->year ?? null;
+        $endYear = $period->end_year ?? $period->year ?? null;
 
         if (! $startYear || ! $endYear) {
             return response()->json(['data' => []]);

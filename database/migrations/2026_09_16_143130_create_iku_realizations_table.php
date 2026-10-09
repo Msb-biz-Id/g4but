@@ -19,32 +19,32 @@ return new class extends Migration
 
             // Referensi ke IKU Final
             $table->foreignId('indicator_id')
-                  ->constrained('indicators')
-                  ->cascadeOnDelete();
+                ->constrained('indicators')
+                ->cascadeOnDelete();
 
             // Periode dan tahun realisasi
             $table->foreignId('planning_period_id')
-                  ->nullable()
-                  ->constrained('planning_periods')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('planning_periods')
+                ->nullOnDelete();
             $table->unsignedSmallInteger('year')->comment('Tahun realisasi, misal 2025');
 
             // Nilai realisasi
             $table->decimal('realization_value', 15, 4)->nullable()
-                  ->comment('Nilai realisasi aktual yang diinput');
+                ->comment('Nilai realisasi aktual yang diinput');
 
             // Catatan / keterangan realisasi
             $table->text('notes')->nullable();
 
             // Audit siapa yang menginput
             $table->foreignId('created_by')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->foreignId('updated_by')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
 
             $table->timestamps();
 

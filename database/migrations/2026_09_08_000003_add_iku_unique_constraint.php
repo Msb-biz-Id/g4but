@@ -30,7 +30,8 @@ return new class extends Migration
                 Schema::table('indicators', function (Blueprint $table) {
                     $table->dropUnique('indicators_name_unique');
                 });
-            } catch (\Throwable $e) {}
+            } catch (Throwable $e) {
+            }
         }
 
         // Tambah unique constraint baru yang kontekstual
@@ -53,7 +54,8 @@ return new class extends Migration
                 Schema::table('indicators', function (Blueprint $table) {
                     $table->dropUnique('iku_duplicate_prevention');
                 });
-            } catch (\Throwable $e) {}
+            } catch (Throwable $e) {
+            }
         }
     }
 };

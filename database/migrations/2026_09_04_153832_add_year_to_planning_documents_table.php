@@ -28,7 +28,7 @@ return new class extends Migration
         });
 
         // Isi nilai year dari start_year yang sudah ada (best-effort)
-        \DB::statement('UPDATE planning_documents SET year = start_year WHERE start_year IS NOT NULL AND year = 0');
+        DB::statement('UPDATE planning_documents SET year = start_year WHERE start_year IS NOT NULL AND year = 0');
     }
 
     public function down(): void

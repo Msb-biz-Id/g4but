@@ -40,16 +40,16 @@ class SecurityHeaders
             ? ' http://localhost:5173 http://127.0.0.1:5173 ws://localhost:5173 ws://127.0.0.1:5173'
             : '';
 
-        return "default-src 'self'; " .
-            "script-src 'self' 'unsafe-inline'{$viteSrc}; " .
-            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com{$viteSrc}; " .
-            "img-src 'self' data: blob:; " .
-            "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; " .
-            "connect-src 'self'{$viteSrc}; " .
-            "media-src 'self'; " .
-            "object-src 'none'; " .
-            "frame-ancestors 'self'; " .
-            "base-uri 'self'; " .
+        return "default-src 'self'; ".
+            "script-src 'self' 'unsafe-inline'{$viteSrc}; ".
+            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com{$viteSrc}; ".
+            "img-src 'self' data: blob:; ".
+            "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; ".
+            "connect-src 'self'{$viteSrc}; ".
+            "media-src 'self'; ".
+            "object-src 'none'; ".
+            "frame-ancestors 'self'; ".
+            "base-uri 'self'; ".
             "form-action 'self';";
     }
 
@@ -80,4 +80,3 @@ class SecurityHeaders
         return $response;
     }
 }
-

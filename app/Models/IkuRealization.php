@@ -22,7 +22,7 @@ class IkuRealization extends Model
     ];
 
     protected $casts = [
-        'year'              => 'integer',
+        'year' => 'integer',
         'realization_value' => 'float',
     ];
 
@@ -55,13 +55,17 @@ class IkuRealization extends Model
      */
     public function getCapaianAttribute(): ?float
     {
-        if ($this->realization_value === null) return null;
+        if ($this->realization_value === null) {
+            return null;
+        }
 
         $target = $this->indicator?->targets()
             ->where('year', $this->year)
             ->value('target_value');
 
-        if (! $target || (float) $target == 0) return null;
+        if (! $target || (float) $target == 0) {
+            return null;
+        }
 
         $capaian = ((float) $this->realization_value / (float) $target) * 100;
 

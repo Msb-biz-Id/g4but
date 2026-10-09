@@ -43,24 +43,24 @@ class AlertController extends Controller
         // 1. Statistik Alert
         $statsQuery = Alert::query()->whereIn('organization_id', $accessibleOrgIds);
         $alertStats = [
-            'open'        => (clone $statsQuery)->where('status', 'open')->count(),
-            'critical'    => (clone $statsQuery)->where('severity', 'critical')->whereIn('status', ['open', 'in_progress', 'acknowledged'])->count(),
+            'open' => (clone $statsQuery)->where('status', 'open')->count(),
+            'critical' => (clone $statsQuery)->where('severity', 'critical')->whereIn('status', ['open', 'in_progress', 'acknowledged'])->count(),
             'in_progress' => (clone $statsQuery)->whereIn('status', ['in_progress', 'acknowledged'])->count(),
-            'resolved'    => (clone $statsQuery)->where('status', 'resolved')->count(),
+            'resolved' => (clone $statsQuery)->where('status', 'resolved')->count(),
         ];
 
         // 2. Daftar Aturan EWS Terformat
         $rules = AlertRule::query()->orderBy('name')->get()->map(fn ($r) => [
-            'id'                    => $r->id,
-            'name'                  => $r->name,
-            'description'           => $r->config['description'] ?? null,
-            'type'                  => $r->rule_type,
-            'operator'              => $r->config['operator'] ?? '<',
-            'threshold'             => (float) ($r->config['threshold'] ?? ($r->config['threshold_days'] ?? 80)),
-            'level'                 => $r->severity,
-            'is_active'             => (bool) $r->is_active,
+            'id' => $r->id,
+            'name' => $r->name,
+            'description' => $r->config['description'] ?? null,
+            'type' => $r->rule_type,
+            'operator' => $r->config['operator'] ?? '<',
+            'threshold' => (float) ($r->config['threshold'] ?? ($r->config['threshold_days'] ?? 80)),
+            'level' => $r->severity,
+            'is_active' => (bool) $r->is_active,
             'performance_period_id' => $r->config['performance_period_id'] ?? null,
-            'notify_roles'          => (array) ($r->config['notify_roles'] ?? []),
+            'notify_roles' => (array) ($r->config['notify_roles'] ?? []),
         ]);
 
         // 3. Deteksi Ambang Batas (Indikator di bawah target secara real-time)
@@ -83,9 +83,9 @@ class AlertController extends Controller
                 $ach = round(($r->value / $target->target_value) * 100, 1);
                 if ($ach < 80) {
                     $rulesCheck[] = [
-                        'indicator'    => $r->indicatorVersion?->name ?? 'Indikator',
+                        'indicator' => $r->indicatorVersion?->name ?? 'Indikator',
                         'organization' => $r->organization?->name ?? '-',
-                        'achievement'  => $ach,
+                        'achievement' => $ach,
                     ];
                 }
             }
@@ -125,7 +125,7 @@ class AlertController extends Controller
                 }
                 $complianceRows[] = [
                     'organization' => $o->name,
-                    'submitted'    => $isSubmitted,
+                    'submitted' => $isSubmitted,
                 ];
             }
         } else {
@@ -147,7 +147,7 @@ class AlertController extends Controller
                 }
                 $complianceRows[] = [
                     'organization' => $o->name,
-                    'submitted'    => $isSubmitted,
+                    'submitted' => $isSubmitted,
                 ];
             }
         }
@@ -156,10 +156,10 @@ class AlertController extends Controller
         $reportRate = $totalOrgs > 0 ? round(($submittedCount / $totalOrgs) * 100, 1) : 0;
 
         $compliance = [
-            'report_rate'   => $reportRate,
-            'submitted'     => $submittedCount,
+            'report_rate' => $reportRate,
+            'submitted' => $submittedCount,
             'not_submitted' => $notSubmittedCount,
-            'rows'          => $complianceRows,
+            'rows' => $complianceRows,
         ];
 
         // 5. Periode untuk dropdown
@@ -176,44 +176,44 @@ class AlertController extends Controller
         }
 
         return Inertia::render('Alerts/Index', [
-            'alerts'        => $alerts,
-            'alertStats'    => $alertStats,
-            'rules'         => $rules,
-            'rulesCheck'    => $rulesCheck,
-            'compliance'    => $compliance,
-            'periods'       => $periods,
-            'canManage'     => $request->user()->can('manage-alert-rules'),
-            'canResolve'    => $request->user()->can('resolve-alerts'),
-            'filters'       => $request->only(['severity', 'status', 'per_page']),
+            'alerts' => $alerts,
+            'alertStats' => $alertStats,
+            'rules' => $rules,
+            'rulesCheck' => $rulesCheck,
+            'compliance' => $compliance,
+            'periods' => $periods,
+            'canManage' => $request->user()->can('manage-alert-rules'),
+            'canResolve' => $request->user()->can('resolve-alerts'),
+            'filters' => $request->only(['severity', 'status', 'per_page']),
             'organizations' => Organization::query()
                 ->whereIn('id', $accessibleOrgIds)
                 ->orderBy('code')
                 ->get(['id', 'code', 'name']),
-            'levelLabels'   => [
-                'info'     => 'Info',
-                'low'      => 'Rendah',
-                'warning'  => 'Peringatan',
-                'medium'   => 'Sedang',
-                'high'     => 'Tinggi',
+            'levelLabels' => [
+                'info' => 'Info',
+                'low' => 'Rendah',
+                'warning' => 'Peringatan',
+                'medium' => 'Sedang',
+                'high' => 'Tinggi',
                 'critical' => 'Kritis',
             ],
-            'statusLabels'  => [
-                'open'         => 'Terbuka',
+            'statusLabels' => [
+                'open' => 'Terbuka',
                 'acknowledged' => 'Diakui',
-                'in_progress'  => 'Sedang Ditindak',
-                'resolved'     => 'Selesai',
-                'closed'       => 'Ditutup',
+                'in_progress' => 'Sedang Ditindak',
+                'resolved' => 'Selesai',
+                'closed' => 'Ditutup',
             ],
-            'typeLabels'    => [
+            'typeLabels' => [
                 'performance_deviation' => 'Deviasi Capaian',
-                'achievement'           => 'Deviasi Capaian',
-                'late_report'           => 'Keterlambatan Laporan',
-                'submission_overdue'    => 'Keterlambatan Laporan',
-                'evidence_empty'        => 'Tanpa Bukti Dukung',
-                'missing_evidence'      => 'Tanpa Bukti Dukung',
-                'document_overdue'      => 'Dokumen SAKIP Terlambat',
-                'pk_unsigned'           => 'PK Belum Disahkan',
-                'revision_pending'      => 'Revisi Tertunda',
+                'achievement' => 'Deviasi Capaian',
+                'late_report' => 'Keterlambatan Laporan',
+                'submission_overdue' => 'Keterlambatan Laporan',
+                'evidence_empty' => 'Tanpa Bukti Dukung',
+                'missing_evidence' => 'Tanpa Bukti Dukung',
+                'document_overdue' => 'Dokumen SAKIP Terlambat',
+                'pk_unsigned' => 'PK Belum Disahkan',
+                'revision_pending' => 'Revisi Tertunda',
             ],
         ]);
     }

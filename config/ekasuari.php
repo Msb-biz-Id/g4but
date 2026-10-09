@@ -12,14 +12,14 @@ return [
     ],
 
     'ai' => [
-        'provider'    => env('EKASUARI_AI_PROVIDER', 'mock'), // mock | http
+        'provider' => env('EKASUARI_AI_PROVIDER', 'mock'), // mock | http
         'service_url' => env('EKASUARI_AI_SERVICE_URL', 'http://127.0.0.1:8001'),
-        'timeout'     => (int) env('EKASUARI_AI_TIMEOUT', 50),    // BR-AI-011: max 50 detik
+        'timeout' => (int) env('EKASUARI_AI_TIMEOUT', 50),    // BR-AI-011: max 50 detik
         'daily_quota' => (int) env('EKASUARI_AI_DAILY_QUOTA', 10), // BR-AI-009: default 10/hari per OPD (-1 = unlimited)
         // OpenAI-compatible provider (OpenRouter, OpenAI, dll) — DEC-AI-004: key disimpan di server
-        'api_key'     => env('OPENAI_API_KEY', ''),
-        'base_url'    => env('OPENAI_BASE_URL', 'https://openrouter.ai/api/v1'),
-        'model'       => env('OPENAI_MODEL', 'openai/gpt-4o-mini'),
+        'api_key' => env('OPENAI_API_KEY', ''),
+        'base_url' => env('OPENAI_BASE_URL', 'https://openrouter.ai/api/v1'),
+        'model' => env('OPENAI_MODEL', 'openai/gpt-4o-mini'),
     ],
 
     'integrations' => [

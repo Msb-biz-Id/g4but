@@ -45,13 +45,13 @@ class Agreement extends Model
     {
         static::creating(function ($agreement) {
             if (empty($agreement->code)) {
-                $agreement->code = 'PK-' . ($agreement->organization_id ?? 'ORG') . '-' . date('Y') . '-' . strtoupper(substr(uniqid(), -4));
+                $agreement->code = 'PK-'.($agreement->organization_id ?? 'ORG').'-'.date('Y').'-'.strtoupper(substr(uniqid(), -4));
             }
-            if (empty($agreement->title) && !empty($agreement->name)) {
+            if (empty($agreement->title) && ! empty($agreement->name)) {
                 $agreement->title = $agreement->name;
             }
             if (empty($agreement->planning_period_id)) {
-                $agreement->planning_period_id = $agreement->performance_period_id ?? \App\Models\PlanningPeriod::value('id') ?? 1;
+                $agreement->planning_period_id = $agreement->performance_period_id ?? PlanningPeriod::value('id') ?? 1;
             }
         });
     }
@@ -89,7 +89,7 @@ class Agreement extends Model
 
     public function isLocked(): bool
     {
-        return $this->status === 'locked' || !empty($this->locked_at);
+        return $this->status === 'locked' || ! empty($this->locked_at);
     }
 
     public function getIsLockedAttribute(): bool

@@ -13,6 +13,7 @@ use App\Models\Role;
 use App\Models\StrategicGoal;
 use App\Models\StrategicObjective;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,13 +22,21 @@ class IkuTest extends TestCase
     use RefreshDatabase;
 
     private User $superAdmin;
+
     private User $adminOpd;
+
     private User $adminBappeda;
+
     private Organization $bappedaOrg;
+
     private Organization $dinasOrg;
+
     private PlanningPeriod $period;
+
     private StrategicGoal $goal;
+
     private StrategicObjective $objective;
+
     private MeasurementUnit $unit;
 
     protected function setUp(): void
@@ -35,21 +44,21 @@ class IkuTest extends TestCase
         parent::setUp();
 
         $superAdminRole = Role::create(['name' => RoleEnum::SuperAdmin->value]);
-        $adminProvRole  = Role::create(['name' => RoleEnum::AdminProvinsi->value]);
-        $adminOpdRole   = Role::create(['name' => 'admin_opd']);
+        $adminProvRole = Role::create(['name' => RoleEnum::AdminProvinsi->value]);
+        $adminOpdRole = Role::create(['name' => 'admin_opd']);
 
         $this->bappedaOrg = Organization::create([
-            'code'       => 'BAPPEDA-PB',
-            'name'       => 'Badan Perencanaan Pembangunan Daerah Papua Barat',
+            'code' => 'BAPPEDA-PB',
+            'name' => 'Badan Perencanaan Pembangunan Daerah Papua Barat',
             'is_bappeda' => true,
-            'is_active'  => true,
+            'is_active' => true,
         ]);
 
         $this->dinasOrg = Organization::create([
-            'code'       => 'DISDIK-PB',
-            'name'       => 'Dinas Pendidikan Papua Barat',
+            'code' => 'DISDIK-PB',
+            'name' => 'Dinas Pendidikan Papua Barat',
             'is_bappeda' => false,
-            'is_active'  => true,
+            'is_active' => true,
         ]);
 
         $this->superAdmin = User::factory()->create();
@@ -65,34 +74,34 @@ class IkuTest extends TestCase
         $this->adminOpd->organizations()->attach($this->dinasOrg, ['is_default' => true]);
 
         $this->period = PlanningPeriod::create([
-            'code'       => 'RPJMD-2025-2029',
-            'name'       => 'RPJMD Papua Barat 2025-2029',
-            'year'       => 2025,
-            'type'       => 'annual',
+            'code' => 'RPJMD-2025-2029',
+            'name' => 'RPJMD Papua Barat 2025-2029',
+            'year' => 2025,
+            'type' => 'annual',
             'start_date' => '2025-01-01',
-            'end_date'   => '2029-12-31',
-            'status'     => 'active',
+            'end_date' => '2029-12-31',
+            'status' => 'active',
         ]);
 
         $this->goal = StrategicGoal::create([
             'planning_period_id' => $this->period->id,
-            'organization_id'    => $this->dinasOrg->id,
-            'code'               => 'TUJ-01',
-            'name'               => 'Meningkatkan Kualitas SDM',
-            'status'             => 'active',
+            'organization_id' => $this->dinasOrg->id,
+            'code' => 'TUJ-01',
+            'name' => 'Meningkatkan Kualitas SDM',
+            'status' => 'active',
         ]);
 
         $this->objective = StrategicObjective::create([
             'strategic_goal_id' => $this->goal->id,
-            'code'              => 'SAS-01',
-            'name'              => 'Meningkatnya Akses Pendidikan Menengah',
-            'status'            => 'active',
+            'code' => 'SAS-01',
+            'name' => 'Meningkatnya Akses Pendidikan Menengah',
+            'status' => 'active',
         ]);
 
         $this->unit = MeasurementUnit::create([
-            'code'      => 'PERSEN',
-            'name'      => 'Persen',
-            'symbol'    => '%',
+            'code' => 'PERSEN',
+            'name' => 'Persen',
+            'symbol' => '%',
             'is_active' => true,
         ]);
     }
@@ -107,21 +116,21 @@ class IkuTest extends TestCase
     public function test_can_create_iku_with_yearly_targets_and_verify_draft(): void
     {
         $payload = [
-            'level'                  => 'perangkat_daerah',
-            'planning_period_id'     => $this->period->id,
-            'owner_organization_id'  => $this->dinasOrg->id,
-            'strategic_goal_id'      => $this->goal->id,
+            'level' => 'perangkat_daerah',
+            'planning_period_id' => $this->period->id,
+            'owner_organization_id' => $this->dinasOrg->id,
+            'strategic_goal_id' => $this->goal->id,
             'strategic_objective_id' => $this->objective->id,
-            'name'                   => 'Angka Partisipasi Kasar SMA',
-            'measurement_unit_id'    => $this->unit->id,
-            'definition'             => 'Jumlah siswa terdaftar SMA dibanding usia sekolah',
-            'formula_notes'          => '(Siswa SMA / Usia 16-18) * 100',
-            'baseline_year'          => 2024,
-            'baseline_note'          => 'Data Dapodik',
-            'polarization'           => 'positif',
-            'data_source'            => 'Dinas Pendidikan',
-            'frequency'              => 'annual',
-            'targets'                => [
+            'name' => 'Angka Partisipasi Kasar SMA',
+            'measurement_unit_id' => $this->unit->id,
+            'definition' => 'Jumlah siswa terdaftar SMA dibanding usia sekolah',
+            'formula_notes' => '(Siswa SMA / Usia 16-18) * 100',
+            'baseline_year' => 2024,
+            'baseline_note' => 'Data Dapodik',
+            'polarization' => 'positif',
+            'data_source' => 'Dinas Pendidikan',
+            'frequency' => 'annual',
+            'targets' => [
                 ['year' => 2025, 'target_value' => 85.5],
                 ['year' => 2026, 'target_value' => 87.0],
                 ['year' => 2027, 'target_value' => 89.0],
@@ -170,40 +179,40 @@ class IkuTest extends TestCase
     public function test_complete_workflow_lifecycle_and_guard(): void
     {
         $iku = Indicator::create([
-            'is_iku'                 => true,
-            'code'                   => 'IKU-PD-0001',
-            'name'                   => 'Angka Kelulusan SMA',
-            'level'                  => 'perangkat_daerah',
-            'planning_period_id'     => $this->period->id,
-            'owner_organization_id'  => $this->dinasOrg->id,
-            'strategic_goal_id'      => $this->goal->id,
+            'is_iku' => true,
+            'code' => 'IKU-PD-0001',
+            'name' => 'Angka Kelulusan SMA',
+            'level' => 'perangkat_daerah',
+            'planning_period_id' => $this->period->id,
+            'owner_organization_id' => $this->dinasOrg->id,
+            'strategic_goal_id' => $this->goal->id,
             'strategic_objective_id' => $this->objective->id,
-            'measurement_unit_id'    => $this->unit->id,
-            'definition'             => 'Definisi',
-            'formula_notes'          => 'Formula',
-            'baseline_year'          => 2024,
-            'polarization'           => 'positif',
-            'data_source'            => 'Disdik',
-            'frequency'              => 'annual',
-            'iku_status'             => 'draft',
-            'status'                 => 'draft',
+            'measurement_unit_id' => $this->unit->id,
+            'definition' => 'Definisi',
+            'formula_notes' => 'Formula',
+            'baseline_year' => 2024,
+            'polarization' => 'positif',
+            'data_source' => 'Disdik',
+            'frequency' => 'annual',
+            'iku_status' => 'draft',
+            'status' => 'draft',
         ]);
 
         $version = IndicatorVersion::create([
-            'indicator_id'   => $iku->id,
+            'indicator_id' => $iku->id,
             'version_number' => 1,
-            'name'           => $iku->name,
-            'created_by'     => $this->superAdmin->id,
+            'name' => $iku->name,
+            'created_by' => $this->superAdmin->id,
         ]);
         $iku->update(['current_version_id' => $version->id]);
 
         foreach (range(2025, 2029) as $yr) {
             IndicatorTarget::create([
                 'indicator_version_id' => $version->id,
-                'organization_id'      => $this->dinasOrg->id,
-                'planning_period_id'   => $this->period->id,
-                'year'                 => $yr,
-                'target_value'         => 85.0,
+                'organization_id' => $this->dinasOrg->id,
+                'planning_period_id' => $this->period->id,
+                'year' => $yr,
+                'target_value' => 85.0,
             ]);
         }
 
@@ -252,22 +261,22 @@ class IkuTest extends TestCase
     public function test_can_export_excel_and_pdf(): void
     {
         $iku = Indicator::create([
-            'is_iku'                 => true,
-            'code'                   => 'IKU-PD-0002',
-            'name'                   => 'Tingkat Literasi',
-            'level'                  => 'pemda',
-            'planning_period_id'     => $this->period->id,
-            'strategic_goal_id'      => $this->goal->id,
+            'is_iku' => true,
+            'code' => 'IKU-PD-0002',
+            'name' => 'Tingkat Literasi',
+            'level' => 'pemda',
+            'planning_period_id' => $this->period->id,
+            'strategic_goal_id' => $this->goal->id,
             'strategic_objective_id' => $this->objective->id,
-            'measurement_unit_id'    => $this->unit->id,
-            'definition'             => 'Definisi literasi',
-            'formula_notes'          => 'Formula literasi',
-            'baseline_year'          => 2024,
-            'polarization'           => 'positif',
-            'data_source'            => 'BPS',
-            'frequency'              => 'annual',
-            'iku_status'             => 'final',
-            'status'                 => 'active',
+            'measurement_unit_id' => $this->unit->id,
+            'definition' => 'Definisi literasi',
+            'formula_notes' => 'Formula literasi',
+            'baseline_year' => 2024,
+            'polarization' => 'positif',
+            'data_source' => 'BPS',
+            'frequency' => 'annual',
+            'iku_status' => 'final',
+            'status' => 'active',
         ]);
 
         // Excel Export
@@ -299,17 +308,17 @@ class IkuTest extends TestCase
     {
         $validRows = [
             [
-                'name'                  => 'Indikator Impor Contoh',
-                'level'                 => 'pemda',
+                'name' => 'Indikator Impor Contoh',
+                'level' => 'pemda',
                 'owner_organization_id' => null,
-                'measurement_unit_id'   => $this->unit->id,
-                'definition'            => 'Definisi impor',
-                'formula_notes'         => 'Formula impor',
-                'polarization'          => 'positif',
-                'baseline_year'         => 2024,
-                'baseline_note'         => null,
-                'data_source'           => 'BPS',
-                'frequency'             => 'annual',
+                'measurement_unit_id' => $this->unit->id,
+                'definition' => 'Definisi impor',
+                'formula_notes' => 'Formula impor',
+                'polarization' => 'positif',
+                'baseline_year' => 2024,
+                'baseline_note' => null,
+                'data_source' => 'BPS',
+                'frequency' => 'annual',
             ],
         ];
 
@@ -319,8 +328,8 @@ class IkuTest extends TestCase
             ->assertRedirect(route('planning.iku.index'));
 
         $this->assertDatabaseHas('indicators', [
-            'name'       => 'Indikator Impor Contoh',
-            'is_iku'     => true,
+            'name' => 'Indikator Impor Contoh',
+            'is_iku' => true,
             'iku_status' => 'draft',
         ]);
     }
@@ -328,32 +337,32 @@ class IkuTest extends TestCase
     public function test_duplicate_iku_prevention(): void
     {
         $payload = [
-            'level'                  => 'perangkat_daerah',
-            'planning_period_id'     => $this->period->id,
-            'owner_organization_id'  => $this->dinasOrg->id,
-            'strategic_goal_id'      => $this->goal->id,
+            'level' => 'perangkat_daerah',
+            'planning_period_id' => $this->period->id,
+            'owner_organization_id' => $this->dinasOrg->id,
+            'strategic_goal_id' => $this->goal->id,
             'strategic_objective_id' => $this->objective->id,
-            'name'                   => 'Indikator Unik Duplikasi',
-            'measurement_unit_id'    => $this->unit->id,
-            'definition'             => 'Definisi',
-            'formula_notes'          => 'Formula',
-            'baseline_year'          => 2024,
-            'polarization'           => 'positif',
-            'data_source'            => 'Dinas',
-            'frequency'              => 'annual',
+            'name' => 'Indikator Unik Duplikasi',
+            'measurement_unit_id' => $this->unit->id,
+            'definition' => 'Definisi',
+            'formula_notes' => 'Formula',
+            'baseline_year' => 2024,
+            'polarization' => 'positif',
+            'data_source' => 'Dinas',
+            'frequency' => 'annual',
         ];
 
         // First creation succeeds
         $this->actingAs($this->superAdmin)->post(route('planning.iku.store'), $payload);
 
         // Second creation with exact same period, level, org, objective, and name
-        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
+        $this->expectException(UniqueConstraintViolationException::class);
         Indicator::create([
             ...$payload,
-            'code'       => 'IKU-PD-DUP',
-            'is_iku'     => true,
+            'code' => 'IKU-PD-DUP',
+            'is_iku' => true,
             'iku_status' => 'draft',
-            'status'     => 'draft',
+            'status' => 'draft',
         ]);
     }
 }

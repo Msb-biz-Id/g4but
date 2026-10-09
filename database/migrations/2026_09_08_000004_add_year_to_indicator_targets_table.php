@@ -31,7 +31,8 @@ return new class extends Migration
                 Schema::table('indicator_targets', function (Blueprint $table) {
                     $table->dropUnique(['indicator_version_id', 'organization_id', 'planning_period_id']);
                 });
-            } catch (\Throwable $e) {}
+            } catch (Throwable $e) {
+            }
         }
 
         // Tambah unique constraint baru yang mencakup kolom year
@@ -56,7 +57,8 @@ return new class extends Migration
                 Schema::table('indicator_targets', function (Blueprint $table) {
                     $table->dropUnique('indicator_targets_version_org_period_year_unique');
                 });
-            } catch (\Throwable $e) {}
+            } catch (Throwable $e) {
+            }
         }
 
         Schema::table('indicator_targets', function (Blueprint $table) {

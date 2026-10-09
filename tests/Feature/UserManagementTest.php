@@ -150,4 +150,3 @@ class UserManagementTest extends TestCase
         $this->assertStringContainsString('daftar_akun_ekasuari.csv', (string) $response->headers->get('content-disposition'));
     }
 }
-

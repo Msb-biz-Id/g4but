@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Indicator;
 use App\Models\IndicatorTarget;
+use App\Models\IndicatorVersion;
 use App\Models\MeasurementPeriod;
 use App\Models\Organization;
 use App\Models\Realization;
@@ -237,7 +238,7 @@ class TrendPredictor
         }
 
         $indIds = $indicators->pluck('id');
-        $versions = \App\Models\IndicatorVersion::whereIn('indicator_id', $indIds)->get(['id', 'indicator_id', 'direction']);
+        $versions = IndicatorVersion::whereIn('indicator_id', $indIds)->get(['id', 'indicator_id', 'direction']);
         $versionMap = $versions->keyBy('id');
         $versionsByInd = $versions->groupBy('indicator_id');
         $allVersionIds = $versions->pluck('id');
@@ -336,6 +337,7 @@ class TrendPredictor
             if (! $result['feasible']) {
                 $result['reason'] = 'Data historis tidak memadai (butuh minimal '.$minPoints.' titik realisasi tervalidasi, tersedia '.count($points).').';
                 $results[] = $result;
+
                 continue;
             }
 

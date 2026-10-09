@@ -20,8 +20,8 @@ class Organization extends Model
     protected function casts(): array
     {
         return [
-            'is_active'        => 'boolean',
-            'is_bappeda'       => 'boolean', // BR-003
+            'is_active' => 'boolean',
+            'is_bappeda' => 'boolean', // BR-003
             'is_pilot_project' => 'boolean', // G-11
         ];
     }

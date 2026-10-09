@@ -60,41 +60,8 @@ class ReportController extends Controller
         $provinsi = Organization::where('type', 'province')->first();
         $provId = $provinsi?->id;
 
-        // A. LKIP Pemerintah Daerah (Lintas Tahun)
-        $pemdaYears = $availableYears;
-        $pemdaDocsByYear = PlanningDocument::query()
-            ->whereIn('type', ['lkip', 'lkjip', 'laporan_kinerja'])
-            ->whereIn('year', $pemdaYears)
-            ->where(function ($q) use ($provId) {
-                $q->whereNull('organization_id');
-                if ($provId) {
-                    $q->orWhere('organization_id', $provId);
-                }
-            })
-            ->get()
-            ->groupBy('year');
-
+        // LKIP Pemda dihapus (Rumah Besar OPD)
         $pemdaDocuments = [];
-        foreach ($pemdaYears as $idx => $yr) {
-            $doc = $pemdaDocsByYear->get($yr)?->first();
-
-            $fullPath = $doc ? $this->resolveFilePath($doc->file_path) : null;
-            $hasFile = (bool) ($doc && ! empty($doc->file_path) && $fullPath);
-
-            $pemdaDocuments[] = [
-                'no' => $idx + 1,
-                'id' => $doc?->id,
-                'year' => $yr,
-                'jenis_dokumen' => 'LKIP Pemerintah Daerah',
-                'file_name' => $hasFile
-                    ? ($doc->title ?: "LKIP Provinsi Papua Barat Tahun {$yr}.pdf")
-                    : ($doc && ! empty($doc->file_path) ? basename($doc->file_path) : '-'),
-                'status' => $hasFile ? 'Tersedia' : 'Belum Tersedia',
-                'has_file' => $hasFile,
-                'file_path' => $doc?->file_path,
-                'tanggal_upload' => $doc ? ($doc->updated_at?->format('d-m-Y') ?? $doc->created_at?->format('d-m-Y')) : '-',
-            ];
-        }
 
         // B. LKIP Perangkat Daerah (Seluruh OPD untuk tahun terpilih)
         $opds = Organization::query()
@@ -171,42 +138,27 @@ class ReportController extends Controller
         $this->authorize('view-reports');
 
         $validated = $request->validate([
-            'target_type' => ['required', 'string', 'in:pemda,opd'],
-            'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
+            'target_type' => ['nullable', 'string', 'in:opd'],
+            'organization_id' => ['required', 'integer', 'exists:organizations,id'],
             'year' => ['required', 'integer', 'min:2000', 'max:2099'],
             'file' => ['required', 'file', 'mimes:pdf', 'max:25600'],
         ], [
             'file.required' => 'File dokumen LKIP wajib dipilih.',
             'file.mimes' => 'Format file harus PDF.',
             'file.max' => 'Ukuran file PDF maksimal 25 MB.',
+            'organization_id.required' => 'Perangkat Daerah wajib dipilih.',
         ]);
 
         $year = (int) $validated['year'];
-        $targetType = $validated['target_type'];
+        $orgId = (int) $validated['organization_id'];
         $file = $request->file('file');
         $originalName = $file->getClientOriginalName();
 
-        $provinsi = Organization::where('type', 'province')->first();
-        $provId = $provinsi?->id;
-
-        if ($targetType === 'pemda') {
-            if (! $request->user()->hasRole('Super Admin') && ! $request->user()->hasRole('Admin Provinsi')) {
-                abort(403, 'Hanya Admin Provinsi / Super Admin yang dapat mengunggah LKIP Pemerintah Daerah.');
-            }
-            $orgId = $provId;
-            $title = $originalName ?: "LKIP Provinsi Papua Barat Tahun {$year}.pdf";
-            $code = "LKIP-PEMDA-{$year}";
-        } else {
-            if (empty($validated['organization_id'])) {
-                return back()->withErrors(['file' => 'Perangkat Daerah wajib dipilih.']);
-            }
-            $orgId = (int) $validated['organization_id'];
-            $this->authorization->canAccessOrganization($request->user(), $orgId)
-                ?: abort(403, 'Di luar lingkup organisasi Anda.');
-            $org = Organization::findOrFail($orgId);
-            $title = $originalName ?: "LKIP {$org->name} {$year}.pdf";
-            $code = "LKIP-OPD-{$orgId}-{$year}";
-        }
+        $this->authorization->canAccessOrganization($request->user(), $orgId)
+            ?: abort(403, 'Di luar lingkup organisasi Anda.');
+        $org = Organization::findOrFail($orgId);
+        $title = $originalName ?: "LKIP {$org->name} {$year}.pdf";
+        $code = "LKIP-OPD-{$orgId}-{$year}";
 
         // Store file in local storage
         $storedPath = $file->store("planning-documents/{$year}/lkip", 'local');
@@ -214,16 +166,7 @@ class ReportController extends Controller
         $doc = PlanningDocument::query()
             ->whereIn('type', ['lkip', 'lkjip', 'laporan_kinerja'])
             ->where('year', $year)
-            ->when($targetType === 'pemda', function ($q) use ($provId) {
-                $q->where(function ($sq) use ($provId) {
-                    $sq->whereNull('organization_id');
-                    if ($provId) {
-                        $sq->orWhere('organization_id', $provId);
-                    }
-                });
-            }, function ($q) use ($orgId) {
-                $q->where('organization_id', $orgId);
-            })
+            ->where('organization_id', $orgId)
             ->first();
 
         $perfPeriod = PerformancePeriod::where('year', $year)->first()
@@ -247,7 +190,7 @@ class ReportController extends Controller
                 $doc->end_year = $year;
             }
         } else {
-            $doc = new PlanningDocument();
+            $doc = new PlanningDocument;
             $doc->code = $code;
             $doc->type = 'lkjip';
             $doc->organization_id = $orgId;
@@ -290,7 +233,7 @@ class ReportController extends Controller
 
         return response()->file($fullPath, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . ($doc->title ?: basename($fullPath)) . '"',
+            'Content-Disposition' => 'inline; filename="'.($doc->title ?: basename($fullPath)).'"',
         ]);
     }
 
@@ -318,17 +261,8 @@ class ReportController extends Controller
         $this->authorize('view-reports');
 
         $doc = PlanningDocument::findOrFail($id);
-        $provId = Organization::where('type', 'province')->first()?->id;
-        $isPemda = empty($doc->organization_id) || ($provId && (int) $doc->organization_id === (int) $provId);
-
-        if ($isPemda) {
-            if (! $this->authorization->isProvincialAdmin($request->user())) {
-                abort(403, 'Hanya Admin Provinsi / Super Admin yang dapat menghapus dokumen LKIP Pemerintah Daerah.');
-            }
-        } else {
-            $this->authorization->canAccessOrganization($request->user(), (int) $doc->organization_id)
-                ?: abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->authorization->canAccessOrganization($request->user(), (int) $doc->organization_id)
+            ?: abort(403, 'Di luar lingkup organisasi Anda.');
 
         $fullPath = $this->resolveFilePath($doc->file_path);
         if ($fullPath && file_exists($fullPath)) {
@@ -354,11 +288,11 @@ class ReportController extends Controller
         if (Storage::disk('public')->exists($path)) {
             return Storage::disk('public')->path($path);
         }
-        if (file_exists(storage_path('app/' . $path))) {
-            return storage_path('app/' . $path);
+        if (file_exists(storage_path('app/'.$path))) {
+            return storage_path('app/'.$path);
         }
-        if (file_exists(storage_path('app/public/' . $path))) {
-            return storage_path('app/public/' . $path);
+        if (file_exists(storage_path('app/public/'.$path))) {
+            return storage_path('app/public/'.$path);
         }
 
         return null;

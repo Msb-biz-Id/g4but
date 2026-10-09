@@ -31,7 +31,7 @@ class AiQuotaService
 
         if (! $kuota->masihTersedia()) {
             return [
-                'ok'    => false,
+                'ok' => false,
                 'pesan' => sprintf(self::PESAN_KUOTA_HABIS, $kuota->terpakai, $kuota->kuota_maksimal),
                 'kuota' => $kuota,
             ];
@@ -59,10 +59,10 @@ class AiQuotaService
         $kuota = AiOpdQuota::hariIniUntuk($organizationId);
 
         return [
-            'terpakai'       => $kuota->terpakai,
+            'terpakai' => $kuota->terpakai,
             'kuota_maksimal' => $kuota->kuota_maksimal,
-            'sisa'           => $kuota->sisa(),
-            'unlimited'      => $kuota->kuota_maksimal === -1,
+            'sisa' => $kuota->sisa(),
+            'unlimited' => $kuota->kuota_maksimal === -1,
         ];
     }
 

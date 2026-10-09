@@ -5,9 +5,9 @@ namespace App\Providers;
 use App\Services\AchievementCalculator;
 use App\Services\AuditService;
 use App\Services\AuthorizationService;
+use App\Services\PdfService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use App\Services\PdfService;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -44,9 +44,9 @@ class AppServiceProvider extends ServiceProvider
         // Menyediakan logo dinamis (Base64) & konfigurasi umum untuk seluruh template PDF / cetak
         View::composer(['pdf.*', 'reports.*'], function ($view) {
             $view->with([
-                'logoBase64'   => PdfService::getLogoBase64(),
+                'logoBase64' => PdfService::getLogoBase64(),
                 'provinceName' => PdfService::getProvinceName(),
-                'appName'      => PdfService::getAppName(),
+                'appName' => PdfService::getAppName(),
             ]);
         });
     }
@@ -62,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('login', function (Request $request): Limit {
             $maxAttempts = app()->environment('local', 'testing') ? 100 : 15;
+
             return Limit::perMinute($maxAttempts)
                 ->by($request->ip())
                 ->response(fn () => response()->json([

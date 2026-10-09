@@ -98,12 +98,12 @@ class EvaluateAlertRules extends Command
     {
         return match ($rule->rule_type) {
             'performance_deviation', 'achievement' => $this->checkPerformanceDeviation($rule),
-            'late_report', 'submission_overdue'    => $this->checkLateReport($rule),
-            'evidence_empty', 'missing_evidence'   => $this->checkEvidenceEmpty($rule),
-            'document_overdue'                     => $this->checkDocumentOverdue($rule),
-            'pk_unsigned'                          => $this->checkPkUnsigned($rule),
-            'revision_pending'                     => $this->checkRevisionPending($rule),
-            default                                => [],
+            'late_report', 'submission_overdue' => $this->checkLateReport($rule),
+            'evidence_empty', 'missing_evidence' => $this->checkEvidenceEmpty($rule),
+            'document_overdue' => $this->checkDocumentOverdue($rule),
+            'pk_unsigned' => $this->checkPkUnsigned($rule),
+            'revision_pending' => $this->checkRevisionPending($rule),
+            default => [],
         };
     }
 
@@ -132,9 +132,9 @@ class EvaluateAlertRules extends Command
             $pct = ($r->value / $target->target_value) * 100;
 
             $isTriggered = match ($operator) {
-                '<='    => $pct <= $threshold,
-                '>'     => $pct > $threshold,
-                '>='    => $pct >= $threshold,
+                '<=' => $pct <= $threshold,
+                '>' => $pct > $threshold,
+                '>=' => $pct >= $threshold,
                 default => $pct < $threshold,
             };
 
@@ -272,7 +272,7 @@ class EvaluateAlertRules extends Command
                     }
 
                     $missingNames = array_slice($row['missing_docs'] ?? [], 0, 3);
-                    $missingStr = !empty($missingNames) ? implode(', ', $missingNames) : "{$missing} dokumen";
+                    $missingStr = ! empty($missingNames) ? implode(', ', $missingNames) : "{$missing} dokumen";
 
                     $results[] = [
                         'organization_id' => (int) $row['organization_id'],

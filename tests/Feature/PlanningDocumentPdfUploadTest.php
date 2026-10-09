@@ -18,7 +18,9 @@ class PlanningDocumentPdfUploadTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Organization $organization;
+
     private PerformancePeriod $period;
 
     protected function setUp(): void

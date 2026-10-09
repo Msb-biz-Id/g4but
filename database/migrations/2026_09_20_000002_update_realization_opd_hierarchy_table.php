@@ -14,7 +14,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('realization_opd_items')) {
             Schema::table('realization_opd_items', function (Blueprint $table) {
-                if (!Schema::hasColumn('realization_opd_items', 'parent_id')) {
+                if (! Schema::hasColumn('realization_opd_items', 'parent_id')) {
                     $table->foreignId('parent_id')
                         ->nullable()
                         ->after('organization_id')
@@ -22,31 +22,31 @@ return new class extends Migration
                         ->cascadeOnDelete();
                 }
 
-                if (!Schema::hasColumn('realization_opd_items', 'level')) {
+                if (! Schema::hasColumn('realization_opd_items', 'level')) {
                     $table->string('level', 20)
                         ->default('objective')
                         ->after('parent_id'); // 'goal', 'objective'
                 }
 
-                if (!Schema::hasColumn('realization_opd_items', 'order_no')) {
+                if (! Schema::hasColumn('realization_opd_items', 'order_no')) {
                     $table->unsignedInteger('order_no')
                         ->default(0)
                         ->after('level');
                 }
 
-                if (!Schema::hasColumn('realization_opd_items', 'goal_targets')) {
+                if (! Schema::hasColumn('realization_opd_items', 'goal_targets')) {
                     $table->json('goal_targets')
                         ->nullable()
                         ->after('targets');
                 }
 
-                if (!Schema::hasColumn('realization_opd_items', 'goal_realizations')) {
+                if (! Schema::hasColumn('realization_opd_items', 'goal_realizations')) {
                     $table->json('goal_realizations')
                         ->nullable()
                         ->after('realizations');
                 }
 
-                if (!Schema::hasColumn('realization_opd_items', 'goal_measurement_pattern')) {
+                if (! Schema::hasColumn('realization_opd_items', 'goal_measurement_pattern')) {
                     $table->string('goal_measurement_pattern', 20)
                         ->default('Positif')
                         ->after('measurement_pattern');
@@ -104,7 +104,7 @@ return new class extends Migration
         foreach ($items as $item) {
             $orgId = $item->organization_id ?? 0;
             $gKey = trim($item->goal ?? '') ?: 'Tujuan Renstra';
-            $key = $orgId . '|||' . $gKey;
+            $key = $orgId.'|||'.$gKey;
             $groups[$key][] = $item;
         }
 
@@ -114,25 +114,25 @@ return new class extends Migration
 
             // Create or designate Goal row
             $goalId = DB::table('realization_opd_items')->insertGetId([
-                'organization_id'          => (int) $orgId,
-                'parent_id'                => null,
-                'level'                    => 'goal',
-                'order_no'                 => 0,
-                'goal'                     => $goal,
-                'goal_indicator'           => $first->goal_indicator ?? $goal,
-                'goal_indicator_unit'      => $first->goal_indicator_unit ?? '%',
-                'objective'                => null,
-                'objective_indicator'      => null,
-                'unit'                     => $first->goal_indicator_unit ?? '%',
-                'measurement_pattern'      => 'Positif',
+                'organization_id' => (int) $orgId,
+                'parent_id' => null,
+                'level' => 'goal',
+                'order_no' => 0,
+                'goal' => $goal,
+                'goal_indicator' => $first->goal_indicator ?? $goal,
+                'goal_indicator_unit' => $first->goal_indicator_unit ?? '%',
+                'objective' => null,
+                'objective_indicator' => null,
+                'unit' => $first->goal_indicator_unit ?? '%',
+                'measurement_pattern' => 'Positif',
                 'goal_measurement_pattern' => 'Positif',
-                'targets'                  => null,
-                'realizations'             => null,
-                'goal_targets'             => null,
-                'goal_realizations'        => null,
-                'created_by'               => $first->created_by,
-                'created_at'               => now(),
-                'updated_at'               => now(),
+                'targets' => null,
+                'realizations' => null,
+                'goal_targets' => null,
+                'goal_realizations' => null,
+                'created_by' => $first->created_by,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
             // Link children items
@@ -142,8 +142,8 @@ return new class extends Migration
                     ->where('id', $subItem->id)
                     ->update([
                         'parent_id' => $goalId,
-                        'level'     => 'objective',
-                        'order_no'  => $order++,
+                        'level' => 'objective',
+                        'order_no' => $order++,
                     ]);
             }
         }

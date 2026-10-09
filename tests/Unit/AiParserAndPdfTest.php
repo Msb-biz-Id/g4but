@@ -103,14 +103,14 @@ JSON;
         $logoBase64 = PdfService::getLogoBase64();
 
         $pdf = Pdf::loadView('pdf.ai-report', [
-            'title'            => 'Executive Summary',
-            'feature'          => 'executive_summary',
-            'scope'            => 'Pemerintah Provinsi Papua Barat',
-            'output'           => 'Laporan ringkasan eksekutif berjalan lancar.',
+            'title' => 'Executive Summary',
+            'feature' => 'executive_summary',
+            'scope' => 'Pemerintah Provinsi Papua Barat',
+            'output' => 'Laporan ringkasan eksekutif berjalan lancar.',
             'formattedContent' => '<p class="paragraph">Laporan ringkasan eksekutif berjalan lancar.</p>',
-            'userName'         => 'Test Administrator',
-            'generatedAt'      => '17/09/2026 01:00',
-            'logoBase64'       => $logoBase64,
+            'userName' => 'Test Administrator',
+            'generatedAt' => '17/09/2026 01:00',
+            'logoBase64' => $logoBase64,
         ])->setPaper('a4', 'portrait');
 
         $binary = $pdf->output();
@@ -133,17 +133,17 @@ JSON;
         ];
 
         $html = view('pdf.ai-report', [
-            'title'            => 'Executive Summary',
-            'feature'          => 'executive_summary',
-            'scope'            => 'Pemerintah Provinsi Papua Barat',
-            'output'           => 'dummy',
-            'parsed'           => $parsed,
+            'title' => 'Executive Summary',
+            'feature' => 'executive_summary',
+            'scope' => 'Pemerintah Provinsi Papua Barat',
+            'output' => 'dummy',
+            'parsed' => $parsed,
             'formattedContent' => '',
-            'userName'         => 'John Doe',
-            'generatedAt'      => '17/09/2026 03:00',
-            'logoBase64'       => PdfService::getLogoBase64(),
-            'provinceName'     => 'Provinsi Papua Barat',
-            'appName'          => 'e-KASUARI',
+            'userName' => 'John Doe',
+            'generatedAt' => '17/09/2026 03:00',
+            'logoBase64' => PdfService::getLogoBase64(),
+            'provinceName' => 'Provinsi Papua Barat',
+            'appName' => 'e-KASUARI',
         ])->render();
 
         $this->assertStringContainsString('PEMERINTAH PROVINSI PAPUA BARAT', $html);

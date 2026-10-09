@@ -52,6 +52,7 @@ class PlanningDocument extends Model
         }
 
         $y = $this->start_year ?: $this->year;
+
         return $y ? "{$y}-01-01" : null;
     }
 
@@ -62,6 +63,7 @@ class PlanningDocument extends Model
         }
 
         $y = $this->end_year ?: $this->year;
+
         return $y ? "{$y}-12-31" : null;
     }
 
@@ -77,7 +79,7 @@ class PlanningDocument extends Model
 
     public function isLocked(): bool
     {
-        return $this->status === 'locked' || !empty($this->locked_at);
+        return $this->status === 'locked' || ! empty($this->locked_at);
     }
 
     public function getIsLockedAttribute(): bool

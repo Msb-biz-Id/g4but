@@ -3,11 +3,11 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
-use Database\Seeders\LocalUserSeeder;
-use Database\Seeders\KamarOpdSeeder;
 use Database\Seeders\AppConfigSeeder;
+use Database\Seeders\KamarOpdSeeder;
+use Database\Seeders\LocalUserSeeder;
 use Database\Seeders\MasterPeriodSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

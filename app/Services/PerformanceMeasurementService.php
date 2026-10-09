@@ -41,7 +41,7 @@ class PerformanceMeasurementService
      */
     public static function determineStatus(?float $achievement, ?float $target, ?float $realization): array
     {
-        if (($target !== null && $realization !== null && (float)$target == 0 && (float)$realization == 0) || $achievement === null) {
+        if (($target !== null && $realization !== null && (float) $target == 0 && (float) $realization == 0) || $achievement === null) {
             return [
                 'status' => 'Tidak Dinilai',
                 'badge' => 'secondary',

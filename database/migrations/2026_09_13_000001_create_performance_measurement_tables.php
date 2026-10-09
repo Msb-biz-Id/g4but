@@ -68,7 +68,7 @@ return new class extends Migration
             $table->string('satuan', 100)->nullable();
             $table->string('measurement_pattern', 20)->default('Positif'); // Positif, Negatif
             $table->decimal('target_output_tahunan', 18, 4)->nullable();
-            
+
             // Triwulan Target & Realisasi
             $table->decimal('target_tw1', 18, 4)->nullable();
             $table->decimal('target_tw2', 18, 4)->nullable();

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('realization_rpjmd_items')) {
             Schema::table('realization_rpjmd_items', function (Blueprint $table) {
-                if (!Schema::hasColumn('realization_rpjmd_items', 'goal_indicator_unit')) {
+                if (! Schema::hasColumn('realization_rpjmd_items', 'goal_indicator_unit')) {
                     $table->string('goal_indicator_unit', 100)->nullable()->after('goal_indicator');
                 }
             });
@@ -21,7 +21,7 @@ return new class extends Migration
 
         if (Schema::hasTable('realization_opd_items')) {
             Schema::table('realization_opd_items', function (Blueprint $table) {
-                if (!Schema::hasColumn('realization_opd_items', 'goal_indicator_unit')) {
+                if (! Schema::hasColumn('realization_opd_items', 'goal_indicator_unit')) {
                     $table->string('goal_indicator_unit', 100)->nullable()->after('goal_indicator');
                 }
             });

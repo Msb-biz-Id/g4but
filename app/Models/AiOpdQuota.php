@@ -4,14 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Model kuota harian pemanggilan AI per OPD (BR-AI-009, MOD-AI-006).
  *
  * @property int $id
  * @property int $organization_id
- * @property \Illuminate\Support\Carbon $tanggal
- * @property int $kuota_maksimal  (-1 = unlimited)
+ * @property Carbon $tanggal
+ * @property int $kuota_maksimal (-1 = unlimited)
  * @property int $terpakai
  */
 class AiOpdQuota extends Model
@@ -28,9 +29,9 @@ class AiOpdQuota extends Model
     protected function casts(): array
     {
         return [
-            'tanggal'        => 'date',
+            'tanggal' => 'date',
             'kuota_maksimal' => 'integer',
-            'terpakai'       => 'integer',
+            'terpakai' => 'integer',
         ];
     }
 
@@ -70,9 +71,9 @@ class AiOpdQuota extends Model
         try {
             return static::create([
                 'organization_id' => $organizationId,
-                'tanggal'         => today()->startOfDay(),
-                'kuota_maksimal'  => $defaultQuota,
-                'terpakai'        => 0,
+                'tanggal' => today()->startOfDay(),
+                'kuota_maksimal' => $defaultQuota,
+                'terpakai' => 0,
             ]);
         } catch (\Throwable $e) {
             return static::where('organization_id', $organizationId)

@@ -35,6 +35,7 @@ class AuthorizationService
             if ($user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi')) {
                 return true;
             }
+
             // Admin OPD hanya boleh mengedit profil OPD-nya sendiri
             return $user->hasRole('Admin OPD') && $user->organizations()->where('organizations.id', $org->id)->exists();
         });
@@ -83,17 +84,16 @@ class AuthorizationService
         Gate::define('archive-indicators', fn (User $user) => $user->hasPermission('indicator:archive'));
 
         // IKU Workflow gates — FINAL SPEC
-        Gate::define('view-iku',       fn (User $user) => true); // semua login bisa lihat
-        Gate::define('create-iku',     fn (User $user) => $user->hasPermission('indicator:create') || $user->hasPermission('iku:create'));
-        Gate::define('update-iku',     fn (User $user) => $user->hasPermission('indicator:update') || $user->hasPermission('iku:update'));
-        Gate::define('submit-iku',     fn (User $user) => $user->hasPermission('indicator:update') || $user->hasPermission('iku:submit'));
-        Gate::define('review-iku',     fn (User $user) => $user->organization?->is_bappeda === true || $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasPermission('iku:review'));
-        Gate::define('finalize-iku',   fn (User $user) => $user->organization?->is_bappeda === true || $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasPermission('iku:finalize'));
+        Gate::define('view-iku', fn (User $user) => true); // semua login bisa lihat
+        Gate::define('create-iku', fn (User $user) => $user->hasPermission('indicator:create') || $user->hasPermission('iku:create'));
+        Gate::define('update-iku', fn (User $user) => $user->hasPermission('indicator:update') || $user->hasPermission('iku:update'));
+        Gate::define('submit-iku', fn (User $user) => $user->hasPermission('indicator:update') || $user->hasPermission('iku:submit'));
+        Gate::define('review-iku', fn (User $user) => $user->organization?->is_bappeda === true || $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasPermission('iku:review'));
+        Gate::define('finalize-iku', fn (User $user) => $user->organization?->is_bappeda === true || $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasPermission('iku:finalize'));
         Gate::define('deactivate-iku', fn (User $user) => $user->organization?->is_bappeda === true || $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasPermission('iku:deactivate'));
-        Gate::define('delete-iku',     fn (User $user) => $user->organization?->is_bappeda === true || $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasPermission('iku:delete'));
-        Gate::define('import-iku',     fn (User $user) => $user->hasPermission('indicator:create') || $user->hasPermission('iku:import'));
-        Gate::define('export-iku',     fn (User $user) => $user->hasPermission('indicator:view') || $user->hasPermission('iku:export'));
-
+        Gate::define('delete-iku', fn (User $user) => $user->organization?->is_bappeda === true || $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasPermission('iku:delete'));
+        Gate::define('import-iku', fn (User $user) => $user->hasPermission('indicator:create') || $user->hasPermission('iku:import'));
+        Gate::define('export-iku', fn (User $user) => $user->hasPermission('indicator:view') || $user->hasPermission('iku:export'));
 
         // Unit (measurement unit) gates
         Gate::define('view-units', fn (User $user) => $user->hasPermission('unit:view'));

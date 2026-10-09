@@ -60,25 +60,25 @@ return new class extends Migration
         DB::table('app_configs')
             ->where('key', 'ui_headline_image')
             ->update([
-                'value'         => '/images/hero-banner.jpg',
+                'value' => '/images/hero-banner.jpg',
                 'default_value' => '/images/hero-banner.jpg',
-                'updated_at'    => $now,
+                'updated_at' => $now,
             ]);
 
         DB::table('app_configs')
             ->where('key', 'ui_login_image')
             ->update([
-                'value'         => '/images/login-bg.png',
+                'value' => '/images/login-bg.png',
                 'default_value' => '/images/login-bg.png',
-                'updated_at'    => $now,
+                'updated_at' => $now,
             ]);
 
         DB::table('app_configs')
             ->where('key', 'app_logo')
             ->update([
-                'value'         => '/logo.png',
+                'value' => '/logo.png',
                 'default_value' => '/logo.png',
-                'updated_at'    => $now,
+                'updated_at' => $now,
             ]);
 
         Cache::forget('app_general_config');

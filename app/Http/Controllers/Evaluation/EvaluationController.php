@@ -12,6 +12,7 @@ use App\Models\PkoEvaluation;
 use App\Models\PkoIndicator;
 use App\Models\PlanningPeriod;
 use App\Models\Recommendation;
+use App\Models\User;
 use App\Services\AuditService;
 use App\Services\AuthorizationService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -29,7 +30,7 @@ class EvaluationController extends Controller
         private readonly AuditService $audit,
     ) {}
 
-    public function canManageProvincialEvaluations(?\App\Models\User $user): bool
+    public function canManageProvincialEvaluations(?User $user): bool
     {
         if (! $user) {
             return false;
@@ -100,17 +101,7 @@ class EvaluationController extends Controller
         rsort($availableYears);
         $availableYears = array_values(array_unique($availableYears));
 
-        // 1. SAKIP Pemerintah Daerah
-        $pemda = Organization::where('type', 'province')->first() ?? Organization::find(1);
-        $evalPemda = null;
-        if ($pemda) {
-            $evalPemda = Evaluation::with('scores')
-                ->where('organization_id', $pemda->id)
-                ->where('planning_period_id', $period->id)
-                ->first();
-        }
-
-        $sakipPemdaData = $this->formatSakipItem($pemda, $evalPemda, 1);
+        $sakipPemdaData = null;
 
         // 2. SAKIP OPD
         $opdList = Organization::query()
@@ -135,14 +126,8 @@ class EvaluationController extends Controller
             $sakipOpdData[] = $this->formatSakipItem($opd, $ev, $idx + 1);
         }
 
-        // 3. PKO Pemerintah Daerah
+        // 3. PKO Pemda dihapus
         $pkoPemda = null;
-        if ($pemda) {
-            $pkoPemda = PkoEvaluation::with('indicators')
-                ->where('year', $year)
-                ->where('organization_id', $pemda->id)
-                ->first();
-        }
 
         // 4. PKO Perangkat Daerah (OPD)
         if ($isProvincialAuditor) {
@@ -198,22 +183,22 @@ class EvaluationController extends Controller
 
         $scores = $eval?->scores;
         $perencanaan = (float) ($scores?->where('component', 'Perencanaan Kinerja')->first()?->score ?? 0);
-        $pengukuran  = (float) ($scores?->where('component', 'Pengukuran Kinerja')->first()?->score ?? 0);
-        $pelaporan   = (float) ($scores?->where('component', 'Pelaporan Kinerja')->first()?->score ?? 0);
-        $evaluasi    = (float) ($scores?->where('component', 'Evaluasi Internal')->first()?->score ?? 0);
-        $total       = round($perencanaan + $pengukuran + $pelaporan + $evaluasi, 2);
+        $pengukuran = (float) ($scores?->where('component', 'Pengukuran Kinerja')->first()?->score ?? 0);
+        $pelaporan = (float) ($scores?->where('component', 'Pelaporan Kinerja')->first()?->score ?? 0);
+        $evaluasi = (float) ($scores?->where('component', 'Evaluasi Internal')->first()?->score ?? 0);
+        $total = round($perencanaan + $pengukuran + $pelaporan + $evaluasi, 2);
 
         $hasScores = $eval && $scores && $scores->isNotEmpty() && ($perencanaan > 0 || $pengukuran > 0 || $pelaporan > 0 || $evaluasi > 0);
 
         $predikat = match (true) {
-            !$hasScores || $total <= 0 => 'BELUM DINILAI',
+            ! $hasScores || $total <= 0 => 'BELUM DINILAI',
             $total > 90 => 'AA',
             $total > 80 => 'A',
             $total > 70 => 'BB',
             $total > 60 => 'B',
             $total > 50 => 'CC',
             $total > 30 => 'C',
-            default     => 'D',
+            default => 'D',
         };
 
         return [
@@ -309,45 +294,6 @@ class EvaluationController extends Controller
                         'evaluator_comment' => 'Penilaian evaluasi SAKIP',
                     ]
                 );
-            }
-
-            // Otomatis sinkronkan nilai total SAKIP Pemda ke Realisasi IKU Pemda
-            if ($org->type === 'province' || $org->code === 'PROV-PAPBAR') {
-                $totalSakip = round(
-                    (float) $validated['perencanaan'] +
-                    (float) $validated['pengukuran'] +
-                    (float) $validated['pelaporan'] +
-                    (float) $validated['evaluasi_internal'],
-                    2
-                );
-                $yearStr = (string) $validated['year'];
-
-                $ikuItem = \App\Models\RealizationIkuItem::where(function ($q) {
-                    $q->where('indicator_name', 'like', '%SAKIP%')
-                      ->orWhere('indicator_name', 'like', '%Akuntabilitas Kinerja Pemda%');
-                })->first();
-
-                if ($ikuItem) {
-                    $reals = (array) ($ikuItem->realizations ?? []);
-                    $reals[$yearStr] = $totalSakip;
-                    $ikuItem->update(['realizations' => $reals]);
-                }
-
-                $indVersionIds = \App\Models\Indicator::where('is_iku', true)
-                    ->where(function ($q) {
-                        $q->where('name', 'like', '%SAKIP%')
-                          ->orWhere('name', 'like', '%Akuntabilitas Kinerja Pemda%');
-                    })
-                    ->pluck('current_version_id')
-                    ->filter()
-                    ->all();
-
-                if (!empty($indVersionIds)) {
-                    \App\Models\Realization::whereIn('indicator_version_id', $indVersionIds)
-                        ->update(['value' => $totalSakip]);
-                }
-
-                \Illuminate\Support\Facades\Cache::flush();
             }
         });
 
@@ -463,23 +409,23 @@ class EvaluationController extends Controller
             $ev = $period ? Evaluation::with('scores')->where('organization_id', $validated['organization_id'])->where('planning_period_id', $period->id)->first() : null;
             $totalSakip = $ev ? (float) $ev->scores->sum('score') : 0.0;
             $predikatSakip = match (true) {
-                $totalSakip < 0  => 'D',
+                $totalSakip < 0 => 'D',
                 $totalSakip > 90 => 'AA',
                 $totalSakip > 80 => 'A',
                 $totalSakip > 70 => 'BB',
                 $totalSakip > 60 => 'B',
                 $totalSakip > 50 => 'CC',
                 $totalSakip > 30 => 'C',
-                default          => 'D',
+                default => 'D',
             };
 
             $koreksi = match ($predikatSakip) {
                 'AA', 'A' => 0.00,
-                'BB'      => 10.00,
-                'B'       => 15.00,
-                'CC'      => 20.00,
-                'C', 'D'  => 30.00,
-                default   => 0.00,
+                'BB' => 10.00,
+                'B' => 15.00,
+                'CC' => 20.00,
+                'C', 'D' => 30.00,
+                default => 0.00,
             };
         }
 
@@ -631,27 +577,27 @@ class EvaluationController extends Controller
             $weightedTotal > 60 => ['label' => 'B',  'desc' => 'Baik',              'variant' => 'info'],
             $weightedTotal > 50 => ['label' => 'CC', 'desc' => 'Cukup / Memadai',   'variant' => 'warning'],
             $weightedTotal > 30 => ['label' => 'C',  'desc' => 'Kurang',            'variant' => 'warning'],
-            default             => ['label' => 'D',  'desc' => 'Sangat Kurang',     'variant' => 'destructive'],
+            default => ['label' => 'D',  'desc' => 'Sangat Kurang',     'variant' => 'destructive'],
         };
 
         $recs = $evaluation->recommendations;
         $recStats = [
-            'open'        => $recs->where('status', 'open')->count(),
+            'open' => $recs->where('status', 'open')->count(),
             'in_progress' => $recs->where('status', 'in_progress')->count(),
-            'submitted'   => $recs->where('status', 'submitted')->count(),
-            'verified'    => $recs->where('status', 'verified')->count(),
-            'closed'      => $recs->where('status', 'closed')->count(),
+            'submitted' => $recs->where('status', 'submitted')->count(),
+            'verified' => $recs->where('status', 'verified')->count(),
+            'closed' => $recs->where('status', 'closed')->count(),
         ];
 
         $isProvincialEvaluator = $this->canManageProvincialEvaluations($user);
 
         return Inertia::render('Evaluations/Show', [
-            'evaluation'  => $evaluation,
+            'evaluation' => $evaluation,
             'total_score' => round($weightedTotal, 2),
-            'grade'       => $grade,
-            'rec_stats'   => $recStats,
-            'can_manage'  => $isProvincialEvaluator || (! $isPemda && $user->can('manage-evaluations') && $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)),
-            'can_score'   => $isProvincialEvaluator || (! $isPemda && $user->can('score-evaluations') && $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)),
+            'grade' => $grade,
+            'rec_stats' => $recStats,
+            'can_manage' => $isProvincialEvaluator || (! $isPemda && $user->can('manage-evaluations') && $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)),
+            'can_score' => $isProvincialEvaluator || (! $isPemda && $user->can('score-evaluations') && $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)),
         ]);
     }
 
@@ -708,12 +654,12 @@ class EvaluationController extends Controller
         }
 
         $validated = $request->validate([
-            'title'                 => ['required', 'string', 'max:255'],
-            'description'           => ['nullable', 'string'],
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
             'owner_organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
-            'assigned_to'           => ['nullable', 'integer', 'exists:users,id'],
-            'due_date'              => ['nullable', 'date'],
-            'priority'              => ['required', 'string', 'in:low,medium,high,critical'],
+            'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
+            'due_date' => ['nullable', 'date'],
+            'priority' => ['required', 'string', 'in:low,medium,high,critical'],
         ]);
 
         // Default owner_organization_id ke OPD yang dievaluasi jika tidak diisi
@@ -722,8 +668,8 @@ class EvaluationController extends Controller
         $rec = Recommendation::create([
             ...$validated,
             'owner_organization_id' => $ownerOrgId,
-            'evaluation_id'         => $evaluation->id,
-            'status'                => 'open',
+            'evaluation_id' => $evaluation->id,
+            'status' => 'open',
         ]);
 
         $this->audit->log('create', 'recommendation', $rec->id, $ownerOrgId);
@@ -738,16 +684,16 @@ class EvaluationController extends Controller
             ?: abort(403, 'Di luar lingkup organisasi Anda.');
 
         $validated = $request->validate([
-            'description'  => ['required', 'string', 'max:2000'],
+            'description' => ['required', 'string', 'max:2000'],
             'submitted_at' => ['nullable', 'date'],
         ]);
 
         RecommendationFollowup::create([
             'recommendation_id' => $recommendation->id,
-            'submitted_by'      => $user->id,
-            'description'       => $validated['description'],
-            'submitted_at'      => !empty($validated['submitted_at']) ? $validated['submitted_at'] : now(),
-            'status'            => 'submitted',
+            'submitted_by' => $user->id,
+            'description' => $validated['description'],
+            'submitted_at' => ! empty($validated['submitted_at']) ? $validated['submitted_at'] : now(),
+            'status' => 'submitted',
         ]);
 
         if ($recommendation->status === 'open') {
@@ -780,14 +726,14 @@ class EvaluationController extends Controller
 
         $validated = $request->validate([
             'verified' => ['required', 'boolean'],
-            'notes'    => ['nullable', 'string', 'max:500'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $followup->update([
-            'status'      => $validated['verified'] ? 'verified' : 'rejected',
+            'status' => $validated['verified'] ? 'verified' : 'rejected',
             'verified_by' => $request->user()->id,
             'verified_at' => now(),
-            'notes'       => $validated['notes'] ?? null,
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         if ($validated['verified']) {
@@ -848,8 +794,8 @@ class EvaluationController extends Controller
 
         $validated = $request->validate([
             'evidence_id' => ['required', 'integer', 'exists:evidences,id'],
-            'notes'       => ['nullable', 'string', 'max:1000'],
-            'status'      => ['required', 'string', 'in:accepted,rejected,revision_needed'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'status' => ['required', 'string', 'in:accepted,rejected,revision_needed'],
         ]);
 
         $this->audit->log('evidence_review', 'evaluation', $evaluation->id, $evaluation->organization_id);
@@ -881,7 +827,7 @@ class EvaluationController extends Controller
 
         return Inertia::render('Evaluations/History', [
             'evaluation' => $evaluation,
-            'auditLogs'  => $auditLogs,
+            'auditLogs' => $auditLogs,
         ]);
     }
 
@@ -907,7 +853,7 @@ class EvaluationController extends Controller
             $percentage > 60 => 'B',
             $percentage > 50 => 'CC',
             $percentage > 30 => 'C',
-            default          => 'D',
+            default => 'D',
         };
 
         $pdf = Pdf::loadView('reports.evaluation-pdf', [
@@ -948,29 +894,37 @@ class EvaluationController extends Controller
                 $scores = $ev ? $ev->scores->keyBy('component') : collect();
 
                 $komponen = ['perencanaan', 'pengukuran', 'pelaporan', 'evaluasi_internal', 'pencapaian_kinerja'];
-                $total = 0.0; $hasData = false;
+                $total = 0.0;
+                $hasData = false;
                 $row = ['organization' => $org->name];
                 foreach ($komponen as $k) {
                     $sc = $scores->get($k);
                     $val = $sc ? (float) $sc->score : null;
                     $row[$k] = $val;
-                    if ($val !== null) { $total += $val; $hasData = true; }
+                    if ($val !== null) {
+                        $total += $val;
+                        $hasData = true;
+                    }
                 }
                 $row['total'] = $hasData ? round($total, 2) : null;
-                $predikat = match(true) {
+                $predikat = match (true) {
                     $total > 90 => 'AA',
                     $total > 80 => 'A',
                     $total > 70 => 'BB',
                     $total > 60 => 'B',
                     $total > 50 => 'CC',
                     $total > 30 => 'C',
-                    $hasData    => 'D',
-                    default     => '-'
+                    $hasData => 'D',
+                    default => '-'
                 };
                 $row['predikat'] = $predikat;
-                if (in_array($predikat, ['AA', 'A', 'ISTIMEWA', 'BAIK'])) $stats['sangat_baik']++;
-                elseif (in_array($predikat, ['BB', 'B', 'BUTUH PERBAIKAN'])) $stats['baik']++;
-                elseif ($hasData) $stats['rendah']++;
+                if (in_array($predikat, ['AA', 'A', 'ISTIMEWA', 'BAIK'])) {
+                    $stats['sangat_baik']++;
+                } elseif (in_array($predikat, ['BB', 'B', 'BUTUH PERBAIKAN'])) {
+                    $stats['baik']++;
+                } elseif ($hasData) {
+                    $stats['rendah']++;
+                }
                 $rows[] = $row;
             }
         }
@@ -987,29 +941,22 @@ class EvaluationController extends Controller
     {
         $this->authorize('view-evaluations');
 
-        $year       = (int) ($request->input('year', 2025));
-        $targetType = $request->input('target_type', 'pemda'); // 'pemda' atau 'opd'
-        $orgId      = $request->input('organization_id');
+        $year = (int) ($request->input('year', 2025));
+        $targetType = $request->input('target_type', 'opd');
+        $orgId = $request->input('organization_id');
 
-        $period       = PlanningPeriod::where('year', $year)->first();
-        $organization = $orgId ? Organization::find((int) $orgId) : null;
+        $period = PlanningPeriod::where('year', $year)->first();
+        $organization = $orgId ? Organization::find((int) $orgId) : Organization::where('type', 'opd')->first();
 
-        // Pembeda pemda vs opd: pemda → organization_id milik Pemprov, opd → organization_id = $orgId
-        $pkoQuery = \App\Models\PkoEvaluation::where('year', $year);
-        if ($targetType === 'opd' && $orgId) {
-            $pkoQuery->where('organization_id', (int) $orgId);
-        } else {
-            $pemda = Organization::where('type', 'province')->first()
-                ?? Organization::where('code', 'PROV-PAPBAR')->first()
-                ?? Organization::find(1);
-            $pkoQuery->where('organization_id', $pemda?->id);
-            $organization = $organization ?? $pemda;
+        $pkoQuery = PkoEvaluation::where('year', $year);
+        if ($organization) {
+            $pkoQuery->where('organization_id', $organization->id);
         }
         $pkoEval = $pkoQuery->first();
 
         // PkoIndicator terhubung via pko_evaluation_id (bukan year/target_type langsung)
         $indicators = $pkoEval
-            ? \App\Models\PkoIndicator::where('pko_evaluation_id', $pkoEval->id)
+            ? PkoIndicator::where('pko_evaluation_id', $pkoEval->id)
                 ->orderBy('order')
                 ->get()
             : collect();
@@ -1017,10 +964,10 @@ class EvaluationController extends Controller
         $pdf = Pdf::loadView('pdf.measurement-pko', [
             'indicators' => $indicators,
             'pkoSummary' => $pkoEval,
-            'year'       => $year,
+            'year' => $year,
             'targetType' => $targetType,
             'organization' => $organization,
-            'generatedAt'  => now()->format('d/m/Y H:i'),
+            'generatedAt' => now()->format('d/m/Y H:i'),
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download("evaluasi-pko-{$targetType}-{$year}.pdf");

@@ -24,21 +24,21 @@ return new class extends Migration
         $existingApiKey = AppConfig::where('key', 'ai.api_key')->first();
         if ($existingApiKey) {
             $existingApiKey->update([
-                'group'     => 'ai',
-                'label'     => 'API Key AI (OpenRouter / OpenAI / Gemini)',
-                'type'      => 'secret',
+                'group' => 'ai',
+                'label' => 'API Key AI (OpenRouter / OpenAI / Gemini)',
+                'type' => 'secret',
                 'is_secret' => true,
             ]);
         } else {
             AppConfig::create([
-                'group'         => 'ai',
-                'key'           => 'ai.api_key',
-                'label'         => 'API Key AI (OpenRouter / OpenAI / Gemini)',
-                'description'   => 'Kunci API rahasia untuk autentikasi ke provider AI (contoh: sk-or-v1-... atau sk-...). Tersimpan aman dan tersamar.',
-                'type'          => 'secret',
-                'value'         => (string) config('ekasuari.ai.api_key', ''),
+                'group' => 'ai',
+                'key' => 'ai.api_key',
+                'label' => 'API Key AI (OpenRouter / OpenAI / Gemini)',
+                'description' => 'Kunci API rahasia untuk autentikasi ke provider AI (contoh: sk-or-v1-... atau sk-...). Tersimpan aman dan tersamar.',
+                'type' => 'secret',
+                'value' => (string) config('ekasuari.ai.api_key', ''),
                 'default_value' => '',
-                'is_secret'     => true,
+                'is_secret' => true,
             ]);
         }
 
@@ -51,14 +51,14 @@ return new class extends Migration
             ]);
         } else {
             AppConfig::create([
-                'group'         => 'ai',
-                'key'           => 'ai.provider',
-                'label'         => 'Provider AI Aktif',
-                'description'   => 'Pilih provider AI yang digunakan: "http" untuk API nyata (OpenRouter/OpenAI/Gemini) atau "mock" untuk simulasi lokal tanpa API eksternal.',
-                'type'          => 'string',
-                'value'         => (string) config('ekasuari.ai.provider', 'http'),
+                'group' => 'ai',
+                'key' => 'ai.provider',
+                'label' => 'Provider AI Aktif',
+                'description' => 'Pilih provider AI yang digunakan: "http" untuk API nyata (OpenRouter/OpenAI/Gemini) atau "mock" untuk simulasi lokal tanpa API eksternal.',
+                'type' => 'string',
+                'value' => (string) config('ekasuari.ai.provider', 'http'),
                 'default_value' => 'http',
-                'is_secret'     => false,
+                'is_secret' => false,
             ]);
         }
 
@@ -68,13 +68,13 @@ return new class extends Migration
             AppConfig::updateOrCreate(
                 ['key' => 'ai.model'],
                 [
-                    'group'         => 'ai',
-                    'label'         => 'Model AI Digunakan',
-                    'description'   => 'ID/nama model LLM yang dipanggil (contoh: openai/gpt-4o-mini, google/gemini-2.0-flash, gemini-pro).',
-                    'type'          => 'string',
-                    'value'         => $oldModel->value ?: 'openai/gpt-4o-mini',
+                    'group' => 'ai',
+                    'label' => 'Model AI Digunakan',
+                    'description' => 'ID/nama model LLM yang dipanggil (contoh: openai/gpt-4o-mini, google/gemini-2.0-flash, gemini-pro).',
+                    'type' => 'string',
+                    'value' => $oldModel->value ?: 'openai/gpt-4o-mini',
                     'default_value' => 'openai/gpt-4o-mini',
-                    'is_secret'     => false,
+                    'is_secret' => false,
                 ]
             );
             $oldModel->delete();
@@ -86,13 +86,13 @@ return new class extends Migration
             AppConfig::updateOrCreate(
                 ['key' => 'ai.max_tokens'],
                 [
-                    'group'         => 'ai',
-                    'label'         => 'Maks. Token AI',
-                    'description'   => 'Batas maksimum token untuk setiap permintaan ke AI.',
-                    'type'          => 'integer',
-                    'value'         => $oldTokens->value ?: '2048',
+                    'group' => 'ai',
+                    'label' => 'Maks. Token AI',
+                    'description' => 'Batas maksimum token untuk setiap permintaan ke AI.',
+                    'type' => 'integer',
+                    'value' => $oldTokens->value ?: '2048',
                     'default_value' => '2048',
-                    'is_secret'     => false,
+                    'is_secret' => false,
                 ]
             );
             $oldTokens->delete();

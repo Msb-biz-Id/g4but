@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Measurement;
 
+use App\Services\AuthorizationService;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -64,7 +65,7 @@ class StoreRealizationRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $user = $this->user();
-            if ($user && ! app(\App\Services\AuthorizationService::class)->canAccessOrganization($user, (int) $this->input('organization_id'))) {
+            if ($user && ! app(AuthorizationService::class)->canAccessOrganization($user, (int) $this->input('organization_id'))) {
                 $validator->errors()->add('organization_id', 'Organisasi berada di luar wewenang akun Anda.');
             }
         });

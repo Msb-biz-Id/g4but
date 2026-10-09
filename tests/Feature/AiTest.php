@@ -18,6 +18,7 @@ use App\Models\PlanningPeriod;
 use App\Models\Realization;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Ai\AiContextBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -150,7 +151,6 @@ class AiTest extends TestCase
         $this->assertStringContainsString('tmpl-executive_summary', (string) $log->prompt_template);
     }
 
-
     public function test_prompt_template_is_created_and_versioned(): void
     {
         $this->seedData();
@@ -231,7 +231,7 @@ class AiTest extends TestCase
     public function test_chat_context_builder_retrieves_indicator_code_without_undefined_column(): void
     {
         $this->seedData();
-        $builder = app(\App\Services\Ai\AiContextBuilder::class);
+        $builder = app(AiContextBuilder::class);
         $this->actingAs($this->superAdmin);
         $context = $builder->chatContext('Bagaimana capaian indikator kritis?');
 

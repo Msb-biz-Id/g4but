@@ -49,14 +49,14 @@ class MfaController extends Controller
         // Generate QR code lokal sebagai SVG (tidak bergantung internet)
         $renderer = new ImageRenderer(
             new RendererStyle(200),
-            new SvgImageBackEnd(),
+            new SvgImageBackEnd,
         );
-        $writer  = new Writer($renderer);
-        $qrSvg   = $writer->writeString($qrCodeUrl);
-        $qrImage = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+        $writer = new Writer($renderer);
+        $qrSvg = $writer->writeString($qrCodeUrl);
+        $qrImage = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
 
         return Inertia::render('Auth/MfaSetup', [
-            'secret'  => $secret,
+            'secret' => $secret,
             'qrImage' => $qrImage,
         ]);
     }

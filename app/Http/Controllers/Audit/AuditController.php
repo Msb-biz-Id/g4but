@@ -71,7 +71,7 @@ class AuditController extends Controller
             $orgIds = $user->organizations->pluck('id')->all();
             $scopeBase->where(function ($q) use ($user, $orgIds) {
                 $q->whereIn('organization_id', $orgIds)
-                  ->orWhere('actor_id', $user->id);
+                    ->orWhere('actor_id', $user->id);
             });
         }
         $totalEntries = $scopeBase->count();
@@ -182,7 +182,7 @@ class AuditController extends Controller
 
         return Response::streamDownload(function () use ($logs) {
             $out = fopen('php://output', 'w');
-            fputs($out, "\xEF\xBB\xBF");
+            fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, ['WAKTU', 'USER', 'ROLE / OPD', 'MODUL', 'AKTIVITAS', 'DESKRIPSI', 'IP']);
 
             foreach ($logs as $log) {
@@ -220,7 +220,7 @@ class AuditController extends Controller
             $orgIds = $user->organizations->pluck('id')->all();
             $query->where(function ($q) use ($user, $orgIds) {
                 $q->whereIn('organization_id', $orgIds)
-                  ->orWhere('actor_id', $user->id);
+                    ->orWhere('actor_id', $user->id);
             });
         }
 
@@ -228,18 +228,18 @@ class AuditController extends Controller
             $search = trim($request->q);
             $query->where(function ($q) use ($search) {
                 $q->where('reason', 'like', "%{$search}%")
-                  ->orWhere('action', 'like', "%{$search}%")
-                  ->orWhere('resource_type', 'like', "%{$search}%")
-                  ->orWhere('ip_address', 'like', "%{$search}%")
-                  ->orWhereHas('actor', function ($uq) use ($search) {
-                      $uq->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('action', 'like', "%{$search}%")
+                    ->orWhere('resource_type', 'like', "%{$search}%")
+                    ->orWhere('ip_address', 'like', "%{$search}%")
+                    ->orWhereHas('actor', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
         if ($request->filled('module') && $request->module !== 'Semua') {
             $matchedResources = array_keys(array_filter(self::MODULE_MAP, fn ($m) => strcasecmp($m, $request->module) === 0));
-            if (!empty($matchedResources)) {
+            if (! empty($matchedResources)) {
                 $query->whereIn('resource_type', $matchedResources);
             } else {
                 $query->where('resource_type', 'like', '%'.$request->module.'%');
@@ -274,7 +274,7 @@ class AuditController extends Controller
 
     private function formatDescription(AuditLog $log): string
     {
-        if (!empty($log->reason)) {
+        if (! empty($log->reason)) {
             return $log->reason;
         }
 

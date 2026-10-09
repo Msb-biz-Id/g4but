@@ -76,24 +76,24 @@ class DemoDataSeeder extends Seeder
         $pp2026 = PlanningPeriod::updateOrCreate(
             ['code' => 'TA-2026'],
             [
-                'name'       => 'Periode Kinerja Tahunan 2026',
-                'year'       => 2026,
-                'type'       => 'annual',
+                'name' => 'Periode Kinerja Tahunan 2026',
+                'year' => 2026,
+                'type' => 'annual',
                 'start_date' => '2026-01-01',
-                'end_date'   => '2026-12-31',
-                'status'     => 'active',
+                'end_date' => '2026-12-31',
+                'status' => 'active',
             ]
         );
 
         $ppRpjmd = PlanningPeriod::updateOrCreate(
             ['code' => 'RPJMD-2025-2029'],
             [
-                'name'       => 'Periode RPJMD Papua Barat 2025-2029',
-                'year'       => 2025,
-                'type'       => 'annual',
+                'name' => 'Periode RPJMD Papua Barat 2025-2029',
+                'year' => 2025,
+                'type' => 'annual',
                 'start_date' => '2025-01-01',
-                'end_date'   => '2029-12-31',
-                'status'     => 'active',
+                'end_date' => '2029-12-31',
+                'status' => 'active',
             ]
         );
 
@@ -151,7 +151,7 @@ class DemoDataSeeder extends Seeder
                 ['type' => 'renja',   'periode_type' => 'tahunan',      'code' => 'DOC-PUPR-RENJA-26',   'num' => '600/015/PUPR/2026',    'title' => 'Renja Dinas PUPR Papua Barat Tahun 2026',  'period' => $periodeTagungan, 'year' => 2026, 'status' => 'draft',    'has_file' => true],
                 ['type' => 'pk',      'periode_type' => 'tahunan',      'code' => 'DOC-PUPR-PK-26',      'num' => '600/031/PUPR/2026',    'title' => 'Perjanjian Kinerja Dinas PUPR 2026',       'period' => $periodeTagungan, 'year' => 2026, 'status' => 'draft',    'has_file' => false],
                 ['type' => 'dpa',     'periode_type' => 'tahunan',      'code' => 'DOC-PUPR-DPA-26',     'num' => '600/040/PUPR/2026',    'title' => 'DPA Dinas PUPR Tahun 2026',                'period' => $periodeTagungan, 'year' => 2026, 'status' => 'approved', 'has_file' => true],
-                ['type' => 'lhe',     'periode_type' => 'tahunan',      'code' => 'DOC-PUPR-LHE-25',     'num' => '600/085/PUPR/2025',    'title' => 'Laporan Evaluasi Pengawasan Fisik PUPR 2025','period' => $periode5Tahunan, 'year' => 2025, 'status' => 'approved', 'has_file' => true],
+                ['type' => 'lhe',     'periode_type' => 'tahunan',      'code' => 'DOC-PUPR-LHE-25',     'num' => '600/085/PUPR/2025',    'title' => 'Laporan Evaluasi Pengawasan Fisik PUPR 2025', 'period' => $periode5Tahunan, 'year' => 2025, 'status' => 'approved', 'has_file' => true],
             ],
         ];
 
@@ -169,12 +169,12 @@ class DemoDataSeeder extends Seeder
                         $d['title'],
                         $org->name,
                         strtoupper($d['type']),
-                        (string)$d['year'],
+                        (string) $d['year'],
                         [
                             'Nomor Dokumen' => $d['num'],
                             'Perangkat Daerah' => $org->name,
                             'Jenis Dokumen' => strtoupper($d['type']),
-                            'Tahun Anggaran' => (string)$d['year'],
+                            'Tahun Anggaran' => (string) $d['year'],
                             'Status Legalitas' => ucfirst($status),
                             'Tanggal Penetapan' => now()->subDays(15)->format('d F Y'),
                         ]
@@ -184,26 +184,26 @@ class DemoDataSeeder extends Seeder
                 PlanningDocument::updateOrCreate(
                     ['organization_id' => $org->id, 'performance_period_id' => $d['period']->id, 'type' => $d['type']],
                     [
-                        'code'            => $d['code'],
+                        'code' => $d['code'],
                         'document_number' => $d['num'],
-                        'year'            => $d['year'],
-                        'periode_type'    => $d['periode_type'],
-                        'title'           => $d['title'],
-                        'description'     => 'Dokumen resmi simulasi e-KASUARI Provinsi Papua Barat.',
-                        'issued_at'       => now()->toDateString(),
-                        'start_year'      => (int)$d['period']->start_date->format('Y'),
-                        'end_year'        => (int)$d['period']->end_date->format('Y'),
-                        'file_path'       => $filePath,
-                        'status'          => $status,
-                        'created_by'      => $adminId,
-                        'updated_by'      => $adminId,
-                        'approved_by'     => in_array($status, ['approved', 'locked']) ? $adminId : null,
-                        'approved_at'     => in_array($status, ['approved', 'locked']) ? now()->subDays(rand(5, 20)) : null,
-                        'locked_at'       => $status === 'locked' ? now()->subDays(3) : null,
+                        'year' => $d['year'],
+                        'periode_type' => $d['periode_type'],
+                        'title' => $d['title'],
+                        'description' => 'Dokumen resmi simulasi e-KASUARI Provinsi Papua Barat.',
+                        'issued_at' => now()->toDateString(),
+                        'start_year' => (int) $d['period']->start_date->format('Y'),
+                        'end_year' => (int) $d['period']->end_date->format('Y'),
+                        'file_path' => $filePath,
+                        'status' => $status,
+                        'created_by' => $adminId,
+                        'updated_by' => $adminId,
+                        'approved_by' => in_array($status, ['approved', 'locked']) ? $adminId : null,
+                        'approved_at' => in_array($status, ['approved', 'locked']) ? now()->subDays(rand(5, 20)) : null,
+                        'locked_at' => $status === 'locked' ? now()->subDays(3) : null,
                     ]
                 );
             }
-            $this->command->info("   OK {$org->name}: ".count($defs)." dokumen (variasi status & PDF)");
+            $this->command->info("   OK {$org->name}: ".count($defs).' dokumen (variasi status & PDF)');
         }
 
         // ── D. SEED DEMO POHON KINERJA ────────────────────────────────────────
@@ -214,41 +214,43 @@ class DemoDataSeeder extends Seeder
                 'outcome' => 'Meningkatnya kualitas perencanaan pembangunan daerah yang partisipatif dan berbasis data',
                 'csfs' => [
                     ['name' => 'Sinkronisasi dokumen perencanaan daerah dengan nasional tercapai minimal 85%',
-                     'conditions' => ['Tersedianya database perencanaan yang terintegrasi', 'Terselenggaranya forum musrenbang yang representatif']],
+                        'conditions' => ['Tersedianya database perencanaan yang terintegrasi', 'Terselenggaranya forum musrenbang yang representatif']],
                     ['name' => 'Peningkatan kapasitas SDM perencana OPD',
-                     'conditions' => ['Terlaksananya bimtek perencanaan berbasis kinerja']],
+                        'conditions' => ['Terlaksananya bimtek perencanaan berbasis kinerja']],
                 ],
             ],
             'INSP-PB' => [
                 'outcome' => 'Meningkatnya efektivitas pengawasan internal pemerintah daerah',
                 'csfs' => [
                     ['name' => 'Penyelesaian tindak lanjut hasil pemeriksaan minimal 80%',
-                     'conditions' => ['Terselenggaranya audit reguler pada seluruh OPD Pilot', 'Tersedianya sistem monitoring tindak lanjut rekomendasi']],
+                        'conditions' => ['Terselenggaranya audit reguler pada seluruh OPD Pilot', 'Tersedianya sistem monitoring tindak lanjut rekomendasi']],
                 ],
             ],
             'DISKOP-PB' => [
                 'outcome' => 'Meningkatnya daya saing Koperasi dan UMKM di Provinsi Papua Barat',
                 'csfs' => [
                     ['name' => 'Bertambahnya jumlah koperasi aktif sebesar 15% per tahun',
-                     'conditions' => ['Terselenggaranya pendampingan dan pembinaan koperasi', 'Tersedianya akses pembiayaan bagi UMKM']],
+                        'conditions' => ['Terselenggaranya pendampingan dan pembinaan koperasi', 'Tersedianya akses pembiayaan bagi UMKM']],
                     ['name' => 'Peningkatan omzet UMKM binaan minimal 20%',
-                     'conditions' => ['Terlaksananya pelatihan kewirausahaan berbasis komoditi lokal']],
+                        'conditions' => ['Terlaksananya pelatihan kewirausahaan berbasis komoditi lokal']],
                 ],
             ],
             'PUPR-PB' => [
                 'outcome' => 'Meningkatnya kualitas infrastruktur jalan dan jembatan di Provinsi Papua Barat',
                 'csfs' => [
                     ['name' => 'Kemantapan jalan provinsi mencapai 75% pada akhir 2026',
-                     'conditions' => ['Terlaksananya pemeliharaan rutin jalan sepanjang 450 km', 'Selesainya pembangunan jembatan prioritas di 3 kabupaten']],
+                        'conditions' => ['Terlaksananya pemeliharaan rutin jalan sepanjang 450 km', 'Selesainya pembangunan jembatan prioritas di 3 kabupaten']],
                     ['name' => 'Cakupan layanan air bersih perkotaan mencapai 80%',
-                     'conditions' => ['Tersedianya jaringan pipa distribusi air bersih yang memadai']],
+                        'conditions' => ['Tersedianya jaringan pipa distribusi air bersih yang memadai']],
                 ],
             ],
         ];
 
         foreach ($pilotOrgs as $org) {
             $t = $trees[$org->code] ?? null;
-            if (!$t) continue;
+            if (! $t) {
+                continue;
+            }
 
             $outcome = PlanningTree::updateOrCreate(
                 ['organization_id' => $org->id, 'performance_period_id' => $periode5Tahunan->id, 'parent_id' => null, 'level' => 1],
@@ -258,12 +260,12 @@ class DemoDataSeeder extends Seeder
             foreach ($t['csfs'] as $ci => $csf) {
                 $csfNode = PlanningTree::updateOrCreate(
                     ['organization_id' => $org->id, 'performance_period_id' => $periode5Tahunan->id, 'parent_id' => $outcome->id, 'level' => 2, 'sort_order' => $ci + 1],
-                    ['code' => $org->code.'-CSF-'.($ci+1), 'name' => $csf['name'], 'is_active' => true]
+                    ['code' => $org->code.'-CSF-'.($ci + 1), 'name' => $csf['name'], 'is_active' => true]
                 );
                 foreach ($csf['conditions'] as $ki => $cond) {
                     PlanningTree::updateOrCreate(
                         ['organization_id' => $org->id, 'performance_period_id' => $periode5Tahunan->id, 'parent_id' => $csfNode->id, 'level' => 3, 'sort_order' => $ki + 1],
-                        ['code' => $org->code.'-KA-'.($ci+1).($ki+1), 'name' => $cond, 'is_active' => true]
+                        ['code' => $org->code.'-KA-'.($ci + 1).($ki + 1), 'name' => $cond, 'is_active' => true]
                     );
                 }
             }
@@ -309,7 +311,7 @@ class DemoDataSeeder extends Seeder
                 );
                 $createdIndicators[$org->code][] = ['model' => $ind, 'target' => $targetVal];
             }
-            $this->command->info("   OK {$org->name}: " . count($items) . " indikator aktif");
+            $this->command->info("   OK {$org->name}: ".count($items).' indikator aktif');
         }
 
         // ── D.2 PERJANJIAN KINERJA (AGREEMENT) ──────────────────────────────
@@ -317,38 +319,40 @@ class DemoDataSeeder extends Seeder
 
         $pkDefs = [
             'BAPPEDA-PB' => [
-                'code'            => 'PK-BAPPEDA-2026',
-                'name'            => 'Perjanjian Kinerja Bappeda Tahun 2026',
-                'doc_num'         => '050/012/BAPPEDA/2026',
-                'status'          => 'approved',
-                'desc'            => 'Perjanjian Kinerja definitif Bappeda Papua Barat TA 2026 telah disetujui Gubernur.',
+                'code' => 'PK-BAPPEDA-2026',
+                'name' => 'Perjanjian Kinerja Bappeda Tahun 2026',
+                'doc_num' => '050/012/BAPPEDA/2026',
+                'status' => 'approved',
+                'desc' => 'Perjanjian Kinerja definitif Bappeda Papua Barat TA 2026 telah disetujui Gubernur.',
             ],
             'INSP-PB' => [
-                'code'            => 'PK-INSP-2026',
-                'name'            => 'Perjanjian Kinerja Inspektorat Daerah Tahun 2026',
-                'doc_num'         => '700/005/INSP/2026',
-                'status'          => 'submitted',
-                'desc'            => 'Perjanjian Kinerja telah diajukan ke Sekretaris Daerah untuk proses telaah dan persetujuan.',
+                'code' => 'PK-INSP-2026',
+                'name' => 'Perjanjian Kinerja Inspektorat Daerah Tahun 2026',
+                'doc_num' => '700/005/INSP/2026',
+                'status' => 'submitted',
+                'desc' => 'Perjanjian Kinerja telah diajukan ke Sekretaris Daerah untuk proses telaah dan persetujuan.',
             ],
             'DISKOP-PB' => [
-                'code'            => 'PK-DISKOP-2026',
-                'name'            => 'Perjanjian Kinerja Dinas Koperasi & UKM Tahun 2026',
-                'doc_num'         => '518/022/DISKOP/2026',
-                'status'          => 'locked',
-                'desc'            => 'Perjanjian Kinerja telah final dan dikunci untuk proses pelaporan triwulanan.',
+                'code' => 'PK-DISKOP-2026',
+                'name' => 'Perjanjian Kinerja Dinas Koperasi & UKM Tahun 2026',
+                'doc_num' => '518/022/DISKOP/2026',
+                'status' => 'locked',
+                'desc' => 'Perjanjian Kinerja telah final dan dikunci untuk proses pelaporan triwulanan.',
             ],
             'PUPR-PB' => [
-                'code'            => 'PK-PUPR-2026',
-                'name'            => 'Perjanjian Kinerja Dinas PUPR Tahun 2026',
-                'doc_num'         => '600/031/PUPR/2026',
-                'status'          => 'draft',
-                'desc'            => 'Draft awal Perjanjian Kinerja Dinas PUPR sedang dalam tahap harmonisasi indikator teknis.',
+                'code' => 'PK-PUPR-2026',
+                'name' => 'Perjanjian Kinerja Dinas PUPR Tahun 2026',
+                'doc_num' => '600/031/PUPR/2026',
+                'status' => 'draft',
+                'desc' => 'Draft awal Perjanjian Kinerja Dinas PUPR sedang dalam tahap harmonisasi indikator teknis.',
             ],
         ];
 
         foreach ($pilotOrgs as $org) {
             $def = $pkDefs[$org->code] ?? null;
-            if (!$def) continue;
+            if (! $def) {
+                continue;
+            }
 
             $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $def['doc_num']));
             $relPath = "planning/agreements/{$slug}.pdf";
@@ -363,47 +367,47 @@ class DemoDataSeeder extends Seeder
                 [
                     'Nomor Dokumen' => $def['doc_num'],
                     'Pihak Pertama' => "Kepala {$org->name}",
-                    'Pihak Kedua'   => 'Gubernur Papua Barat',
+                    'Pihak Kedua' => 'Gubernur Papua Barat',
                     'Tahun Anggaran' => '2026',
-                    'Status'        => ucfirst($status),
+                    'Status' => ucfirst($status),
                 ]
             );
 
             $agreement = Agreement::updateOrCreate(
                 ['code' => $def['code']],
                 [
-                    'organization_id'        => $org->id,
-                    'performance_period_id'  => $periodeTagungan->id,
-                    'planning_period_id'     => $pp2026->id,
-                    'name'                   => $def['name'],
-                    'title'                  => $def['name'],
-                    'document_number'        => $def['doc_num'],
-                    'responsible_name'       => "Kepala {$org->name}",
-                    'counterpart_name'       => 'Gubernur Papua Barat',
-                    'version'                => 1,
-                    'description'            => $def['desc'],
-                    'file_path'              => $filePath,
-                    'status'                 => $status,
-                    'created_by'             => $adminId,
-                    'updated_by'             => $adminId,
-                    'submitted_by'           => in_array($status, ['submitted', 'approved', 'locked']) ? ($adminOpd?->id ?? $adminId) : null,
-                    'submitted_at'           => in_array($status, ['submitted', 'approved', 'locked']) ? now()->subDays(10) : null,
-                    'approved_by'            => in_array($status, ['approved', 'locked']) ? $adminId : null,
-                    'approved_at'            => in_array($status, ['approved', 'locked']) ? now()->subDays(5) : null,
-                    'locked_at'              => $status === 'locked' ? now()->subDays(2) : null,
+                    'organization_id' => $org->id,
+                    'performance_period_id' => $periodeTagungan->id,
+                    'planning_period_id' => $pp2026->id,
+                    'name' => $def['name'],
+                    'title' => $def['name'],
+                    'document_number' => $def['doc_num'],
+                    'responsible_name' => "Kepala {$org->name}",
+                    'counterpart_name' => 'Gubernur Papua Barat',
+                    'version' => 1,
+                    'description' => $def['desc'],
+                    'file_path' => $filePath,
+                    'status' => $status,
+                    'created_by' => $adminId,
+                    'updated_by' => $adminId,
+                    'submitted_by' => in_array($status, ['submitted', 'approved', 'locked']) ? ($adminOpd?->id ?? $adminId) : null,
+                    'submitted_at' => in_array($status, ['submitted', 'approved', 'locked']) ? now()->subDays(10) : null,
+                    'approved_by' => in_array($status, ['approved', 'locked']) ? $adminId : null,
+                    'approved_at' => in_array($status, ['approved', 'locked']) ? now()->subDays(5) : null,
+                    'locked_at' => $status === 'locked' ? now()->subDays(2) : null,
                 ]
             );
 
             // Hubungkan indikator ke Agreement
             $syncData = [];
-            if (!empty($createdIndicators[$org->code])) {
+            if (! empty($createdIndicators[$org->code])) {
                 foreach ($createdIndicators[$org->code] as $indItem) {
                     $syncData[$indItem['model']->id] = ['target' => $indItem['target']];
                 }
                 $agreement->indicators()->sync($syncData);
             }
 
-            $this->command->info("   OK {$org->name}: PK ({$status}) + " . count($syncData) . " indikator + PDF");
+            $this->command->info("   OK {$org->name}: PK ({$status}) + ".count($syncData).' indikator + PDF');
         }
 
         // ── D.3 KNOWLEDGE DOCUMENTS (PUBLIC & INTERNAL) ──────────────────────
@@ -411,102 +415,102 @@ class DemoDataSeeder extends Seeder
 
         $kbDocs = [
             [
-                'title'         => 'PermenPAN-RB No. 88 Tahun 2021 tentang Pedoman Evaluasi AKIP',
+                'title' => 'PermenPAN-RB No. 88 Tahun 2021 tentang Pedoman Evaluasi AKIP',
                 'document_type' => 'regulation',
-                'category'      => 'Regulasi Nasional',
-                'access'        => 'public',
-                'status'        => 'published',
-                'tags'          => 'SAKIP, AKIP, Evaluasi, PermenPAN',
-                'content'       => 'Pedoman teknis evaluasi Akuntabilitas Kinerja Instansi Pemerintah (AKIP) mencakup perencanaan, pengukuran, pelaporan, dan evaluasi internal.',
+                'category' => 'Regulasi Nasional',
+                'access' => 'public',
+                'status' => 'published',
+                'tags' => 'SAKIP, AKIP, Evaluasi, PermenPAN',
+                'content' => 'Pedoman teknis evaluasi Akuntabilitas Kinerja Instansi Pemerintah (AKIP) mencakup perencanaan, pengukuran, pelaporan, dan evaluasi internal.',
             ],
             [
-                'title'         => 'Petunjuk Teknis Pengukuran Kinerja SAKIP Papua Barat (e-KASUARI)',
+                'title' => 'Petunjuk Teknis Pengukuran Kinerja SAKIP Papua Barat (e-KASUARI)',
                 'document_type' => 'guideline',
-                'category'      => 'Petunjuk Teknis',
-                'access'        => 'public',
-                'status'        => 'published',
-                'tags'          => 'Juknis, e-KASUARI, Pengukuran, Panduan OPD',
-                'content'       => 'Panduan operasional bagi seluruh operator dan verifikator OPD dalam penginputan capaian indikator kinerja berkala triwulanan.',
+                'category' => 'Petunjuk Teknis',
+                'access' => 'public',
+                'status' => 'published',
+                'tags' => 'Juknis, e-KASUARI, Pengukuran, Panduan OPD',
+                'content' => 'Panduan operasional bagi seluruh operator dan verifikator OPD dalam penginputan capaian indikator kinerja berkala triwulanan.',
             ],
             [
-                'title'         => 'SOP Verifikasi dan Penetapan Dokumen Perjanjian Kinerja',
+                'title' => 'SOP Verifikasi dan Penetapan Dokumen Perjanjian Kinerja',
                 'document_type' => 'sop',
-                'category'      => 'Standar Operasional Prosedur',
-                'access'        => 'public',
-                'status'        => 'published',
-                'tags'          => 'SOP, PK, Perjanjian Kinerja, Verifikasi',
-                'content'       => 'Alur kerja verifikasi perjanjian kinerja berjenjang dari operator OPD, verifikator Bappeda, hingga persetujuan Gubernur.',
+                'category' => 'Standar Operasional Prosedur',
+                'access' => 'public',
+                'status' => 'published',
+                'tags' => 'SOP, PK, Perjanjian Kinerja, Verifikasi',
+                'content' => 'Alur kerja verifikasi perjanjian kinerja berjenjang dari operator OPD, verifikator Bappeda, hingga persetujuan Gubernur.',
             ],
             [
-                'title'         => 'Peraturan Gubernur Papua Barat tentang Penyelenggaraan SAKIP Terintegrasi',
+                'title' => 'Peraturan Gubernur Papua Barat tentang Penyelenggaraan SAKIP Terintegrasi',
                 'document_type' => 'regulation',
-                'category'      => 'Regulasi Daerah',
-                'access'        => 'public',
-                'status'        => 'published',
-                'tags'          => 'Pergub, Papua Barat, SAKIP, Regulasi',
-                'content'       => 'Landasan hukum penerapan sistem manajemen kinerja terintegrasi e-KASUARI di lingkungan Pemerintah Provinsi Papua Barat.',
+                'category' => 'Regulasi Daerah',
+                'access' => 'public',
+                'status' => 'published',
+                'tags' => 'Pergub, Papua Barat, SAKIP, Regulasi',
+                'content' => 'Landasan hukum penerapan sistem manajemen kinerja terintegrasi e-KASUARI di lingkungan Pemerintah Provinsi Papua Barat.',
             ],
             [
-                'title'         => 'Draft Panduan Integrasi Modul Evaluasi dengan SIPD Kemendagri',
+                'title' => 'Draft Panduan Integrasi Modul Evaluasi dengan SIPD Kemendagri',
                 'document_type' => 'tutorial',
-                'category'      => 'Integrasi Teknis',
-                'access'        => 'internal',
-                'status'        => 'draft',
-                'tags'          => 'SIPD, Integrasi, API, Internal',
-                'content'       => 'Dokumen teknis internal pemetaan data anggaran DPA dan realisasi belanja dari SIPD ke e-KASUARI.',
+                'category' => 'Integrasi Teknis',
+                'access' => 'internal',
+                'status' => 'draft',
+                'tags' => 'SIPD, Integrasi, API, Internal',
+                'content' => 'Dokumen teknis internal pemetaan data anggaran DPA dan realisasi belanja dari SIPD ke e-KASUARI.',
             ],
             [
-                'title'         => 'FAQ: Pertanyaan Umum Seputar Pengisian dan Pelaporan SAKIP e-KASUARI',
+                'title' => 'FAQ: Pertanyaan Umum Seputar Pengisian dan Pelaporan SAKIP e-KASUARI',
                 'document_type' => 'faq',
-                'category'      => 'Tanya Jawab',
-                'access'        => 'public',
-                'status'        => 'published',
-                'tags'          => 'FAQ, Bantuan, Kendala, Pertanyaan Umum',
-                'content'       => 'Kumpulan jawaban atas pertanyaan yang sering diajukan terkait batas waktu pengisian capaian, verifikasi Bappeda, dan kendala teknis aplikasi.',
+                'category' => 'Tanya Jawab',
+                'access' => 'public',
+                'status' => 'published',
+                'tags' => 'FAQ, Bantuan, Kendala, Pertanyaan Umum',
+                'content' => 'Kumpulan jawaban atas pertanyaan yang sering diajukan terkait batas waktu pengisian capaian, verifikasi Bappeda, dan kendala teknis aplikasi.',
             ],
             [
-                'title'         => 'Sosialisasi Penerapan e-KASUARI Terintegrasi untuk Seluruh OPD Papua Barat',
+                'title' => 'Sosialisasi Penerapan e-KASUARI Terintegrasi untuk Seluruh OPD Papua Barat',
                 'document_type' => 'news',
-                'category'      => 'Berita & Informasi',
-                'access'        => 'public',
-                'status'        => 'published',
-                'tags'          => 'Sosialisasi, e-KASUARI, Berita, Bappeda',
-                'content'       => 'Bappeda Papua Barat menyelenggarakan workshop bimbingan teknis implementasi sistem e-KASUARI guna akselerasi nilai AKIP daerah.',
+                'category' => 'Berita & Informasi',
+                'access' => 'public',
+                'status' => 'published',
+                'tags' => 'Sosialisasi, e-KASUARI, Berita, Bappeda',
+                'content' => 'Bappeda Papua Barat menyelenggarakan workshop bimbingan teknis implementasi sistem e-KASUARI guna akselerasi nilai AKIP daerah.',
             ],
             [
-                'title'         => 'Video Tutorial: Alur Penyusunan Pohon Kinerja dan Cascading Indikator OPD',
+                'title' => 'Video Tutorial: Alur Penyusunan Pohon Kinerja dan Cascading Indikator OPD',
                 'document_type' => 'video_tutorial',
-                'category'      => 'Tutorial Video',
-                'access'        => 'public',
-                'status'        => 'published',
-                'external_url'  => 'https://www.youtube.com',
-                'tags'          => 'Video, Tutorial, Pohon Kinerja, Cascading',
-                'content'       => 'Panduan video interaktif langkah demi langkah dalam menyusun pohon kinerja dari level Sasaran Strategis hingga Sub-Kegiatan.',
+                'category' => 'Tutorial Video',
+                'access' => 'public',
+                'status' => 'published',
+                'external_url' => 'https://www.youtube.com',
+                'tags' => 'Video, Tutorial, Pohon Kinerja, Cascading',
+                'content' => 'Panduan video interaktif langkah demi langkah dalam menyusun pohon kinerja dari level Sasaran Strategis hingga Sub-Kegiatan.',
             ],
             [
-                'title'         => 'Portal SIPD RI — Sistem Informasi Pemerintahan Daerah (Kemendagri)',
+                'title' => 'Portal SIPD RI — Sistem Informasi Pemerintahan Daerah (Kemendagri)',
                 'document_type' => 'external_link',
-                'category'      => 'Aplikasi Eksternal',
-                'access'        => 'public',
-                'status'        => 'published',
-                'external_url'  => 'https://sipd-ri.kemendagri.go.id',
-                'tags'          => 'SIPD, Kemendagri, Perencanaan, Penganggaran',
-                'content'       => 'Tautan resmi menuju aplikasi SIPD-RI Kementerian Dalam Negeri untuk integrasi data perencanaan dan penatausahaan keuangan.',
+                'category' => 'Aplikasi Eksternal',
+                'access' => 'public',
+                'status' => 'published',
+                'external_url' => 'https://sipd-ri.kemendagri.go.id',
+                'tags' => 'SIPD, Kemendagri, Perencanaan, Penganggaran',
+                'content' => 'Tautan resmi menuju aplikasi SIPD-RI Kementerian Dalam Negeri untuk integrasi data perencanaan dan penatausahaan keuangan.',
             ],
             [
-                'title'         => 'Portal ESR KemenPANRB — Evaluasi SAKIP Nasional',
+                'title' => 'Portal ESR KemenPANRB — Evaluasi SAKIP Nasional',
                 'document_type' => 'external_link',
-                'category'      => 'Aplikasi Eksternal',
-                'access'        => 'public',
-                'status'        => 'published',
-                'external_url'  => 'https://esr.menpan.go.id',
-                'tags'          => 'ESR, KemenPANRB, LHE, Evaluasi AKIP',
-                'content'       => 'Aplikasi Electronic SAKIP Review (ESR) Kementerian PANRB untuk pelaporan dan hasil evaluasi akuntabilitas kinerja pemerintah daerah.',
+                'category' => 'Aplikasi Eksternal',
+                'access' => 'public',
+                'status' => 'published',
+                'external_url' => 'https://esr.menpan.go.id',
+                'tags' => 'ESR, KemenPANRB, LHE, Evaluasi AKIP',
+                'content' => 'Aplikasi Electronic SAKIP Review (ESR) Kementerian PANRB untuk pelaporan dan hasil evaluasi akuntabilitas kinerja pemerintah daerah.',
             ],
         ];
 
         foreach ($kbDocs as $i => $kb) {
-            $slug = 'kb_' . ($i + 1) . '_' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', substr($kb['title'], 0, 30)));
+            $slug = 'kb_'.($i + 1).'_'.strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', substr($kb['title'], 0, 30)));
             $relPath = "knowledge/documents/{$slug}.pdf";
 
             $filePath = $this->createSamplePdf(
@@ -517,24 +521,24 @@ class DemoDataSeeder extends Seeder
                 '2026',
                 [
                     'Judul Dokumen' => $kb['title'],
-                    'Jenis'         => ucfirst($kb['document_type']),
-                    'Kategori'      => $kb['category'],
-                    'Hak Akses'     => ucfirst($kb['access']),
-                    'Status'        => ucfirst($kb['status']),
+                    'Jenis' => ucfirst($kb['document_type']),
+                    'Kategori' => $kb['category'],
+                    'Hak Akses' => ucfirst($kb['access']),
+                    'Status' => ucfirst($kb['status']),
                 ]
             );
 
             KnowledgeDocument::updateOrCreate(
                 ['title' => $kb['title']],
                 array_merge($kb, [
-                    'file_path'    => $filePath,
-                    'version'      => 1,
+                    'file_path' => $filePath,
+                    'version' => 1,
                     'published_by' => $kb['status'] === 'published' ? $adminId : null,
                     'published_at' => $kb['status'] === 'published' ? now()->subDays(rand(5, 30)) : null,
                 ])
             );
         }
-        $this->command->info('   OK ' . count($kbDocs) . ' Dokumen Pengetahuan (Publik & Internal) + PDF siap');
+        $this->command->info('   OK '.count($kbDocs).' Dokumen Pengetahuan (Publik & Internal) + PDF siap');
 
         // ── E. ALERT RULES & ALERTS (EWS) ────────────────────────────────────
         $this->command->info('E. Membuat Alert Rules & Alerts (EWS)...');
@@ -586,13 +590,13 @@ class DemoDataSeeder extends Seeder
         $notifs = [
             ['user_id' => $pimpinan?->id, 'event' => 'alert.created', 'channel' => 'in_app', 'title' => 'Peringatan Kinerja Baru', 'message' => '2 OPD pilot belum upload dokumen wajib. Harap segera ditindaklanjuti.', 'resource_type' => 'Alert', 'delivery_status' => 'delivered', 'metadata' => ['alert_count' => 2, 'severity' => 'high']],
             ['user_id' => $adminOpd?->id, 'event' => 'document.revision_requested', 'channel' => 'in_app', 'title' => 'Dokumen Perlu Direvisi', 'message' => 'Renstra Bappeda 2025-2029 dikembalikan Admin Provinsi. Silakan periksa catatan revisi.', 'resource_type' => 'PlanningDocument', 'delivery_status' => 'delivered', 'metadata' => ['doc_type' => 'renstra']],
-            ['user_id' => $admin?->id, 'event' => 'user.login', 'channel' => 'in_app', 'title' => 'Login Baru Terdeteksi', 'message' => 'Login berhasil dari perangkat baru pada ' . now()->subHours(1)->format('d M Y H:i') . '.', 'resource_type' => 'User', 'delivery_status' => 'delivered', 'metadata' => ['ip' => '192.168.1.10']],
+            ['user_id' => $admin?->id, 'event' => 'user.login', 'channel' => 'in_app', 'title' => 'Login Baru Terdeteksi', 'message' => 'Login berhasil dari perangkat baru pada '.now()->subHours(1)->format('d M Y H:i').'.', 'resource_type' => 'User', 'delivery_status' => 'delivered', 'metadata' => ['ip' => '192.168.1.10']],
             ['user_id' => $pimpinan?->id, 'event' => 'document.uploaded', 'channel' => 'in_app', 'title' => 'Dokumen Baru Diupload', 'message' => 'Dinas PUPR telah mengupload Perjanjian Kinerja 2026. Siap untuk ditinjau.', 'resource_type' => 'PlanningDocument', 'delivery_status' => 'delivered', 'read_at' => now()->subMinutes(30), 'metadata' => ['org' => 'PUPR']],
             ['user_id' => $adminOpd?->id, 'event' => 'system.reminder', 'channel' => 'in_app', 'title' => 'Pengingat Batas Waktu', 'message' => 'Batas waktu upload dokumen Renja 2026 tinggal 7 hari lagi. Pastikan semua dokumen sudah disiapkan.', 'resource_type' => 'System', 'delivery_status' => 'delivered', 'metadata' => ['days_left' => 7]],
         ];
 
         foreach ($notifs as $n) {
-            if (!empty($n['user_id'])) {
+            if (! empty($n['user_id'])) {
                 AppNotification::updateOrCreate(
                     ['title' => $n['title'], 'user_id' => $n['user_id']],
                     $n
@@ -656,15 +660,15 @@ class DemoDataSeeder extends Seeder
 
         $this->command->info('');
         $this->command->info('=== SELESAI ===');
-        $this->command->info('OPDs       : ' . Organization::count());
-        $this->command->info('Periods    : ' . PerformancePeriod::count());
-        $this->command->info('Documents  : ' . PlanningDocument::count());
-        $this->command->info('Agreements : ' . Agreement::count());
-        $this->command->info('Indicators : ' . Indicator::count());
-        $this->command->info('Knowledge  : ' . KnowledgeDocument::count());
-        $this->command->info('Tree Nodes : ' . PlanningTree::count());
-        $this->command->info('Alerts     : ' . Alert::count());
-        $this->command->info('Notifs     : ' . AppNotification::count());
+        $this->command->info('OPDs       : '.Organization::count());
+        $this->command->info('Periods    : '.PerformancePeriod::count());
+        $this->command->info('Documents  : '.PlanningDocument::count());
+        $this->command->info('Agreements : '.Agreement::count());
+        $this->command->info('Indicators : '.Indicator::count());
+        $this->command->info('Knowledge  : '.KnowledgeDocument::count());
+        $this->command->info('Tree Nodes : '.PlanningTree::count());
+        $this->command->info('Alerts     : '.Alert::count());
+        $this->command->info('Notifs     : '.AppNotification::count());
     }
 
     /**

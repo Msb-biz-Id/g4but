@@ -10,7 +10,6 @@ use App\Models\PlanningDocument;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
-
 /**
  * Discovers recipients for BRD §12 notification types and sends in-app
  * notifications. Recipients are resolved from roles and organizations
@@ -137,7 +136,7 @@ class NotificationService
     {
         $orgName = $doc->organization?->short_name ?? $doc->organization?->name ?? 'OPD';
         $docType = strtoupper($doc->type);
-        $title   = "Dokumen {$docType} Diajukan";
+        $title = "Dokumen {$docType} Diajukan";
         $message = "Dokumen {$docType} dari {$orgName} telah diunggah dan menunggu review & validasi Anda.";
 
         $reviewers = User::query()
@@ -156,7 +155,7 @@ class NotificationService
     public function notifyDocumentApproved(PlanningDocument $doc, User $reviewer): void
     {
         $docType = strtoupper($doc->type);
-        $title   = "Dokumen {$docType} Telah Divalidasi";
+        $title = "Dokumen {$docType} Telah Divalidasi";
         $message = "Dokumen {$docType} '{$doc->title}' telah divalidasi dan disetujui oleh {$reviewer->name}.";
 
         $uploader = $doc->createdBy;
@@ -184,7 +183,7 @@ class NotificationService
     public function notifyDocumentRevision(PlanningDocument $doc, string $notes, User $reviewer): void
     {
         $docType = strtoupper($doc->type);
-        $title   = "Revisi Dokumen {$docType} Diperlukan";
+        $title = "Revisi Dokumen {$docType} Diperlukan";
         $message = "Dokumen {$docType} '{$doc->title}' memerlukan revisi: {$notes}";
 
         $uploader = $doc->createdBy;
@@ -213,7 +212,7 @@ class NotificationService
     public function notifyAgreementSubmitted(Agreement $agreement): void
     {
         $orgName = $agreement->organization?->short_name ?? $agreement->organization?->name ?? 'OPD';
-        $title   = "Perjanjian Kinerja Diajukan";
+        $title = 'Perjanjian Kinerja Diajukan';
         $message = "Perjanjian Kinerja dari {$orgName} telah diajukan dan menunggu review & validasi Anda.";
 
         $reviewers = User::query()
@@ -232,7 +231,7 @@ class NotificationService
     public function notifyAgreementApproved(Agreement $agreement, User $reviewer): void
     {
         $orgName = $agreement->organization?->short_name ?? $agreement->organization?->name ?? 'OPD';
-        $title   = "Perjanjian Kinerja Divalidasi";
+        $title = 'Perjanjian Kinerja Divalidasi';
         $message = "Perjanjian Kinerja {$orgName} telah divalidasi dan disetujui oleh {$reviewer->name}.";
 
         if ($agreement->organization_id) {
@@ -251,7 +250,7 @@ class NotificationService
     public function notifyAgreementRevision(Agreement $agreement, string $notes, User $reviewer): void
     {
         $orgName = $agreement->organization?->short_name ?? $agreement->organization?->name ?? 'OPD';
-        $title   = "Revisi Perjanjian Kinerja Diperlukan";
+        $title = 'Revisi Perjanjian Kinerja Diperlukan';
         $message = "Perjanjian Kinerja {$orgName} memerlukan revisi: {$notes}";
 
         if ($agreement->organization_id) {
@@ -291,7 +290,7 @@ class NotificationService
             $leaders = User::query()
                 ->where('is_active', true)
                 ->whereHas('roles', fn ($q) => $q->whereIn('roles.name', [
-                    'Super Admin', 'Admin Provinsi', 'Evaluator Provinsi', 'Pimpinan', 'Inspektorat', 'Bappeda'
+                    'Super Admin', 'Admin Provinsi', 'Evaluator Provinsi', 'Pimpinan', 'Inspektorat', 'Bappeda',
                 ]))
                 ->get();
             $recipients = $recipients->merge($leaders);
@@ -307,7 +306,6 @@ class NotificationService
     /**
      * Check whether a notification channel is enabled (defaults to true).
      */
-
     public function channelEnabled(string $channel): bool
     {
         $config = AppConfig::value('notification.channels.'.$channel);

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AssignRequestId;
+use App\Http\Middleware\EnsureOrganizationScope;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireMfa;
 use App\Http\Middleware\SecurityHeaders;
@@ -40,7 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // FR-IAM-007: Named middleware untuk MFA enforcement pada route tertentu
         $middleware->alias([
             'mfa' => RequireMfa::class,
-            'org.scope' => \App\Http\Middleware\EnsureOrganizationScope::class,
+            'org.scope' => EnsureOrganizationScope::class,
         ]);
 
         //

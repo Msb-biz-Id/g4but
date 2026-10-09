@@ -33,6 +33,7 @@ class CleanAuditLogs extends Command
 
         if ($days <= 0) {
             $this->error('Parameter --days harus berupa angka positif.');
+
             return Command::FAILURE;
         }
 
@@ -44,11 +45,13 @@ class CleanAuditLogs extends Command
 
         if ($count === 0) {
             $this->info('Tidak ada data log yang melebihi batas retensi.');
+
             return Command::SUCCESS;
         }
 
         if ($isDryRun) {
             $this->warn("[DRY RUN] Ditemukan {$count} entri log yang memenuhi syarat untuk dihapus.");
+
             return Command::SUCCESS;
         }
 

@@ -41,8 +41,9 @@ class ClearNotifications extends Command
                 ? User::find((int) $userFilter)
                 : User::firstWhere('email', $userFilter);
 
-            if (!$user) {
+            if (! $user) {
                 $this->error("Pengguna dengan ID / Email '{$userFilter}' tidak ditemukan.");
+
                 return Command::FAILURE;
             }
 

@@ -52,23 +52,25 @@ class RealizationOpdItem extends Model
     {
         if (isset($this->attributes['goal_indicators_list'])) {
             $val = $this->attributes['goal_indicators_list'];
+
             return is_string($val) ? (json_decode($val, true) ?? []) : (array) $val;
         }
-        if (!empty($this->goal_indicators) && is_array($this->goal_indicators)) {
+        if (! empty($this->goal_indicators) && is_array($this->goal_indicators)) {
             return $this->goal_indicators;
         }
-        if (!empty($this->goal_indicator)) {
+        if (! empty($this->goal_indicator)) {
             return [
                 [
-                    'id'                  => 1,
-                    'indicator'           => $this->goal_indicator,
-                    'unit'                => $this->goal_indicator_unit ?? '%',
+                    'id' => 1,
+                    'indicator' => $this->goal_indicator,
+                    'unit' => $this->goal_indicator_unit ?? '%',
                     'measurement_pattern' => $this->goal_measurement_pattern ?? 'Positif',
-                    'targets'             => $this->goal_targets ?? $this->targets ?? [],
-                    'realizations'        => $this->goal_realizations ?? $this->realizations ?? [],
-                ]
+                    'targets' => $this->goal_targets ?? $this->targets ?? [],
+                    'realizations' => $this->goal_realizations ?? $this->realizations ?? [],
+                ],
             ];
         }
+
         return [];
     }
 
@@ -76,23 +78,25 @@ class RealizationOpdItem extends Model
     {
         if (isset($this->attributes['objective_indicators_list'])) {
             $val = $this->attributes['objective_indicators_list'];
+
             return is_string($val) ? (json_decode($val, true) ?? []) : (array) $val;
         }
-        if (!empty($this->indicators) && is_array($this->indicators)) {
+        if (! empty($this->indicators) && is_array($this->indicators)) {
             return $this->indicators;
         }
-        if (!empty($this->objective_indicator)) {
+        if (! empty($this->objective_indicator)) {
             return [
                 [
-                    'id'                  => 1,
-                    'indicator'           => $this->objective_indicator,
-                    'unit'                => $this->unit ?? '%',
+                    'id' => 1,
+                    'indicator' => $this->objective_indicator,
+                    'unit' => $this->unit ?? '%',
                     'measurement_pattern' => $this->measurement_pattern ?? 'Positif',
-                    'targets'             => $this->targets ?? [],
-                    'realizations'        => $this->realizations ?? [],
-                ]
+                    'targets' => $this->targets ?? [],
+                    'realizations' => $this->realizations ?? [],
+                ],
             ];
         }
+
         return [];
     }
 

@@ -4,11 +4,13 @@ namespace App\Services;
 
 use App\Models\Organization;
 use App\Models\User;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -47,6 +49,7 @@ class UserExportService
                 ->sortBy(function (User $u) use ($provincialRoles) {
                     $firstRole = $u->roles->first()?->name ?? '';
                     $idx = array_search($firstRole, $provincialRoles, true);
+
                     return $idx !== false ? $idx : 99;
                 });
 
@@ -54,16 +57,16 @@ class UserExportService
             foreach ($provUsers as $user) {
                 $org = $user->organizations->first();
                 $provincialRows[] = [
-                    'no'           => $no++,
-                    'cluster'      => 'Pemerintah Provinsi',
-                    'code'         => $org?->code ?? 'PROV-PAPBAR',
-                    'org_name'     => $org?->name ?? 'Pemerintah Provinsi Papua Barat',
-                    'user_name'    => $user->name,
-                    'email'        => $user->email,
-                    'role'         => $user->roles->pluck('name')->join(', ') ?: 'Super Admin',
-                    'nip'          => $user->employee_number ?? '-',
-                    'password'     => 'password',
-                    'status'       => $user->is_active ? 'Aktif' : 'Nonaktif',
+                    'no' => $no++,
+                    'cluster' => 'Pemerintah Provinsi',
+                    'code' => $org?->code ?? 'PROV-PAPBAR',
+                    'org_name' => $org?->name ?? 'Pemerintah Provinsi Papua Barat',
+                    'user_name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->roles->pluck('name')->join(', ') ?: 'Super Admin',
+                    'nip' => $user->employee_number ?? '-',
+                    'password' => 'password',
+                    'status' => $user->is_active ? 'Aktif' : 'Nonaktif',
                 ];
             }
         }
@@ -88,6 +91,7 @@ class UserExportService
         foreach ($opds as $org) {
             $sortedUsers = $org->users->sortBy(function (User $u) use ($roleOrder) {
                 $role = $u->roles->first()?->name ?? '';
+
                 return $roleOrder[$role] ?? 99;
             });
 
@@ -99,16 +103,16 @@ class UserExportService
 
                 $roleName = $user->roles->first()?->name ?? 'Admin OPD';
                 $opdRows[] = [
-                    'no'           => $no++,
-                    'cluster'      => $org->type === 'biro' ? 'Biro Setda' : 'Perangkat Daerah (OPD)',
-                    'code'         => $org->code,
-                    'org_name'     => $org->name,
-                    'user_name'    => $user->name,
-                    'email'        => $user->email,
-                    'role'         => $roleName,
-                    'nip'          => $user->employee_number ?? '-',
-                    'password'     => 'password',
-                    'status'       => $user->is_active ? 'Aktif' : 'Nonaktif',
+                    'no' => $no++,
+                    'cluster' => $org->type === 'biro' ? 'Biro Setda' : 'Perangkat Daerah (OPD)',
+                    'code' => $org->code,
+                    'org_name' => $org->name,
+                    'user_name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $roleName,
+                    'nip' => $user->employee_number ?? '-',
+                    'password' => 'password',
+                    'status' => $user->is_active ? 'Aktif' : 'Nonaktif',
                 ];
             }
         }
@@ -123,8 +127,8 @@ class UserExportService
 
         return [
             'provinsi' => $provincialRows,
-            'opd'      => $opdRows,
-            'all'      => $allRows,
+            'opd' => $opdRows,
+            'all' => $allRows,
         ];
     }
 
@@ -134,7 +138,7 @@ class UserExportService
     public function generateSpreadsheet(?User $scopedUser = null): Spreadsheet
     {
         $data = $this->getExportData($scopedUser);
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
 
         // Sheet 1: Semua Pengguna
         $sheetAll = $spreadsheet->getActiveSheet();
@@ -155,15 +159,16 @@ class UserExportService
         }
 
         $spreadsheet->setActiveSheetIndex(0);
+
         return $spreadsheet;
     }
 
     /**
      * Isi baris data ke dalam sheet dengan styling header & kolom.
      *
-     * @param list<array<string, mixed>> $rows
+     * @param  list<array<string, mixed>>  $rows
      */
-    private function populateSheet(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, array $rows, string $title, string $headerColorHex): void
+    private function populateSheet(Worksheet $sheet, array $rows, string $title, string $headerColorHex): void
     {
         $headers = [
             'A' => 'No',
@@ -181,14 +186,14 @@ class UserExportService
         // Judul Dokumen
         $sheet->setCellValue('A1', $title);
         $sheet->mergeCells('A1:J1');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('1E293B'));
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14)->setColor(new Color('1E293B'));
         $sheet->getStyle('A1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         $sheet->getRowDimension(1)->setRowHeight(28);
 
         // Subjudul Info
-        $sheet->setCellValue('A2', 'Diekspor pada: ' . date('d F Y H:i:s') . ' WIT | Password default bersifat sementara dan dapat diperbarui setelah login.');
+        $sheet->setCellValue('A2', 'Diekspor pada: '.date('d F Y H:i:s').' WIT | Password default bersifat sementara dan dapat diperbarui setelah login.');
         $sheet->mergeCells('A2:J2');
-        $sheet->getStyle('A2')->getFont()->setItalic(true)->setSize(9)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('64748B'));
+        $sheet->getStyle('A2')->getFont()->setItalic(true)->setSize(9)->setColor(new Color('64748B'));
         $sheet->getRowDimension(2)->setRowHeight(18);
 
         // Header Table
@@ -196,10 +201,10 @@ class UserExportService
         $sheet->getRowDimension($headerRow)->setRowHeight(26);
 
         foreach ($headers as $col => $label) {
-            $cell = $col . $headerRow;
+            $cell = $col.$headerRow;
             $sheet->setCellValue($cell, $label);
-            $sheet->getStyle($cell)->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFF'));
-            $sheet->getStyle($cell)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF' . $headerColorHex);
+            $sheet->getStyle($cell)->getFont()->setBold(true)->setColor(new Color('FFFFFF'));
+            $sheet->getStyle($cell)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF'.$headerColorHex);
             $sheet->getStyle($cell)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
             if (in_array($col, ['A', 'C', 'H', 'I', 'J'], true)) {
@@ -212,23 +217,23 @@ class UserExportService
         $currentRow = $startRow;
 
         foreach ($rows as $item) {
-            $sheet->setCellValue('A' . $currentRow, $item['no']);
-            $sheet->setCellValue('B' . $currentRow, $item['cluster']);
-            $sheet->setCellValue('C' . $currentRow, $item['code']);
-            $sheet->setCellValue('D' . $currentRow, $item['org_name']);
-            $sheet->setCellValue('E' . $currentRow, $item['user_name']);
-            $sheet->setCellValue('F' . $currentRow, $item['email']);
-            $sheet->setCellValue('G' . $currentRow, $item['role']);
-            $sheet->setCellValueExplicit('H' . $currentRow, (string) $item['nip'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-            $sheet->setCellValue('I' . $currentRow, $item['password']);
-            $sheet->setCellValue('J' . $currentRow, $item['status']);
+            $sheet->setCellValue('A'.$currentRow, $item['no']);
+            $sheet->setCellValue('B'.$currentRow, $item['cluster']);
+            $sheet->setCellValue('C'.$currentRow, $item['code']);
+            $sheet->setCellValue('D'.$currentRow, $item['org_name']);
+            $sheet->setCellValue('E'.$currentRow, $item['user_name']);
+            $sheet->setCellValue('F'.$currentRow, $item['email']);
+            $sheet->setCellValue('G'.$currentRow, $item['role']);
+            $sheet->setCellValueExplicit('H'.$currentRow, (string) $item['nip'], DataType::TYPE_STRING);
+            $sheet->setCellValue('I'.$currentRow, $item['password']);
+            $sheet->setCellValue('J'.$currentRow, $item['status']);
 
             // Styling per baris
-            $sheet->getStyle('A' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('C' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('H' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('I' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('J' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A'.$currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('C'.$currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('H'.$currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('I'.$currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('J'.$currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
             // Zebra striping
             if ($currentRow % 2 === 0) {
@@ -308,6 +313,7 @@ class UserExportService
         }
 
         fclose($fp);
+
         return $fullPath;
     }
 }

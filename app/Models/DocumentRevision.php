@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +16,7 @@ class DocumentRevision extends Model
     {
         return [
             'acknowledged_at' => 'datetime',
-            'resolved_at'     => 'datetime',
+            'resolved_at' => 'datetime',
         ];
     }
 

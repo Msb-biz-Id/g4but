@@ -25,7 +25,7 @@ return new class extends Migration
         DB::table('app_configs')
             ->where('key', 'ui_login_image')
             ->update([
-                'value'         => '/images/login-bg.jpg',
+                'value' => '/images/login-bg.jpg',
                 'default_value' => '/images/login-bg.jpg',
             ]);
     }

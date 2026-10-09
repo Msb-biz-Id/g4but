@@ -48,6 +48,7 @@ class PkoEvaluation extends Model
                 'nko' => 0,
                 'predikat' => 'BELUM DINILAI',
             ]);
+
             return;
         }
 
@@ -63,12 +64,12 @@ class PkoEvaluation extends Model
         // 0% < X <= 20% / Minus (< 0): SANGAT KURANG (Realisasi kinerja sangat rendah atau minus)
         // 0 / Belum Dinilai: BELUM DINILAI
         $predikat = match (true) {
-            $nko <= 0  => 'BELUM DINILAI',
+            $nko <= 0 => 'BELUM DINILAI',
             $nko > 100 => 'ISTIMEWA',
-            $nko > 80  => 'BAIK',
-            $nko > 60  => 'BUTUH PERBAIKAN',
-            $nko > 20  => 'KURANG',
-            default    => 'SANGAT KURANG',
+            $nko > 80 => 'BAIK',
+            $nko > 60 => 'BUTUH PERBAIKAN',
+            $nko > 20 => 'KURANG',
+            default => 'SANGAT KURANG',
         };
 
         $this->update([

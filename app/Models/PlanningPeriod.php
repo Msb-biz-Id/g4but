@@ -87,7 +87,7 @@ class PlanningPeriod extends Model
 
         $uniqueYears = array_values(array_filter(
             array_unique(array_map('intval', $years)),
-            fn($y) => $y >= 2000 && $y <= 2100
+            fn ($y) => $y >= 2000 && $y <= 2100
         ));
         sort($uniqueYears);
 

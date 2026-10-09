@@ -40,27 +40,27 @@ class AlertRuleController extends Controller
         $code = $request->input('code');
         if (empty($code)) {
             $prefix = match ($ruleType) {
-                'performance_deviation'              => 'EWS-PD',
-                'late_report', 'submission_overdue'  => 'EWS-LR',
+                'performance_deviation' => 'EWS-PD',
+                'late_report', 'submission_overdue' => 'EWS-LR',
                 'missing_evidence', 'evidence_empty' => 'EWS-EV',
-                'document_overdue'                   => 'EWS-DOC',
-                'pk_unsigned'                        => 'EWS-PK',
-                default                              => 'EWS-RULE',
+                'document_overdue' => 'EWS-DOC',
+                'pk_unsigned' => 'EWS-PK',
+                default => 'EWS-RULE',
             };
-            $code = $prefix . '-' . strtoupper(substr(uniqid(), -4));
+            $code = $prefix.'-'.strtoupper(substr(uniqid(), -4));
         }
 
         $request->merge([
-            'code'      => $code,
+            'code' => $code,
             'rule_type' => $ruleType,
-            'severity'  => $severity,
+            'severity' => $severity,
         ]);
 
         $validated = $request->validate([
-            'code'      => ['required', 'string', 'max:50', 'unique:alert_rules,code'],
-            'name'      => ['required', 'string', 'max:200'],
+            'code' => ['required', 'string', 'max:50', 'unique:alert_rules,code'],
+            'name' => ['required', 'string', 'max:200'],
             'rule_type' => ['required', 'string'],
-            'severity'  => ['required', 'string'],
+            'severity' => ['required', 'string'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -84,11 +84,11 @@ class AlertRuleController extends Controller
         }
 
         AlertRule::create([
-            'code'      => $validated['code'],
-            'name'      => $validated['name'],
+            'code' => $validated['code'],
+            'name' => $validated['name'],
             'rule_type' => $validated['rule_type'],
-            'severity'  => $validated['severity'],
-            'config'    => !empty($config) ? $config : null,
+            'severity' => $validated['severity'],
+            'config' => ! empty($config) ? $config : null,
             'is_active' => (bool) ($request->input('is_active', true)),
         ]);
 

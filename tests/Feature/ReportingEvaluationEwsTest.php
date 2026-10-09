@@ -13,6 +13,7 @@ use App\Models\MeasurementPeriod;
 use App\Models\MeasurementUnit;
 use App\Models\Organization;
 use App\Models\PerformancePeriod;
+use App\Models\Permission;
 use App\Models\PlanningDocument;
 use App\Models\PlanningPeriod;
 use App\Models\Realization;
@@ -163,7 +164,7 @@ class ReportingEvaluationEwsTest extends TestCase
     public function test_reports_index_loads_with_selected_year_and_dynamic_planning_years(): void
     {
         // Add multi-year planning period
-        \App\Models\PlanningPeriod::create([
+        PlanningPeriod::create([
             'code' => 'RPJMD-TEST-2025-2030',
             'name' => 'RPJMD Test 2025-2030',
             'type' => 'rpjmd',
@@ -391,8 +392,8 @@ class ReportingEvaluationEwsTest extends TestCase
         Storage::fake('local');
 
         $opdRole = Role::firstOrCreate(['name' => RoleEnum::AdminOpd->value]);
-        $viewReportsPerm = \App\Models\Permission::firstOrCreate(['name' => 'report:view'], ['resource' => 'report', 'action' => 'view', 'module' => 'reporting']);
-        $generateReportsPerm = \App\Models\Permission::firstOrCreate(['name' => 'report:generate'], ['resource' => 'report', 'action' => 'generate', 'module' => 'reporting']);
+        $viewReportsPerm = Permission::firstOrCreate(['name' => 'report:view'], ['resource' => 'report', 'action' => 'view', 'module' => 'reporting']);
+        $generateReportsPerm = Permission::firstOrCreate(['name' => 'report:generate'], ['resource' => 'report', 'action' => 'generate', 'module' => 'reporting']);
         $opdRole->permissions()->syncWithoutDetaching([$viewReportsPerm->id, $generateReportsPerm->id]);
 
         $opdUser = User::factory()->create();
@@ -461,9 +462,9 @@ class ReportingEvaluationEwsTest extends TestCase
 
         // Create Admin OPD role & user with evaluation:manage and evaluation:score
         $opdRole = Role::firstOrCreate(['name' => 'Admin OPD']);
-        $managePerm = \App\Models\Permission::firstOrCreate(['name' => 'evaluation:manage'], ['resource' => 'evaluation', 'action' => 'manage', 'module' => 'evaluation']);
-        $scorePerm = \App\Models\Permission::firstOrCreate(['name' => 'evaluation:score'], ['resource' => 'evaluation', 'action' => 'score', 'module' => 'evaluation']);
-        $viewPerm = \App\Models\Permission::firstOrCreate(['name' => 'evaluation:view'], ['resource' => 'evaluation', 'action' => 'view', 'module' => 'evaluation']);
+        $managePerm = Permission::firstOrCreate(['name' => 'evaluation:manage'], ['resource' => 'evaluation', 'action' => 'manage', 'module' => 'evaluation']);
+        $scorePerm = Permission::firstOrCreate(['name' => 'evaluation:score'], ['resource' => 'evaluation', 'action' => 'score', 'module' => 'evaluation']);
+        $viewPerm = Permission::firstOrCreate(['name' => 'evaluation:view'], ['resource' => 'evaluation', 'action' => 'view', 'module' => 'evaluation']);
         $opdRole->permissions()->syncWithoutDetaching([$managePerm->id, $scorePerm->id, $viewPerm->id]);
 
         $opdUser = User::factory()->create();
@@ -563,4 +564,3 @@ class ReportingEvaluationEwsTest extends TestCase
             ->assertRedirect();
     }
 }
-

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\Role as RoleEnum;
 use App\Models\Organization;
+use App\Models\PlanningDocument;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -26,10 +27,10 @@ class SyncAllOpdUsersSeeder extends Seeder
 
         DB::transaction(function () {
             // 1. Dapatkan mapping model Role
-            $roleAdminOpd     = Role::firstWhere('name', RoleEnum::AdminOpd->value);
-            $roleOperatorOpd  = Role::firstWhere('name', RoleEnum::OperatorOpd->value);
+            $roleAdminOpd = Role::firstWhere('name', RoleEnum::AdminOpd->value);
+            $roleOperatorOpd = Role::firstWhere('name', RoleEnum::OperatorOpd->value);
             $roleValidatorOpd = Role::firstWhere('name', RoleEnum::ValidatorOpd->value);
-            $roleKepalaOpd    = Role::firstWhere('name', RoleEnum::KepalaOpd->value);
+            $roleKepalaOpd = Role::firstWhere('name', RoleEnum::KepalaOpd->value);
 
             $defaultPassword = Hash::make('password'); // Password default untuk pembagian akun awal
 
@@ -41,56 +42,56 @@ class SyncAllOpdUsersSeeder extends Seeder
 
             // Mapping manual slug yang rapi
             $slugCustom = [
-                'SETDA-PB'         => 'setda',
-                'BIRO-PEM-PB'      => 'biro-pem',
-                'BIRO-HUKUM-PB'    => 'biro-hukum',
-                'BIRO-ADPIM-PB'    => 'biro-adpim',
-                'BIRO-ADBANG-PB'   => 'biro-adbang',
-                'BIRO-MENSPIR-PB'  => 'biro-menspir',
-                'BIRO-EKBANG-PB'   => 'biro-ekbang',
-                'BIRO-UMUM-PB'     => 'biro-umum',
-                'BIRO-ORG-PB'      => 'biro-org',
-                'BIRO-PBJ-PB'      => 'biro-pbj',
-                'BIRO-OTSUS-PB'    => 'biro-otsus',
-                'SET-DPRPB'        => 'dprpb',
-                'SET-MRPB'         => 'mrpb',
-                'INSP-PB'          => 'inspektorat',
-                'DISDIK-PB'        => 'disdik',
-                'DINKES-PB'        => 'dinkes',
-                'PUPR-PB'          => 'pupr',
-                'SATPOL-PB'        => 'satpol',
-                'DINSOS-PB'        => 'dinsos',
-                'DUKCAPIL-PB'      => 'dukcapil',
+                'SETDA-PB' => 'setda',
+                'BIRO-PEM-PB' => 'biro-pem',
+                'BIRO-HUKUM-PB' => 'biro-hukum',
+                'BIRO-ADPIM-PB' => 'biro-adpim',
+                'BIRO-ADBANG-PB' => 'biro-adbang',
+                'BIRO-MENSPIR-PB' => 'biro-menspir',
+                'BIRO-EKBANG-PB' => 'biro-ekbang',
+                'BIRO-UMUM-PB' => 'biro-umum',
+                'BIRO-ORG-PB' => 'biro-org',
+                'BIRO-PBJ-PB' => 'biro-pbj',
+                'BIRO-OTSUS-PB' => 'biro-otsus',
+                'SET-DPRPB' => 'dprpb',
+                'SET-MRPB' => 'mrpb',
+                'INSP-PB' => 'inspektorat',
+                'DISDIK-PB' => 'disdik',
+                'DINKES-PB' => 'dinkes',
+                'PUPR-PB' => 'pupr',
+                'SATPOL-PB' => 'satpol',
+                'DINSOS-PB' => 'dinsos',
+                'DUKCAPIL-PB' => 'dukcapil',
                 'DISNAKERTRANS-PB' => 'disnakertrans',
-                'DISPANG-PB'       => 'dispang',
-                'DISTANBUN-PB'     => 'distanbun',
-                'DISNAKKESWAN-PB'  => 'disnakkeswan',
-                'DISHUB-PB'        => 'dishub',
-                'DISHUT-PB'        => 'dishut',
-                'DLHP-PB'          => 'dlhp',
-                'DISKOP-PB'        => 'diskop',
-                'DPMK-PB'          => 'dpmk',
-                'DP3A-PB'          => 'dp3a',
-                'DKP-PB'           => 'dkp',
-                'ESDM-PB'          => 'esdm',
-                'DISPORA-PB'       => 'dispora',
-                'DISBUDPAR-PB'     => 'disbudpar',
-                'DPMPTSP-PB'       => 'dpmptsp',
-                'DISKOMINFO-PB'    => 'diskominfo',
-                'DISPERINDAG-PB'   => 'disperindag',
-                'DISPUSIP-PB'      => 'dispusip',
-                'BAPPEDA-PB'       => 'bappeda',
-                'BALITBANGDA-PB'   => 'balitbangda',
-                'BPKAD-PB'         => 'bpkad',
-                'BAPENDA-PB'       => 'bapenda',
-                'BKD-PB'           => 'bkd',
-                'BPSDM-PB'         => 'bpsdm',
-                'PENGHUBUNG-PB'    => 'penghubung',
-                'BPBD-PB'          => 'bpbd',
+                'DISPANG-PB' => 'dispang',
+                'DISTANBUN-PB' => 'distanbun',
+                'DISNAKKESWAN-PB' => 'disnakkeswan',
+                'DISHUB-PB' => 'dishub',
+                'DISHUT-PB' => 'dishut',
+                'DLHP-PB' => 'dlhp',
+                'DISKOP-PB' => 'diskop',
+                'DPMK-PB' => 'dpmk',
+                'DP3A-PB' => 'dp3a',
+                'DKP-PB' => 'dkp',
+                'ESDM-PB' => 'esdm',
+                'DISPORA-PB' => 'dispora',
+                'DISBUDPAR-PB' => 'disbudpar',
+                'DPMPTSP-PB' => 'dpmptsp',
+                'DISKOMINFO-PB' => 'diskominfo',
+                'DISPERINDAG-PB' => 'disperindag',
+                'DISPUSIP-PB' => 'dispusip',
+                'BAPPEDA-PB' => 'bappeda',
+                'BALITBANGDA-PB' => 'balitbangda',
+                'BPKAD-PB' => 'bpkad',
+                'BAPENDA-PB' => 'bapenda',
+                'BKD-PB' => 'bkd',
+                'BPSDM-PB' => 'bpsdm',
+                'PENGHUBUNG-PB' => 'penghubung',
+                'BPBD-PB' => 'bpbd',
             ];
 
             $createdCount = 0;
-            $syncedCount  = 0;
+            $syncedCount = 0;
 
             foreach ($allOpds as $idx => $opd) {
                 $slug = $slugCustom[$opd->code] ?? Str::slug(str_replace(['-PB', 'PROV-'], '', $opd->code));
@@ -100,32 +101,32 @@ class SyncAllOpdUsersSeeder extends Seeder
                 // Daftar akun standar per instansi (Tepat 4 akun fungsional: 1 Admin, 1 Operator, 1 Validator, 1 Kepala)
                 $accountDefinitions = [
                     [
-                        'email'     => "admin.{$slug}@ekasuari.test",
-                        'name'      => "Admin {$short}",
+                        'email' => "admin.{$slug}@ekasuari.test",
+                        'name' => "Admin {$short}",
                         'job_title' => "Admin OPD / Pengelola SAKIP {$short}",
-                        'role'      => $roleAdminOpd,
-                        'nip'       => "198501{$pad}2010011001",
+                        'role' => $roleAdminOpd,
+                        'nip' => "198501{$pad}2010011001",
                     ],
                     [
-                        'email'     => "operator.{$slug}@ekasuari.test",
-                        'name'      => "Operator {$short}",
+                        'email' => "operator.{$slug}@ekasuari.test",
+                        'name' => "Operator {$short}",
                         'job_title' => "Operator Teknis Kinerja {$short}",
-                        'role'      => $roleOperatorOpd,
-                        'nip'       => "199002{$pad}2015021002",
+                        'role' => $roleOperatorOpd,
+                        'nip' => "199002{$pad}2015021002",
                     ],
                     [
-                        'email'     => "validator.{$slug}@ekasuari.test",
-                        'name'      => "Validator {$short}",
+                        'email' => "validator.{$slug}@ekasuari.test",
+                        'name' => "Validator {$short}",
                         'job_title' => "Validator & Verifikator Kinerja {$short}",
-                        'role'      => $roleValidatorOpd,
-                        'nip'       => "198803{$pad}2013011003",
+                        'role' => $roleValidatorOpd,
+                        'nip' => "198803{$pad}2013011003",
                     ],
                     [
-                        'email'     => "kepala.{$slug}@ekasuari.test",
-                        'name'      => "Kepala {$short}",
+                        'email' => "kepala.{$slug}@ekasuari.test",
+                        'name' => "Kepala {$short}",
                         'job_title' => "Pimpinan Instansi ({$short})",
-                        'role'      => $roleKepalaOpd,
-                        'nip'       => "197204{$pad}1998031004",
+                        'role' => $roleKepalaOpd,
+                        'nip' => "197204{$pad}1998031004",
                     ],
                 ];
 
@@ -135,21 +136,21 @@ class SyncAllOpdUsersSeeder extends Seeder
                         // Generate NIP unik jika NIP bentrok
                         $nip = $acc['nip'];
                         if (User::where('employee_number', $nip)->exists()) {
-                            $nip = '1985' . str_pad((string) mt_rand(10000000000000, 99999999999999), 14, '0', STR_PAD_LEFT);
+                            $nip = '1985'.str_pad((string) mt_rand(10000000000000, 99999999999999), 14, '0', STR_PAD_LEFT);
                         }
 
                         $user = User::create([
-                            'name'                 => $acc['name'],
-                            'email'                => $acc['email'],
-                            'password'             => $defaultPassword,
-                            'job_title'            => $acc['job_title'],
-                            'employee_number'      => $nip,
-                            'is_active'            => true,
-                            'email_verified_at'    => now(),
-                            'locale'               => 'id',
+                            'name' => $acc['name'],
+                            'email' => $acc['email'],
+                            'password' => $defaultPassword,
+                            'job_title' => $acc['job_title'],
+                            'employee_number' => $nip,
+                            'is_active' => true,
+                            'email_verified_at' => now(),
+                            'locale' => 'id',
                             'must_change_password' => false,
-                            'mfa_enabled'          => false,
-                            'google2fa_enabled'    => false,
+                            'mfa_enabled' => false,
+                            'google2fa_enabled' => false,
                         ]);
                         $createdCount++;
                     }
@@ -187,7 +188,7 @@ class SyncAllOpdUsersSeeder extends Seeder
             foreach ($candidatesToDelete as $email) {
                 $u = User::where('email', $email)->first();
                 if ($u) {
-                    $hasDocs = \App\Models\PlanningDocument::where('created_by', $u->id)->exists();
+                    $hasDocs = PlanningDocument::where('created_by', $u->id)->exists();
                     if (! $hasDocs) {
                         $u->roles()->detach();
                         $u->organizations()->detach();

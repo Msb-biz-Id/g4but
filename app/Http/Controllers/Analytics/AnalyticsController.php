@@ -5,12 +5,10 @@ namespace App\Http\Controllers\Analytics;
 use App\Http\Controllers\Controller;
 use App\Models\ActionPlan;
 use App\Models\Evaluation;
-use App\Models\EvaluationScore;
 use App\Models\Indicator;
 use App\Models\IndicatorTarget;
 use App\Models\MeasurementPeriod;
 use App\Models\Organization;
-use App\Models\PlanningDocument;
 use App\Models\PlanningPeriod;
 use App\Models\Realization;
 use App\Services\AchievementCalculator;
@@ -19,12 +17,12 @@ use App\Services\EarlyWarningAnalyticsService;
 use App\Services\OpdAnalyticsService;
 use App\Services\RpjmdAnalyticsService;
 use App\Services\SakipDocumentService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AnalyticsController extends Controller
@@ -56,60 +54,61 @@ class AnalyticsController extends Controller
         $cacheTtl = (int) config('ekasuari.cache.analytics_ttl', 300);
         $cacheKey = 'analytics.'.md5(json_encode($filters));
 
-        $trend             = Cache::remember($cacheKey.'.trend', $cacheTtl, fn () => $this->buildTrend($filters));
-        $deviation         = Cache::remember($cacheKey.'.deviation', $cacheTtl, fn () => $this->buildDeviation($filters));
-        $opdComparison     = Cache::remember($cacheKey.'.opd', $cacheTtl, fn () => $this->buildOpdComparison($filters));
-        $ikuAnalysis       = Cache::remember($cacheKey.'.iku', $cacheTtl, fn () => $this->buildIkuAnalysis($filters));
-        $heatmap           = Cache::remember('analytics.heatmap', $cacheTtl, fn () => $this->buildHeatmap());
-        $sakipDocs         = Cache::remember($cacheKey.'.sakip_docs', $cacheTtl, fn () => $this->buildSakipDocs($filters));
-        $rpjmdAnalysis     = Cache::remember($cacheKey.'.rpjmd', $cacheTtl, fn () => $this->rpjmdService->getRpjmdMatrix($filters['year'], null, $filters['organization_id'] ?? null));
+        $trend = Cache::remember($cacheKey.'.trend', $cacheTtl, fn () => $this->buildTrend($filters));
+        $deviation = Cache::remember($cacheKey.'.deviation', $cacheTtl, fn () => $this->buildDeviation($filters));
+        $opdComparison = Cache::remember($cacheKey.'.opd', $cacheTtl, fn () => $this->buildOpdComparison($filters));
+        $ikuAnalysis = Cache::remember($cacheKey.'.iku', $cacheTtl, fn () => $this->buildIkuAnalysis($filters));
+        $heatmap = Cache::remember('analytics.heatmap', $cacheTtl, fn () => $this->buildHeatmap());
+        $sakipDocs = Cache::remember($cacheKey.'.sakip_docs', $cacheTtl, fn () => $this->buildSakipDocs($filters));
+        $rpjmdAnalysis = Cache::remember($cacheKey.'.rpjmd', $cacheTtl, fn () => $this->rpjmdService->getRpjmdMatrix($filters['year'], null, $filters['organization_id'] ?? null));
 
         // 6 Baris Dashboard Analitik Komprehensif (Sesuai Panduan DASHBOARD ANALITIK.docx)
-        $ikuPemdaMatrix    = Cache::remember($cacheKey.'.iku_pemda', $cacheTtl, fn () => $this->opdAnalytics->getIkuPemdaMatrix($filters['year'], $filters['status'] ?? null));
-        $opdRankingMatrix  = Cache::remember($cacheKey.'.opd_ranking', $cacheTtl, fn () => $this->opdAnalytics->getOpdPerformanceRanking($filters['year'], $filters['organization_id'] ?? null, $filters['status'] ?? null));
-        $sakipPemdaMatrix  = Cache::remember($cacheKey.'.sakip_pemda', $cacheTtl, fn () => $this->opdAnalytics->getSakipPemdaMatrix($filters['year']));
-        $sakipEvaluations  = Cache::remember($cacheKey.'.sakip_eval', $cacheTtl, fn () => $this->opdAnalytics->getSakipEvaluationMatrix($filters['year'], $filters['organization_id'] ?? null));
-        $pkoAnalysis       = Cache::remember($cacheKey.'.pko', $cacheTtl, fn () => $this->opdAnalytics->getPkoMatrix($filters['year'], $filters['organization_id'] ?? null));
-        $actionPlans       = Cache::remember($cacheKey.'.action_plans', $cacheTtl, fn () => $this->opdAnalytics->getActionPlansMatrix($filters['year'], $filters['triwulan'] ?? 'TW II', $filters['organization_id'] ?? null));
-        $monitoringBudget  = Cache::remember($cacheKey.'.monitoring_budget', $cacheTtl, fn () => $this->opdAnalytics->getMonitoringBudgetMatrix($filters['year'], $filters['triwulan'] ?? 'TW II', $filters['organization_id'] ?? null));
-        $riskMapMatrix     = Cache::remember($cacheKey.'.risk_map', $cacheTtl, fn () => $this->ewsAnalytics->getRiskMap($filters['year']));
+        $ikuPemdaMatrix = Cache::remember($cacheKey.'.iku_pemda', $cacheTtl, fn () => $this->opdAnalytics->getIkuPemdaMatrix($filters['year'], $filters['status'] ?? null));
+        $opdRankingMatrix = Cache::remember($cacheKey.'.opd_ranking', $cacheTtl, fn () => $this->opdAnalytics->getOpdPerformanceRanking($filters['year'], $filters['organization_id'] ?? null, $filters['status'] ?? null));
+        $sakipPemdaMatrix = Cache::remember($cacheKey.'.sakip_pemda', $cacheTtl, fn () => $this->opdAnalytics->getSakipPemdaMatrix($filters['year']));
+        $sakipEvaluations = Cache::remember($cacheKey.'.sakip_eval', $cacheTtl, fn () => $this->opdAnalytics->getSakipEvaluationMatrix($filters['year'], $filters['organization_id'] ?? null));
+        $pkoAnalysis = Cache::remember($cacheKey.'.pko', $cacheTtl, fn () => $this->opdAnalytics->getPkoMatrix($filters['year'], $filters['organization_id'] ?? null));
+        $actionPlans = Cache::remember($cacheKey.'.action_plans', $cacheTtl, fn () => $this->opdAnalytics->getActionPlansMatrix($filters['year'], $filters['triwulan'] ?? 'TW II', $filters['organization_id'] ?? null));
+        $monitoringBudget = Cache::remember($cacheKey.'.monitoring_budget', $cacheTtl, fn () => $this->opdAnalytics->getMonitoringBudgetMatrix($filters['year'], $filters['triwulan'] ?? 'TW II', $filters['organization_id'] ?? null));
+        $riskMapMatrix = Cache::remember($cacheKey.'.risk_map', $cacheTtl, fn () => $this->ewsAnalytics->getRiskMap($filters['year']));
 
         return Inertia::render('Analytics/Index', [
-            'filters'                  => $filters,
-            'trend'                    => $trend,
-            'deviation'                => $deviation,
-            'opd_comparison'           => $opdComparison,
-            'iku_analysis'             => $ikuAnalysis,
-            'heatmap'                  => $heatmap,
-            'sakip_docs'               => $sakipDocs,
-            'sakip_pemda_matrix'       => $sakipPemdaMatrix,
-            'sakip_evaluations'        => $sakipEvaluations['rows'],
-            'sakip_eval_matrix'        => $sakipEvaluations,
-            'pko_analysis'             => $pkoAnalysis['opd_pko']['rows'],
-            'pko_matrix'               => $pkoAnalysis,
-            'action_plans'             => $actionPlans['rows'],
-            'action_plans_matrix'      => $actionPlans,
+            'filters' => $filters,
+            'trend' => $trend,
+            'deviation' => $deviation,
+            'opd_comparison' => $opdComparison,
+            'iku_analysis' => $ikuAnalysis,
+            'heatmap' => $heatmap,
+            'sakip_docs' => $sakipDocs,
+            'sakip_pemda_matrix' => $sakipPemdaMatrix,
+            'sakip_evaluations' => $sakipEvaluations['rows'],
+            'sakip_eval_matrix' => $sakipEvaluations,
+            'pko_analysis' => $pkoAnalysis['opd_pko']['rows'],
+            'pko_matrix' => $pkoAnalysis,
+            'action_plans' => $actionPlans['rows'],
+            'action_plans_matrix' => $actionPlans,
             'monitoring_budget_matrix' => $monitoringBudget,
-            'rpjmd_analysis'     => $rpjmdAnalysis,
-            'iku_pemda_matrix'   => $ikuPemdaMatrix,
+            'rpjmd_analysis' => $rpjmdAnalysis,
+            'iku_pemda_matrix' => $ikuPemdaMatrix,
             'opd_ranking_matrix' => $opdRankingMatrix,
-            'risk_map_matrix'    => $riskMapMatrix,
-            'indicators'        => Indicator::query()
+            'risk_map_matrix' => $riskMapMatrix,
+            'indicators' => Indicator::query()
                 ->where('status', 'active')
                 ->with('currentVersion:id,indicator_id,name')
                 ->orderBy('code')
                 ->get(['id', 'code', 'is_iku']),
-            'organizations'     => Organization::query()
+            'organizations' => Organization::query()
                 ->whereIn('id', $this->authorization->accessibleOrganizationIds($request->user()))
                 ->orderBy('code')
                 ->get(['id', 'code', 'name']),
-            'available_years'   => (function () use ($rpjmdAnalysis, $filters) {
+            'available_years' => (function () use ($rpjmdAnalysis, $filters) {
                 $yrs = array_unique(array_merge(
                     PlanningPeriod::getAvailableYears(),
                     $rpjmdAnalysis['years'] ?? [],
                     [$filters['year']]
                 ));
                 sort($yrs);
+
                 return array_values($yrs);
             })(),
         ]);
@@ -311,6 +310,7 @@ class AnalyticsController extends Controller
 
         return $list->map(function ($item, $index) {
             $item['rank'] = $index + 1;
+
             return $item;
         })->all();
     }
@@ -364,10 +364,15 @@ class AnalyticsController extends Controller
 
             $status = 'Belum Ada Data';
             if ($achievement !== null) {
-                if ($achievement >= 100) $status = 'Tercapai';
-                elseif ($achievement >= 80) $status = 'Baik';
-                elseif ($achievement >= 60) $status = 'Perlu Perhatian';
-                else $status = 'Kritis';
+                if ($achievement >= 100) {
+                    $status = 'Tercapai';
+                } elseif ($achievement >= 80) {
+                    $status = 'Baik';
+                } elseif ($achievement >= 60) {
+                    $status = 'Perlu Perhatian';
+                } else {
+                    $status = 'Kritis';
+                }
             }
 
             return [
@@ -491,27 +496,27 @@ class AnalyticsController extends Controller
     {
         $orgIds = $this->authorization->accessibleOrganizationIds(request()->user());
         $year = (int) ($filters['year'] ?? $this->getDefaultYear());
-        $filterOpdId = !empty($filters['organization_id']) ? (int) $filters['organization_id'] : null;
+        $filterOpdId = ! empty($filters['organization_id']) ? (int) $filters['organization_id'] : null;
 
         $pemdaMatrix = $this->sakipDocService->getSakipPemdaMatrix($year);
         $opdMatrix = $this->sakipDocService->getSakipOpdMatrix($year, $filterOpdId, $orgIds);
 
         return [
             'pemda_summary' => [
-                'total_required'  => $pemdaMatrix['total_required'],
-                'available'       => $pemdaMatrix['available'],
-                'missing'         => $pemdaMatrix['missing'],
-                'percentage'      => $pemdaMatrix['percentage'],
-                'status'          => $pemdaMatrix['status'],
+                'total_required' => $pemdaMatrix['total_required'],
+                'available' => $pemdaMatrix['available'],
+                'missing' => $pemdaMatrix['missing'],
+                'percentage' => $pemdaMatrix['percentage'],
+                'status' => $pemdaMatrix['status'],
                 'evaluation_year' => $year,
             ],
             'pemda_rows' => $pemdaMatrix['rows'],
             'opd_summary' => [
-                'total_opd'         => $opdMatrix['total_opd'],
-                'opd_lengkap'       => $opdMatrix['opd_lengkap'],
+                'total_opd' => $opdMatrix['total_opd'],
+                'opd_lengkap' => $opdMatrix['opd_lengkap'],
                 'opd_belum_lengkap' => $opdMatrix['opd_belum_lengkap'],
-                'pct_lengkap'       => $opdMatrix['pct_lengkap'],
-                'missing_docs'      => $opdMatrix['missing_docs'],
+                'pct_lengkap' => $opdMatrix['pct_lengkap'],
+                'missing_docs' => $opdMatrix['missing_docs'],
             ],
             'opd_columns' => $opdMatrix['columns'],
             'opd_rows' => $opdMatrix['rows'],
@@ -544,14 +549,14 @@ class AnalyticsController extends Controller
 
             // Standar Evaluasi Rentang Skala AA - D (Opsi B):
             $predikat = match (true) {
-                $total < 0  => 'D',
+                $total < 0 => 'D',
                 $total > 90 => 'AA',
                 $total > 80 => 'A',
                 $total > 70 => 'BB',
                 $total > 60 => 'B',
                 $total > 50 => 'CC',
                 $total > 30 => 'C',
-                default     => 'D',
+                default => 'D',
             };
 
             $rows[] = [
@@ -570,7 +575,7 @@ class AnalyticsController extends Controller
         }
 
         // Urutkan nilai SAKIP tertinggi
-        usort($rows, fn($a, $b) => $b['nilai'] <=> $a['nilai']);
+        usort($rows, fn ($a, $b) => $b['nilai'] <=> $a['nilai']);
         foreach ($rows as $i => &$r) {
             $r['no'] = $i + 1;
         }
@@ -611,7 +616,7 @@ class AnalyticsController extends Controller
                 $totalSakip > 60 => 'B',
                 $totalSakip > 50 => 'CC',
                 $totalSakip > 30 => 'C',
-                default          => 'D',
+                default => 'D',
             };
 
             $koreksi = 0.00;
@@ -620,12 +625,12 @@ class AnalyticsController extends Controller
             $nilaiPko = round($normalized * (1.0 - $koreksi), 2);
 
             $predPko = match (true) {
-                $nilaiPko <= 0   => 'BELUM DINILAI',
-                $nilaiPko > 100  => 'ISTIMEWA',
-                $nilaiPko > 80   => 'BAIK',
-                $nilaiPko > 60   => 'BUTUH PERBAIKAN',
-                $nilaiPko > 20   => 'KURANG',
-                default          => 'SANGAT KURANG',
+                $nilaiPko <= 0 => 'BELUM DINILAI',
+                $nilaiPko > 100 => 'ISTIMEWA',
+                $nilaiPko > 80 => 'BAIK',
+                $nilaiPko > 60 => 'BUTUH PERBAIKAN',
+                $nilaiPko > 20 => 'KURANG',
+                default => 'SANGAT KURANG',
             };
 
             $rows[] = [
@@ -637,7 +642,7 @@ class AnalyticsController extends Controller
             ];
         }
 
-        usort($rows, fn($a, $b) => $b['nilai_pko'] <=> $a['nilai_pko']);
+        usort($rows, fn ($a, $b) => $b['nilai_pko'] <=> $a['nilai_pko']);
         $totalCount = count($rows);
         foreach ($rows as $idx => &$item) {
             $item['rank'] = $idx + 1;
@@ -669,7 +674,7 @@ class AnalyticsController extends Controller
                 $prog >= 95 => 'Tercapai',
                 $prog >= 75 => 'Perlu Perhatian',
                 $prog >= 50 => 'Terlambat',
-                default     => 'Kritis',
+                default => 'Kritis',
             };
 
             $rows[] = [
@@ -697,18 +702,18 @@ class AnalyticsController extends Controller
 
         $csv = fopen('php://temp', 'r+');
         // Prepend UTF-8 BOM so Excel opens indonesian characters properly
-        fputs($csv, "\xEF\xBB\xBF");
+        fwrite($csv, "\xEF\xBB\xBF");
 
         if ($type === 'rpjmd') {
             $year = (int) ($request->get('year', $this->getDefaultYear()));
-            $filename = 'analitik-capaian-rpjmd-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-capaian-rpjmd-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->rpjmdService->getRpjmdMatrix($year, null, $filters['organization_id'] ?? null);
-            $years = !empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
-            $headers = ['No', 'Tujuan', 'Sasaran RPJMD', 'Indikator', 'Satuan', 'Target ' . $year, 'Realisasi ' . $year, 'Capaian ' . $year . ' (%)', 'Status', 'OPD Pengampu'];
+            $years = ! empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
+            $headers = ['No', 'Tujuan', 'Sasaran RPJMD', 'Indikator', 'Satuan', 'Target '.$year, 'Realisasi '.$year, 'Capaian '.$year.' (%)', 'Status', 'OPD Pengampu'];
             foreach ($years as $yr) {
-                $headers[] = 'Target ' . $yr;
-                $headers[] = 'Realisasi ' . $yr;
-                $headers[] = 'Capaian ' . $yr . ' (%)';
+                $headers[] = 'Target '.$yr;
+                $headers[] = 'Realisasi '.$yr;
+                $headers[] = 'Capaian '.$yr.' (%)';
             }
             fputcsv($csv, $headers);
             foreach ($matrix['rows'] as $row) {
@@ -720,14 +725,14 @@ class AnalyticsController extends Controller
                     $row['satuan'],
                     $row['target'] ?? '-',
                     $row['realisasi'] ?? '-',
-                    $row['capaian'] !== null ? $row['capaian'] . '%' : '-',
+                    $row['capaian'] !== null ? $row['capaian'].'%' : '-',
                     $row['status'],
                     $row['opd_pengampu'],
                 ];
                 foreach ($years as $yr) {
                     $line[] = $row['yearly'][$yr]['target'] ?? '-';
                     $line[] = $row['yearly'][$yr]['realization'] ?? '-';
-                    $line[] = $row['yearly'][$yr]['achievement'] !== null ? $row['yearly'][$yr]['achievement'] . '%' : '-';
+                    $line[] = $row['yearly'][$yr]['achievement'] !== null ? $row['yearly'][$yr]['achievement'].'%' : '-';
                 }
                 fputcsv($csv, $line);
             }
@@ -769,17 +774,17 @@ class AnalyticsController extends Controller
             }
         } elseif ($type === 'iku' || $type === 'iku_pemda') {
             $year = (int) ($request->get('year', $this->getDefaultYear()));
-            $filename = 'analitik-iku-pemda-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-iku-pemda-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->opdAnalytics->getIkuPemdaMatrix($year);
-            $years = !empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
+            $years = ! empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
             $headers = [
                 'No', 'Sasaran Strategis', 'IKU Pemerintah Daerah', 'Satuan', 'Karakter Indikator',
-                'Target ' . $year, 'Realisasi ' . $year, 'Capaian ' . $year . ' (%)', 'Status', 'Predikat', 'Tren', 'OPD Pengampu',
+                'Target '.$year, 'Realisasi '.$year, 'Capaian '.$year.' (%)', 'Status', 'Predikat', 'Tren', 'OPD Pengampu',
             ];
             foreach ($years as $yr) {
-                $headers[] = 'Target ' . $yr;
-                $headers[] = 'Realisasi ' . $yr;
-                $headers[] = 'Capaian ' . $yr . ' (%)';
+                $headers[] = 'Target '.$yr;
+                $headers[] = 'Realisasi '.$yr;
+                $headers[] = 'Capaian '.$yr.' (%)';
             }
             fputcsv($csv, $headers);
             foreach ($matrix['rows'] as $row) {
@@ -791,7 +796,7 @@ class AnalyticsController extends Controller
                     $row['karakter'],
                     $row['target'] ?? '-',
                     $row['realisasi'] ?? '-',
-                    $row['capaian'] !== null ? $row['capaian'] . '%' : '-',
+                    $row['capaian'] !== null ? $row['capaian'].'%' : '-',
                     $row['status'],
                     $row['predikat'],
                     $row['tren'],
@@ -800,21 +805,21 @@ class AnalyticsController extends Controller
                 foreach ($years as $yr) {
                     $line[] = $row['yearly'][$yr]['target'] ?? '-';
                     $line[] = $row['yearly'][$yr]['realization'] ?? '-';
-                    $line[] = $row['yearly'][$yr]['achievement'] !== null ? $row['yearly'][$yr]['achievement'] . '%' : '-';
+                    $line[] = $row['yearly'][$yr]['achievement'] !== null ? $row['yearly'][$yr]['achievement'].'%' : '-';
                 }
                 fputcsv($csv, $line);
             }
         } elseif ($type === 'opd_ranking') {
             $year = (int) ($request->get('year', $this->getDefaultYear()));
-            $filename = 'analitik-ranking-kinerja-opd-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-ranking-kinerja-opd-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->opdAnalytics->getOpdPerformanceRanking($year, $filters['organization_id'] ?? null);
-            $years = !empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
+            $years = ! empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
             $headers = [
                 'Peringkat', 'Kode OPD', 'Perangkat Daerah', 'Jumlah Indikator',
                 'Rata-rata Capaian (%)', 'Tercapai', 'Perlu Perhatian', 'Terlambat', 'Kritis', 'Status', 'Predikat',
             ];
             foreach ($years as $yr) {
-                $headers[] = $yr . ' (%)';
+                $headers[] = $yr.' (%)';
             }
             $headers[] = 'Tren';
             fputcsv($csv, $headers);
@@ -824,7 +829,7 @@ class AnalyticsController extends Controller
                     $row['kode'],
                     $row['perangkat_daerah'],
                     $row['jumlah_indikator'],
-                    $row['rata_capaian'] . '%',
+                    $row['rata_capaian'].'%',
                     $row['tercapai'],
                     $row['perhatian'],
                     $row['terlambat'],
@@ -833,7 +838,7 @@ class AnalyticsController extends Controller
                     $row['predikat'],
                 ];
                 foreach ($years as $yr) {
-                    $line[] = isset($row['yearly'][$yr]['capaian']) ? $row['yearly'][$yr]['capaian'] . '%' : '-';
+                    $line[] = isset($row['yearly'][$yr]['capaian']) ? $row['yearly'][$yr]['capaian'].'%' : '-';
                 }
                 $line[] = $row['tren'] ?? '→';
                 fputcsv($csv, $line);
@@ -859,7 +864,7 @@ class AnalyticsController extends Controller
             foreach ($docs['opd_rows'] as $row) {
                 $line = [$row['no'], $row['organization_code'], $row['organization_name']];
                 foreach ($docs['opd_columns'] as $k => $lbl) {
-                    $line[] = !empty($row['checks'][$k]) ? '✓' : '-';
+                    $line[] = ! empty($row['checks'][$k]) ? '✓' : '-';
                 }
                 $line[] = $row['available_count'];
                 $line[] = $row['total_required'];
@@ -869,7 +874,7 @@ class AnalyticsController extends Controller
             }
         } elseif ($type === 'sakip_pemda') {
             $year = (int) ($request->get('year', $this->getDefaultYear()));
-            $filename = 'analitik-evaluasi-sakip-pemda-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-evaluasi-sakip-pemda-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->opdAnalytics->getSakipPemdaMatrix($year);
             $headers = ['No', 'Komponen Akuntabilitas', 'Bobot (%)', 'Nilai Capaian', 'Persentase Capaian (%)', 'Predikat Mutu', 'Deskripsi Komponen'];
             fputcsv($csv, $headers);
@@ -879,27 +884,27 @@ class AnalyticsController extends Controller
                     $k['komponen'],
                     $k['bobot'],
                     $k['nilai'],
-                    $k['persen'] . '%',
+                    $k['persen'].'%',
                     $k['predikat'],
                     $k['deskripsi'],
                 ]);
             }
             fputcsv($csv, []);
-            fputcsv($csv, ['Total Nilai SAKIP Pemda', '', 100, $matrix['nilai'], $matrix['nilai'] . '%', $matrix['predikat'], 'Predikat Evaluasi Akuntabilitas Kinerja Instansi Pemerintah']);
+            fputcsv($csv, ['Total Nilai SAKIP Pemda', '', 100, $matrix['nilai'], $matrix['nilai'].'%', $matrix['predikat'], 'Predikat Evaluasi Akuntabilitas Kinerja Instansi Pemerintah']);
             fputcsv($csv, ['Nomor LHE', $matrix['lhe']['nomor_lhe']]);
             fputcsv($csv, ['Evaluator', $matrix['lhe']['evaluator']]);
             fputcsv($csv, ['Catatan Evaluasi', $matrix['lhe']['catatan']]);
             fputcsv($csv, ['Rekomendasi', $matrix['lhe']['rekomendasi']]);
         } elseif ($type === 'sakip_eval') {
             $year = (int) ($request->get('year', $this->getDefaultYear()));
-            $filename = 'analitik-evaluasi-sakip-opd-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-evaluasi-sakip-opd-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->opdAnalytics->getSakipEvaluationMatrix($year, $filters['organization_id'] ?? null);
-            $years = !empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
+            $years = ! empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
             $headers = [
                 'No', 'Kode OPD', 'Perangkat Daerah',
                 'Perencanaan Kinerja (30)', 'Pengukuran Kinerja (30)',
                 'Pelaporan Kinerja (15)', 'Evaluasi Internal (25)',
-                'Nilai SAKIP (' . $year . ')', 'Predikat (' . $year . ')',
+                'Nilai SAKIP ('.$year.')', 'Predikat ('.$year.')',
             ];
             foreach ($years as $yr) {
                 $headers[] = (string) $yr;
@@ -928,11 +933,11 @@ class AnalyticsController extends Controller
             }
         } elseif ($type === 'pko' || $type === 'pko_opd') {
             $year = (int) ($request->get('year', $this->getDefaultYear()));
-            $filename = 'analitik-pko-perangkat-daerah-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-pko-perangkat-daerah-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->opdAnalytics->getPkoMatrix($year, $filters['organization_id'] ?? null);
-            $years = !empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
+            $years = ! empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
             $headers = [
-                'No', 'Perangkat Daerah', 'Nilai PKO (' . $year . ')', 'Predikat', 'Peringkat',
+                'No', 'Perangkat Daerah', 'Nilai PKO ('.$year.')', 'Predikat', 'Peringkat',
             ];
             foreach ($years as $yr) {
                 $headers[] = (string) $yr;
@@ -957,7 +962,7 @@ class AnalyticsController extends Controller
             }
         } elseif ($type === 'pko_pemda') {
             $year = (int) ($request->get('year', $this->getDefaultYear()));
-            $filename = 'analitik-pko-pemda-papua-barat-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-pko-pemda-papua-barat-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->opdAnalytics->getPkoMatrix($year);
             fputcsv($csv, ['Tahun', 'Nilai PKO Pemda', 'Predikat', 'Tren']);
             foreach ($matrix['pemda_pko']['trend'] as $row) {
@@ -971,11 +976,11 @@ class AnalyticsController extends Controller
         } elseif ($type === 'action_plans' || $type === 'action_plans_opd') {
             $year = (int) ($request->get('year', $this->getDefaultYear()));
             $tw = $request->get('triwulan', 'TW II');
-            $filename = 'analitik-rencana-aksi-opd-' . str_replace(' ', '-', strtolower($tw)) . '-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-rencana-aksi-opd-'.str_replace(' ', '-', strtolower($tw)).'-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->opdAnalytics->getActionPlansMatrix($year, $tw, $filters['organization_id'] ?? null);
             fputcsv($csv, [
-                'No', 'Kode OPD', 'Perangkat Daerah', 'Target ' . $tw, 'Realisasi ' . $tw, 'Capaian ' . $tw . ' (%)', 'Status', 'Predikat',
-                'TW I (%)', 'TW II (%)', 'TW III (%)', 'TW IV (%)', 'Tren', 'Jumlah Rencana Aksi'
+                'No', 'Kode OPD', 'Perangkat Daerah', 'Target '.$tw, 'Realisasi '.$tw, 'Capaian '.$tw.' (%)', 'Status', 'Predikat',
+                'TW I (%)', 'TW II (%)', 'TW III (%)', 'TW IV (%)', 'Tren', 'Jumlah Rencana Aksi',
             ]);
             foreach ($matrix['opd_rows'] as $row) {
                 fputcsv($csv, [
@@ -984,13 +989,13 @@ class AnalyticsController extends Controller
                     $row['opd'],
                     $row['target_tw'],
                     $row['realisasi_tw'],
-                    $row['capaian'] . ($row['is_overachieved'] ? '%*' : '%'),
+                    $row['capaian'].($row['is_overachieved'] ? '%*' : '%'),
                     $row['status'],
                     $row['predikat'],
-                    $row['quarterly']['TW I']['capaian'] . '%',
-                    $row['quarterly']['TW II']['capaian'] . '%',
-                    $row['quarterly']['TW III']['capaian'] . '%',
-                    $row['quarterly']['TW IV']['capaian'] . '%',
+                    $row['quarterly']['TW I']['capaian'].'%',
+                    $row['quarterly']['TW II']['capaian'].'%',
+                    $row['quarterly']['TW III']['capaian'].'%',
+                    $row['quarterly']['TW IV']['capaian'].'%',
                     $row['tren'],
                     $row['plans_count'],
                 ]);
@@ -998,9 +1003,9 @@ class AnalyticsController extends Controller
         } elseif ($type === 'action_plans_detail') {
             $year = (int) ($request->get('year', 2026));
             $tw = $request->get('triwulan', 'TW II');
-            $filename = 'analitik-rincian-rencana-aksi-' . str_replace(' ', '-', strtolower($tw)) . '-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-rincian-rencana-aksi-'.str_replace(' ', '-', strtolower($tw)).'-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->opdAnalytics->getActionPlansMatrix($year, $tw, $filters['organization_id'] ?? null);
-            fputcsv($csv, ['No', 'Kode OPD', 'Perangkat Daerah', 'Rencana Aksi Kinerja', 'Target ' . $tw, 'Realisasi ' . $tw, 'Capaian (%)', 'Status', 'Predikat']);
+            fputcsv($csv, ['No', 'Kode OPD', 'Perangkat Daerah', 'Rencana Aksi Kinerja', 'Target '.$tw, 'Realisasi '.$tw, 'Capaian (%)', 'Status', 'Predikat']);
             foreach ($matrix['rows'] as $row) {
                 fputcsv($csv, [
                     $row['no'],
@@ -1009,14 +1014,14 @@ class AnalyticsController extends Controller
                     $row['rencana_aksi'],
                     $row['target_tw'],
                     $row['realisasi_tw'],
-                    $row['capaian'] . '%',
+                    $row['capaian'].'%',
                     $row['status'],
                     $row['predikat'],
                 ]);
             }
         } elseif ($type === 'risk_map') {
             $year = (int) ($request->get('year', 2026));
-            $filename = 'analitik-peta-risiko-kinerja-opd-' . $year . '-' . now()->format('YmdHis') . '.csv';
+            $filename = 'analitik-peta-risiko-kinerja-opd-'.$year.'-'.now()->format('YmdHis').'.csv';
             $matrix = $this->ewsAnalytics->getRiskMap($year);
             fputcsv($csv, ['Peringkat Risiko', 'Kode OPD', 'Perangkat Daerah', 'Skor Risiko (0-100)', 'Level Risiko', 'Rata-rata Capaian (%)', 'Nilai SAKIP', 'Kelengkapan Dokumen (%)', 'Rekomendasi Tindak Lanjut']);
             foreach ($matrix['rows'] as $row) {
@@ -1026,9 +1031,9 @@ class AnalyticsController extends Controller
                     $row['perangkat_daerah'],
                     $row['risk_score'],
                     $row['risk_level'],
-                    $row['rata_capaian'] . '%',
+                    $row['rata_capaian'].'%',
                     $row['sakip_nilai'],
-                    $row['dokumen_persen'] . '%',
+                    $row['dokumen_persen'].'%',
                     implode(' | ', $row['rekomendasi']),
                 ]);
             }
@@ -1073,7 +1078,6 @@ class AnalyticsController extends Controller
         return $response;
     }
 
-
     /**
      * Export analytics data as PDF using DomPDF.
      */
@@ -1081,97 +1085,97 @@ class AnalyticsController extends Controller
     {
         $this->authorize('view-dashboard');
 
-        $type    = $request->input('type', 'deviation');
+        $type = $request->input('type', 'deviation');
         $filters = $request->only(['indicator_id', 'organization_id']);
-        $year    = (int) ($request->get('year', $this->getDefaultYear()));
-        $tw      = $request->get('triwulan', 'TW II');
+        $year = (int) ($request->get('year', $this->getDefaultYear()));
+        $tw = $request->get('triwulan', 'TW II');
         $filters['year'] = $year;
         $filters['triwulan'] = $tw;
         $generatedAt = now()->timezone('Asia/Jayapura')->format('d/m/Y H:i');
 
         $view = 'pdf.analytics.deviation';
         $data = ['generatedAt' => $generatedAt, 'year' => $year];
-        $filename = 'analitik-' . $type . '-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+        $filename = 'analitik-'.$type.'-'.$year.'-'.now()->format('YmdHis').'.pdf';
 
         if ($type === 'rpjmd') {
             $matrix = $this->rpjmdService->getRpjmdMatrix($year, null, $filters['organization_id'] ?? null);
             $data = array_merge($data, ['rows' => $matrix['rows'] ?? [], 'stats' => $matrix['stats'] ?? [], 'summary' => $matrix['summary'] ?? []]);
             $view = 'pdf.analytics.rpjmd';
-            $filename = 'analitik-capaian-rpjmd-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-capaian-rpjmd-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'trend') {
             $rows = $this->buildTrend($filters);
             $data = array_merge($data, ['rows' => $rows]);
             $view = 'pdf.analytics.trend';
-            $filename = 'analitik-tren-capaian-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-tren-capaian-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'opd_comparison') {
             $rows = $this->buildOpdComparison($filters);
             $data = array_merge($data, ['rows' => $rows]);
             $view = 'pdf.analytics.opd';
-            $filename = 'analitik-perbandingan-opd-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-perbandingan-opd-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'opd' || $type === 'opd_ranking') {
             $matrix = $this->opdAnalytics->getOpdPerformanceRanking($year, $filters['organization_id'] ?? null);
             $data = array_merge($data, ['rows' => $matrix['rows'] ?? [], 'stats' => $matrix['stats'] ?? []]);
             $view = 'pdf.analytics.opd-ranking';
-            $filename = 'analitik-ranking-kinerja-opd-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-ranking-kinerja-opd-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'iku' || $type === 'iku_pemda') {
             $matrix = $this->opdAnalytics->getIkuPemdaMatrix($year);
             $data = array_merge($data, ['rows' => $matrix['rows'] ?? [], 'stats' => $matrix['stats'] ?? []]);
             $view = 'pdf.analytics.iku';
-            $filename = 'analitik-iku-pemda-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-iku-pemda-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'sakip_docs_pemda') {
             $docs = $this->buildSakipDocs($filters);
             $data = array_merge($data, ['rows' => $docs['pemda_rows'] ?? []]);
             $view = 'pdf.analytics.sakip-docs-pemda';
-            $filename = 'analitik-dokumen-sakip-pemda-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-dokumen-sakip-pemda-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'sakip_docs_opd') {
             $docs = $this->buildSakipDocs($filters);
             $data = array_merge($data, [
-                'rows'    => $docs['opd_rows'] ?? [],
+                'rows' => $docs['opd_rows'] ?? [],
                 'columns' => $docs['opd_columns'] ?? [],
             ]);
             $view = 'pdf.analytics.sakip-docs-opd';
-            $filename = 'analitik-dokumen-sakip-opd-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-dokumen-sakip-opd-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'sakip_pemda') {
             $matrix = $this->opdAnalytics->getSakipPemdaMatrix($year);
             $data = array_merge($data, ['sakip_pemda' => $matrix]);
             $view = 'pdf.analytics.sakip-pemda';
-            $filename = 'analitik-evaluasi-sakip-pemda-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-evaluasi-sakip-pemda-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'sakip_eval') {
             $matrix = $this->opdAnalytics->getSakipEvaluationMatrix($year, $filters['organization_id'] ?? null);
             $data = array_merge($data, ['rows' => $matrix['rows'] ?? [], 'stats' => $matrix['stats'] ?? []]);
             $view = 'pdf.analytics.sakip-eval';
-            $filename = 'analitik-evaluasi-sakip-opd-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-evaluasi-sakip-opd-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'pko_pemda') {
             $matrix = $this->opdAnalytics->getPkoMatrix($year);
             $data = array_merge($data, ['pemda_pko' => $matrix['pemda_pko'] ?? []]);
             $view = 'pdf.analytics.pko-pemda';
-            $filename = 'analitik-pko-pemda-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-pko-pemda-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'pko' || $type === 'pko_opd') {
             $matrix = $this->opdAnalytics->getPkoMatrix($year, $filters['organization_id'] ?? null);
             $data = array_merge($data, ['rows' => $matrix['opd_pko']['rows'] ?? [], 'stats' => $matrix['opd_pko']['stats'] ?? []]);
             $view = 'pdf.analytics.pko-opd';
-            $filename = 'analitik-pko-perangkat-daerah-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-pko-perangkat-daerah-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'action_plans') {
             $matrix = $this->opdAnalytics->getActionPlansMatrix($year, $tw, $filters['organization_id'] ?? null);
             $data = array_merge($data, ['rows' => $matrix['opd_rows'] ?? [], 'tw' => $tw]);
             $view = 'pdf.analytics.action-plans';
-            $filename = 'analitik-rencana-aksi-' . str_replace(' ', '-', strtolower($tw)) . '-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-rencana-aksi-'.str_replace(' ', '-', strtolower($tw)).'-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'action_plans_detail') {
             $matrix = $this->opdAnalytics->getActionPlansMatrix($year, $tw, $filters['organization_id'] ?? null);
             $data = array_merge($data, ['rows' => $matrix['rows'] ?? [], 'tw' => $tw]);
             $view = 'pdf.analytics.action-plans-detail';
-            $filename = 'analitik-rincian-rencana-aksi-' . str_replace(' ', '-', strtolower($tw)) . '-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-rincian-rencana-aksi-'.str_replace(' ', '-', strtolower($tw)).'-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } elseif ($type === 'risk_map') {
             $matrix = $this->ewsAnalytics->getRiskMap($year);
             $data = array_merge($data, ['rows' => $matrix['rows'] ?? []]);
             $view = 'pdf.analytics.risk-map';
-            $filename = 'analitik-peta-risiko-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-peta-risiko-'.$year.'-'.now()->format('YmdHis').'.pdf';
         } else {
             // Default: deviasi
             $rows = $this->buildDeviation($filters);
             $data = array_merge($data, ['rows' => $rows]);
             $view = 'pdf.analytics.deviation';
-            $filename = 'analitik-deviasi-' . $year . '-' . now()->format('YmdHis') . '.pdf';
+            $filename = 'analitik-deviasi-'.$year.'-'.now()->format('YmdHis').'.pdf';
         }
 
         $pdf = Pdf::loadView($view, $data)

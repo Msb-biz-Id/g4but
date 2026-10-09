@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
-
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -65,12 +64,12 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'flash' => [
-                'success'   => session('success'),
-                'error'     => session('error'),
+                'success' => session('success'),
+                'error' => session('error'),
                 'ai_result' => session('ai_result'),
             ],
             'systemNotifications' => $user ? $this->resolveNotifications($user->id) : null,
-            'theme'     => $this->resolveTheme(),
+            'theme' => $this->resolveTheme(),
             'appConfig' => $this->resolveAppConfig(),
         ];
     }
@@ -93,15 +92,15 @@ class HandleInertiaRequests extends Middleware
 
                 ->get(['id', 'event', 'title', 'message', 'resource_type', 'resource_id', 'read_at', 'created_at'])
                 ->map(fn ($n) => [
-                    'id'            => $n->id,
-                    'event'         => $n->event,
-                    'title'         => $n->title,
-                    'message'       => $n->message,
+                    'id' => $n->id,
+                    'event' => $n->event,
+                    'title' => $n->title,
+                    'message' => $n->message,
                     'resource_type' => $n->resource_type,
-                    'resource_id'   => $n->resource_id,
-                    'read_at'       => $n->read_at?->toIso8601String(),
-                    'created_at'    => $n->created_at?->toIso8601String(),
-                    'time_ago'      => $n->created_at?->diffForHumans() ?? '',
+                    'resource_id' => $n->resource_id,
+                    'read_at' => $n->read_at?->toIso8601String(),
+                    'created_at' => $n->created_at?->toIso8601String(),
+                    'time_ago' => $n->created_at?->diffForHumans() ?? '',
                 ])
                 ->toArray();
 
@@ -130,23 +129,23 @@ class HandleInertiaRequests extends Middleware
                 ])->pluck('value', 'key')->toArray();
 
                 return [
-                    'preset'         => $configs['theme.preset'] ?? 'indigo',
-                    'primaryHsl'     => $configs['theme.primary_hsl'] ?? '243 75% 59%',
+                    'preset' => $configs['theme.preset'] ?? 'indigo',
+                    'primaryHsl' => $configs['theme.primary_hsl'] ?? '243 75% 59%',
                     'primaryHslDark' => $configs['theme.primary_hsl_dark'] ?? '243 75% 70%',
-                    'radius'         => $configs['theme.radius'] ?? '0.5',
-                    'fontHeading'    => $configs['theme.font_heading'] ?? 'Inter',
-                    'fontBody'       => $configs['theme.font_body'] ?? 'Inter',
+                    'radius' => $configs['theme.radius'] ?? '0.5',
+                    'fontHeading' => $configs['theme.font_heading'] ?? 'Inter',
+                    'fontBody' => $configs['theme.font_body'] ?? 'Inter',
                 ];
             });
         } catch (\Throwable) {
             // Fallback default jika DB belum ready
             return [
-                'preset'         => 'indigo',
-                'primaryHsl'     => '243 75% 59%',
+                'preset' => 'indigo',
+                'primaryHsl' => '243 75% 59%',
                 'primaryHslDark' => '243 75% 70%',
-                'radius'         => '0.5',
-                'fontHeading'    => 'Inter',
-                'fontBody'       => 'Inter',
+                'radius' => '0.5',
+                'fontHeading' => 'Inter',
+                'fontBody' => 'Inter',
             ];
         }
     }
@@ -167,25 +166,25 @@ class HandleInertiaRequests extends Middleware
                 ])->pluck('value', 'key')->toArray();
 
                 return [
-                    'appName'           => $configs['app_name'] ?? 'e-KASUARI',
-                    'appDescription'    => $configs['app_description'] ?? 'Sistem Akuntabilitas Kinerja',
-                    'logoUrl'           => $configs['app_logo'] ?? '/logo.webp',
-                    'faviconUrl'        => $configs['app_favicon'] ?? '/favicon.ico',
-                    'headlineImageUrl'  => $configs['ui_headline_image'] ?? '/images/hero-banner.webp',
-                    'loginImageUrl'     => $configs['ui_login_image'] ?? '/images/login-bg.webp',
-                    'headlineTitle'     => $configs['ui_headline_title'] ?? '',
-                    'headlineSubtitle'  => $configs['ui_headline_subtitle'] ?? '',
+                    'appName' => $configs['app_name'] ?? 'e-KASUARI',
+                    'appDescription' => $configs['app_description'] ?? 'Sistem Akuntabilitas Kinerja',
+                    'logoUrl' => $configs['app_logo'] ?? '/logo.webp',
+                    'faviconUrl' => $configs['app_favicon'] ?? '/favicon.ico',
+                    'headlineImageUrl' => $configs['ui_headline_image'] ?? '/images/hero-banner.webp',
+                    'loginImageUrl' => $configs['ui_login_image'] ?? '/images/login-bg.webp',
+                    'headlineTitle' => $configs['ui_headline_title'] ?? '',
+                    'headlineSubtitle' => $configs['ui_headline_subtitle'] ?? '',
                 ];
             });
         } catch (\Throwable) {
             return [
-                'appName'          => 'e-KASUARI',
-                'appDescription'   => 'Sistem Akuntabilitas Kinerja',
-                'logoUrl'          => '/logo.webp',
-                'faviconUrl'       => '/favicon.ico',
+                'appName' => 'e-KASUARI',
+                'appDescription' => 'Sistem Akuntabilitas Kinerja',
+                'logoUrl' => '/logo.webp',
+                'faviconUrl' => '/favicon.ico',
                 'headlineImageUrl' => '/images/hero-banner.webp',
-                'loginImageUrl'    => '/images/login-bg.webp',
-                'headlineTitle'    => '',
+                'loginImageUrl' => '/images/login-bg.webp',
+                'headlineTitle' => '',
                 'headlineSubtitle' => '',
             ];
         }

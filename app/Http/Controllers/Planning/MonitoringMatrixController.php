@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Organization;
 use App\Models\PlanningDocument;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,19 +25,19 @@ class MonitoringMatrixController extends Controller
 {
     // Tipe dokumen yang dipantau di matrix (subset dari 12, prioritas MVP)
     private const MATRIX_TYPES = [
-        'rpjmd'              => 'RPJMD',
-        'renstra'            => 'Renstra',
-        'renja'              => 'Renja',
-        'rkpd'               => 'RKPD',
+        'rpjmd' => 'RPJMD',
+        'renstra' => 'Renstra',
+        'renja' => 'Renja',
+        'rkpd' => 'RKPD',
         'perjanjian_kinerja' => 'PK',
-        'laporan_kinerja'    => 'LKj',
-        'evaluasi_sakip'     => 'Evaluasi',
+        'laporan_kinerja' => 'LKj',
+        'evaluasi_sakip' => 'Evaluasi',
     ];
 
     private const TYPE_ALIASES = [
         'perjanjian_kinerja' => ['perjanjian_kinerja', 'pk'],
-        'laporan_kinerja'    => ['laporan_kinerja', 'lkjip'],
-        'evaluasi_sakip'     => ['evaluasi_sakip', 'lhe'],
+        'laporan_kinerja' => ['laporan_kinerja', 'lkjip'],
+        'evaluasi_sakip' => ['evaluasi_sakip', 'lhe'],
     ];
 
     public function index(Request $request): Response
@@ -72,13 +71,14 @@ class MonitoringMatrixController extends Controller
 
                 if ($isLimaTahunan) {
                     $start = $doc->start_year ?: $doc->year;
-                    $end   = $doc->end_year ?: ($start + 4);
+                    $end = $doc->end_year ?: ($start + 4);
                     if ($end <= $start) {
                         $end = $start + 4;
                     }
                     if ($year >= $start && $year <= $end) {
                         return true;
                     }
+
                     return (int) $doc->year === $year;
                 }
 
@@ -100,10 +100,11 @@ class MonitoringMatrixController extends Controller
             ->get(['id', 'organization_id', 'type', 'status', 'approved_at', 'year', 'start_year', 'end_year', 'periode_type'])
             ->filter(function ($doc) use ($year) {
                 $start = $doc->start_year ?: $doc->year;
-                $end   = $doc->end_year ?: ($start + 4);
+                $end = $doc->end_year ?: ($start + 4);
                 if ($end <= $start) {
                     $end = $start + 4;
                 }
+
                 return ($year >= $start && $year <= $end) || (int) $doc->year === $year;
             });
 
@@ -132,41 +133,41 @@ class MonitoringMatrixController extends Controller
                 }
 
                 return [
-                    'status'      => $doc->status,
-                    'id'          => $doc->id,
+                    'status' => $doc->status,
+                    'id' => $doc->id,
                     'approved_at' => $doc->approved_at?->format('d-m-Y'),
                 ];
             });
 
             // Hitung skor kelengkapan
-            $total    = count(self::MATRIX_TYPES);
+            $total = count(self::MATRIX_TYPES);
             $approved = $cells->filter(fn ($c) => $c['status'] === 'approved')->count();
-            $draft    = $cells->filter(fn ($c) => $c['status'] === 'draft')->count();
-            $missing  = $total - $approved - $draft;
+            $draft = $cells->filter(fn ($c) => $c['status'] === 'draft')->count();
+            $missing = $total - $approved - $draft;
 
             return [
                 'organization' => [
-                    'id'         => $org->id,
-                    'code'       => $org->code,
-                    'name'       => $org->name,
-                    'type'       => $org->type,
+                    'id' => $org->id,
+                    'code' => $org->code,
+                    'name' => $org->name,
+                    'type' => $org->type,
                     'is_bappeda' => $org->is_bappeda,
                 ],
-                'cells'        => $cells,
-                'score'        => [
+                'cells' => $cells,
+                'score' => [
                     'approved' => $approved,
-                    'draft'    => $draft,
-                    'missing'  => $missing,
-                    'total'    => $total,
-                    'pct'      => $total > 0 ? round(($approved / $total) * 100) : 0,
+                    'draft' => $draft,
+                    'missing' => $missing,
+                    'total' => $total,
+                    'pct' => $total > 0 ? round(($approved / $total) * 100) : 0,
                 ],
             ];
         });
 
         // Ringkasan provinsi keseluruhan
         $summary = [
-            'total_org'          => $organizations->count(),
-            'fully_complete'     => $matrix->filter(fn ($r) => $r['score']['missing'] === 0)->count(),
+            'total_org' => $organizations->count(),
+            'fully_complete' => $matrix->filter(fn ($r) => $r['score']['missing'] === 0)->count(),
             'avg_completion_pct' => $matrix->isEmpty() ? 0 : round($matrix->avg(fn ($r) => $r['score']['pct'])),
         ];
 
@@ -177,11 +178,11 @@ class MonitoringMatrixController extends Controller
             ->pluck('year');
 
         return Inertia::render('Planning/MonitoringMatrix', [
-            'matrix'     => $matrix->values(),
-            'types'      => collect(self::MATRIX_TYPES)->map(fn ($label, $key) => compact('key', 'label'))->values(),
-            'year'       => $year,
-            'years'      => $availableYears,
-            'summary'    => $summary,
+            'matrix' => $matrix->values(),
+            'types' => collect(self::MATRIX_TYPES)->map(fn ($label, $key) => compact('key', 'label'))->values(),
+            'year' => $year,
+            'years' => $availableYears,
+            'summary' => $summary,
         ]);
     }
 }

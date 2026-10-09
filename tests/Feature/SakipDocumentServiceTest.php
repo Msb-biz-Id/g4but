@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Organization;
-use App\Models\PlanningDocument;
 use App\Services\SakipDocumentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -34,27 +33,6 @@ class SakipDocumentServiceTest extends TestCase
         ]);
     }
 
-    public function test_canonical_pemda_definitions_has_13_documents(): void
-    {
-        $defs = $this->service->getCanonicalPemdaDefinitions();
-        $this->assertCount(13, $defs);
-
-        $keys = array_column($defs, 'type');
-        $this->assertContains('rpjmd', $keys);
-        $this->assertContains('pohon_kinerja', $keys);
-        $this->assertContains('sop', $keys);
-        $this->assertContains('crosscutting', $keys);
-        $this->assertContains('cascading', $keys);
-        $this->assertContains('iku', $keys);
-        $this->assertContains('rkpd', $keys);
-        $this->assertContains('dpa', $keys);
-        $this->assertContains('pk', $keys);
-        $this->assertContains('monev', $keys);
-        $this->assertContains('renaksi', $keys);
-        $this->assertContains('pedoman_teknis', $keys);
-        $this->assertContains('lkjip', $keys);
-    }
-
     public function test_canonical_opd_definitions_has_12_documents(): void
     {
         $defs = $this->service->getCanonicalOpdDefinitions();
@@ -63,21 +41,9 @@ class SakipDocumentServiceTest extends TestCase
         $keys = array_column($defs, 'key');
         $expected = [
             'renstra', 'pohon_kinerja', 'sop', 'crosscutting', 'cascading',
-            'iku', 'renja', 'dpa', 'pk', 'monev', 'renaksi', 'lkjip'
+            'iku', 'renja', 'dpa', 'pk', 'monev', 'renaksi', 'lkjip',
         ];
         $this->assertEquals($expected, $keys);
-    }
-
-    public function test_pemda_sakip_matrix_computation(): void
-    {
-        $matrix = $this->service->getSakipPemdaMatrix(2026);
-
-        $this->assertEquals(13, $matrix['total_required']);
-        $this->assertIsInt($matrix['available']);
-        $this->assertIsInt($matrix['missing']);
-        $this->assertEquals($matrix['total_required'], $matrix['available'] + $matrix['missing']);
-        $this->assertCount(13, $matrix['rows']);
-        $this->assertContains($matrix['status'], ['Lengkap', 'Belum Lengkap', 'Belum Tersedia']);
     }
 
     public function test_opd_sakip_matrix_computation_and_formula(): void

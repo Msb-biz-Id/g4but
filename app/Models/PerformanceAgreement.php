@@ -34,7 +34,7 @@ class PerformanceAgreement extends Model
 
     public function isLocked(): bool
     {
-        return $this->status === 'locked' || !empty($this->locked_at);
+        return $this->status === 'locked' || ! empty($this->locked_at);
     }
 
     public function ensureNotLocked(): void

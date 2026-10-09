@@ -424,20 +424,6 @@ export default function Authenticated({
             icon: Gauge,
             items: [
                 {
-                    href: route('measurement.realization.rpjmd'),
-                    label: 'Realisasi RPJMD',
-                    icon: FileSpreadsheet,
-                    active: route().current('measurement.realization.rpjmd*'),
-                    show: canViewRealizations,
-                },
-                {
-                    href: route('measurement.realization.iku'),
-                    label: 'Capaian IKU PEMDA',
-                    icon: Target,
-                    active: route().current('measurement.realization.iku*'),
-                    show: canViewRealizations,
-                },
-                {
                     href: route('measurement.realization.opd'),
                     label: 'Realisasi Perangkat Daerah',
                     icon: Building2,

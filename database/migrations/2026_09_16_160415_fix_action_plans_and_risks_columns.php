@@ -18,10 +18,10 @@ return new class extends Migration
                 }
             });
 
-            \DB::statement("UPDATE action_plans SET title = activity WHERE (title IS NULL OR title = '') AND activity IS NOT NULL AND activity != ''");
-            \DB::statement("UPDATE action_plans SET activity = title WHERE (activity IS NULL OR activity = '') AND title IS NOT NULL AND title != ''");
-            \DB::statement("UPDATE action_plans SET performance_period_id = planning_period_id WHERE performance_period_id IS NULL AND planning_period_id IS NOT NULL");
-            \DB::statement("UPDATE action_plans SET planning_period_id = performance_period_id WHERE planning_period_id IS NULL AND performance_period_id IS NOT NULL");
+            DB::statement("UPDATE action_plans SET title = activity WHERE (title IS NULL OR title = '') AND activity IS NOT NULL AND activity != ''");
+            DB::statement("UPDATE action_plans SET activity = title WHERE (activity IS NULL OR activity = '') AND title IS NOT NULL AND title != ''");
+            DB::statement('UPDATE action_plans SET performance_period_id = planning_period_id WHERE performance_period_id IS NULL AND planning_period_id IS NOT NULL');
+            DB::statement('UPDATE action_plans SET planning_period_id = performance_period_id WHERE planning_period_id IS NULL AND performance_period_id IS NOT NULL');
         }
 
         if (Schema::hasTable('risks')) {
@@ -49,8 +49,8 @@ return new class extends Migration
                 }
             });
 
-            \DB::statement("UPDATE risks SET risk_event = title WHERE (risk_event IS NULL OR risk_event = '') AND title IS NOT NULL AND title != ''");
-            \DB::statement("UPDATE risks SET title = risk_event WHERE (title IS NULL OR title = '') AND risk_event IS NOT NULL AND risk_event != ''");
+            DB::statement("UPDATE risks SET risk_event = title WHERE (risk_event IS NULL OR risk_event = '') AND title IS NOT NULL AND title != ''");
+            DB::statement("UPDATE risks SET title = risk_event WHERE (title IS NULL OR title = '') AND risk_event IS NOT NULL AND risk_event != ''");
         }
     }
 

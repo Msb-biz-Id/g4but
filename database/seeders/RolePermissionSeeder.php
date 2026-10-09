@@ -345,6 +345,7 @@ class RolePermissionSeeder extends Seeder
                     if (in_array('*', $allowed, true)) {
                         return true;
                     }
+
                     // Cocok jika match exact "resource:action" atau match nama resource
                     return in_array($permission->name, $allowed, true)
                         || in_array($permission->resource, $allowed, true);

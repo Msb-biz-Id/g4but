@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Planning;
 
 use App\Http\Controllers\Controller;
@@ -53,15 +54,15 @@ class DocumentRevisionController extends Controller
             'note' => ['required', 'string', 'min:10', 'max:2000'],
         ], [
             'note.required' => 'Catatan revisi tidak boleh kosong.',
-            'note.min'      => 'Catatan revisi minimal 10 karakter.',
+            'note.min' => 'Catatan revisi minimal 10 karakter.',
         ]);
 
         // Buat catatan revisi
         $revision = DocumentRevision::create([
             'planning_document_id' => $document->id,
-            'note'                 => $validated['note'],
-            'status'               => 'pending',
-            'created_by'           => $request->user()->id,
+            'note' => $validated['note'],
+            'status' => 'pending',
+            'created_by' => $request->user()->id,
         ]);
 
         // Ubah status dokumen kembali ke draft agar OPD sadar perlu revisi
@@ -93,9 +94,9 @@ class DocumentRevisionController extends Controller
         }
 
         $revision->update([
-            'status'           => 'acknowledged',
-            'acknowledged_by'  => $request->user()->id,
-            'acknowledged_at'  => now(),
+            'status' => 'acknowledged',
+            'acknowledged_by' => $request->user()->id,
+            'acknowledged_at' => now(),
         ]);
 
         return back()->with('success', 'Catatan revisi telah dikonfirmasi. Silakan perbaiki dokumen.');
@@ -113,7 +114,7 @@ class DocumentRevisionController extends Controller
             ?: abort(403, 'Di luar lingkup organisasi Anda.');
 
         $revision->update([
-            'status'      => 'resolved',
+            'status' => 'resolved',
             'resolved_at' => now(),
         ]);
 
@@ -136,15 +137,15 @@ class DocumentRevisionController extends Controller
 
         foreach ($org->users as $user) {
             AppNotification::create([
-                'user_id'       => $user->id,
-                'event'         => 'revision',
-                'channel'       => 'in_app',
-                'title'         => "Catatan Revisi: {$document->title}",
-                'message'       => "Biro Organisasi mengirimkan catatan perbaikan untuk dokumen \"{$document->title}\". "
-                    . "Silakan buka halaman Dokumen Perencanaan untuk melihat detail dan melakukan perbaikan.",
+                'user_id' => $user->id,
+                'event' => 'revision',
+                'channel' => 'in_app',
+                'title' => "Catatan Revisi: {$document->title}",
+                'message' => "Biro Organisasi mengirimkan catatan perbaikan untuk dokumen \"{$document->title}\". "
+                    .'Silakan buka halaman Dokumen Perencanaan untuk melihat detail dan melakukan perbaikan.',
                 'resource_type' => 'planning_document',
-                'resource_id'   => $document->id,
-                'metadata'      => [
+                'resource_id' => $document->id,
+                'metadata' => [
                     'revision_id' => $revision->id,
                     'note_preview' => mb_substr($note, 0, 120),
                 ],

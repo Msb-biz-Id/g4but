@@ -38,20 +38,20 @@ class PeriodController extends Controller
 
         // Normalisasi & auto-fill fallback untuk mempermudah input master tahun
         $input = $request->all();
-        $type  = $input['type'] ?? 'annual';
-        $year  = ! empty($input['year']) ? (int) $input['year'] : (int) date('Y');
+        $type = $input['type'] ?? 'annual';
+        $year = ! empty($input['year']) ? (int) $input['year'] : (int) date('Y');
 
         if (empty($input['start_date'])) {
             $input['start_date'] = "{$year}-01-01";
         }
         if (empty($input['end_date'])) {
-            $input['end_date'] = $type === 'rpjmd' ? ($year + 4) . "-12-31" : "{$year}-12-31";
+            $input['end_date'] = $type === 'rpjmd' ? ($year + 4).'-12-31' : "{$year}-12-31";
         }
         if (empty($input['code'])) {
-            $input['code'] = $type === 'rpjmd' ? "RPJMD-{$year}-" . ($year + 4) : "PP-{$year}";
+            $input['code'] = $type === 'rpjmd' ? "RPJMD-{$year}-".($year + 4) : "PP-{$year}";
         }
         if (empty($input['name'])) {
-            $input['name'] = $type === 'rpjmd' ? "RPJMD Provinsi Papua Barat {$year}-" . ($year + 4) : "Tahun Anggaran {$year}";
+            $input['name'] = $type === 'rpjmd' ? "RPJMD Provinsi Papua Barat {$year}-".($year + 4) : "Tahun Anggaran {$year}";
         }
 
         $validated = validator($input, [
