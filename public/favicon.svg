@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+    <defs>
+        <linearGradient id="kasuariGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#4F46E5" />
+            <stop offset="50%" stopColor="#7C3AED" />
+            <stop offset="100%" stopColor="#D97706" />
+        </linearGradient>
+        <linearGradient id="casqueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#F59E0B" />
+            <stop offset="100%" stopColor="#D97706" />
+        </linearGradient>
+        <linearGradient id="wattleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#EF4444" />
+            <stop offset="100%" stopColor="#B91C1C" />
+        </linearGradient>
+        <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1E1B4B" />
+            <stop offset="100%" stopColor="#312E81" />
+        </linearGradient>
+    </defs>
+
+    <!-- Perisai Adat Papua Shield Shape -->
+    <path
+        d="M50 4 L86 18 C86 52 72 82 50 96 C28 82 14 52 14 18 Z"
+        fill="url(#shieldGrad)"
+        stroke="#6366F1"
+        stroke-width="2.5"
+        stroke-linejoin="round"
+    />
+
+    <!-- Inner Border Ornamen -->
+    <path
+        d="M50 9 L81 21 C81 50 68 76 50 89 C32 76 19 50 19 21 Z"
+        fill="none"
+        stroke="#F59E0B"
+        stroke-opacity="0.4"
+        stroke-width="1.2"
+        stroke-dasharray="2 2"
+    />
+
+    <!-- Mahkota / Casque Kasuari Khas Papua -->
+    <path
+        d="M44 26 C44 26 48 15 57 16 C63 17 61 24 59 28 C57 32 50 34 44 34 Z"
+        fill="url(#casqueGrad)"
+    />
+
+    <!-- Kepala & Leher Kasuari -->
+    <path
+        d="M44 34 C36 34 32 39 31 45 C30 52 35 63 38 72 C40 78 43 83 47 83 C52 83 55 77 54 69 C53 60 55 49 53 42 C51 37 48 34 44 34 Z"
+        fill="url(#kasuariGrad)"
+    />
+
+    <!-- Paruh Kasuari -->
+    <path
+        d="M32 43 L18 47 L31 50 Z"
+        fill="#FBBF24"
+    />
+
+    <!-- Gelambir Leher Khas Kasuari (Red Wattle) -->
+    <path
+        d="M38 54 C35 57 34 65 37 68 C40 70 41 64 40 57 Z"
+        fill="url(#wattleGrad)"
+    />
+
+    <!-- Mata Kasuari -->
+    <circle cx="39" cy="42" r="2.5" fill="#FEF08A" />
+    <circle cx="39" cy="42" r="1.2" fill="#1E1B4B" />
+
+    <!-- Aksen Motif Garis Papua -->
+    <path
+        d="M50 89 L50 96 M28 82 L23 86 M72 82 L77 86"
+        stroke="#F59E0B"
+        stroke-width="2"
+        stroke-linecap="round"
+    />
+</svg>

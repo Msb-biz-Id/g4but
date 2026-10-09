@@ -1,0 +1,698 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import PublicLayout from '@/Layouts/PublicLayout';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { SelectNative } from '@/Components/ui/select-native';
+import { Input } from '@/Components/ui/input';
+import { cn } from '@/lib/utils';
+import {
+    ArrowLeft, Building2, ChevronDown, ChevronRight, Eye,
+    Filter, GitBranch, Layers, Maximize, Maximize2, Minimize2,
+    Printer, RotateCcw, Search, Target, X, ZoomIn, ZoomOut,
+} from 'lucide-react';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import {
+    KinerjaNode, getNodeChildren, SURABAYA_LEVELS, getSurabayaLevelConfig, normalizeLevel,
+} from '@/types/kinerjaTree';
+
+interface Organization { id: number; code: string; name: string; short_name?: string; }
+interface Period { id: number; year: number; }
+
+interface PohonKinerjaPublikProps {
+    tree: KinerjaNode[];
+    organizations: Organization[];
+    periods: Period[];
+    treeLevels: Record<string, string>;
+    filters: { organization?: string; period?: string };
+}
+
+// ─── Public Read-Only Node Card ──────────────────────────────────────────────
+function PublicNodeCard({
+    node,
+    isOutputStack = false,
+    highlighted,
+    matchesSearch,
+    isCollapsed,
+    childCount,
+    onToggleCollapse,
+    onHighlight,
+}: {
+    node: KinerjaNode;
+    isOutputStack?: boolean;
+    highlighted: boolean;
+    matchesSearch: boolean;
+    isCollapsed: boolean;
+    childCount: number;
+    onToggleCollapse: (id: number) => void;
+    onHighlight: (id: number | null) => void;
+}) {
+    const config = getSurabayaLevelConfig(node.level);
+
+    return (
+        <div
+            onClick={(e) => {
+                e.stopPropagation();
+                onHighlight(node.id);
+                if (childCount > 0) {
+                    onToggleCollapse(node.id);
+                }
+            }}
+            title={childCount > 0 ? (isCollapsed ? 'Klik bagan untuk membuka cabang turunan' : 'Klik bagan untuk menutup cabang turunan') : 'Simpul Terminal'}
+            className={cn(
+                'group relative flex flex-col rounded-xl border-2 text-left transition-all duration-200 cursor-pointer shadow-md select-none',
+                'hover:shadow-xl hover:border-primary/60 hover:-translate-y-0.5',
+                config.cardBg,
+                config.border,
+                config.widthClass,
+                highlighted && 'ring-4 ring-primary ring-offset-2 scale-[1.03] z-20 shadow-2xl',
+                matchesSearch && !highlighted && 'ring-4 ring-amber-400 ring-offset-2 scale-[1.02] z-20 shadow-xl'
+            )}
+        >
+            {/* Header Strip */}
+            <div className={cn('flex items-center justify-between px-3 py-1.5 rounded-t-lg text-[10px] font-bold tracking-wide uppercase', config.headerBg)}>
+                <span className="truncate">{config.tierName}</span>
+                <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-black/20 font-bold shrink-0 ml-1">
+                    {node.code}
+                </span>
+            </div>
+
+            {/* Content Body */}
+            <div className="p-3 flex flex-col gap-2 flex-1">
+                <p className="text-xs sm:text-[13px] font-semibold text-slate-800 dark:text-slate-100 leading-snug line-clamp-4">
+                    {node.name}
+                </p>
+
+                {node.description && (
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 italic line-clamp-2">
+                        {node.description}
+                    </p>
+                )}
+
+                {node.indicator && (
+                    <div className="flex items-start gap-1.5 rounded-md bg-white/70 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-700/70 px-2 py-1 text-[11px] text-slate-700 dark:text-slate-300">
+                        <Target className="h-3.5 w-3.5 text-rose-500 shrink-0 mt-0.5" />
+                        <div className="flex-1 overflow-hidden">
+                            <span className="font-medium truncate block">{node.indicator.name}</span>
+                            {node.indicator.unit && (
+                                <span className="text-[10px] text-slate-400 font-mono">Satuan: {node.indicator.unit}</span>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {node.organization && (
+                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                        <Building2 className="h-3 w-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{node.organization.short_name || node.organization.name}</span>
+                    </div>
+                )}
+            </div>
+
+            {/* Bottom Expand / Collapse Handle */}
+            <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-50/90 dark:bg-slate-800/80 rounded-b-lg border-t border-slate-100 dark:border-slate-800">
+                {childCount > 0 ? (
+                    <span
+                        className={cn(
+                            'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold transition pointer-events-none',
+                            isCollapsed
+                                ? 'bg-primary text-primary-foreground shadow-2xs'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+                        )}
+                    >
+                        {isCollapsed ? (
+                            <>
+                                <ChevronRight className="h-3 w-3" />
+                                <span>+{childCount} Turunan</span>
+                            </>
+                        ) : (
+                            <>
+                                <ChevronDown className="h-3 w-3" />
+                                <span>{childCount} Turunan</span>
+                            </>
+                        )}
+                    </span>
+                ) : (
+                    <span className="text-[10px] text-slate-400 font-mono">Simpul Terminal</span>
+                )}
+                <span className="text-[10px] text-slate-400 font-medium">
+                    {childCount > 0 ? (isCollapsed ? 'Klik untuk buka' : 'Klik untuk tutup') : 'Publik'}
+                </span>
+            </div>
+        </div>
+    );
+}
+
+// ─── Public Read-Only Hybrid Tree SubTree ─────────────────────────────────────
+function PublicSubTree({
+    node,
+    visibleLayers,
+    collapsedIds,
+    highlightedId,
+    matchedIds,
+    onToggleCollapse,
+    onHighlight,
+}: {
+    node: KinerjaNode;
+    visibleLayers: Record<string, boolean>;
+    collapsedIds: Set<number>;
+    highlightedId: number | null;
+    matchedIds: Set<number>;
+    onToggleCollapse: (id: number) => void;
+    onHighlight: (id: number | null) => void;
+}) {
+    if (visibleLayers[normalizeLevel(node.level)] === false) return null;
+
+    const allChildren = getNodeChildren(node);
+    const visibleChildren = allChildren.filter(
+        (c) => visibleLayers[normalizeLevel(c.level)] !== false
+    );
+
+    const isCollapsed = collapsedIds.has(node.id);
+    const highlighted = highlightedId === node.id;
+    const matchesSearch = matchedIds.has(node.id);
+
+    const isOutputStack =
+        visibleChildren.length > 0 &&
+        visibleChildren.every((c) => normalizeLevel(c.level) === 'output');
+
+    return (
+        <div className="flex flex-col items-center">
+            <PublicNodeCard
+                node={node}
+                isOutputStack={isOutputStack}
+                highlighted={highlighted}
+                matchesSearch={matchesSearch}
+                isCollapsed={isCollapsed}
+                childCount={visibleChildren.length}
+                onToggleCollapse={onToggleCollapse}
+                onHighlight={onHighlight}
+            />
+
+            {!isCollapsed && visibleChildren.length > 0 && (
+                <>
+                    {isOutputStack ? (
+                        /* Vertical Output Stack */
+                        <div className="flex flex-col items-center pt-2">
+                            <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600" />
+                            <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-slate-400 dark:border-t-slate-500 -mt-0.5 mb-2" />
+
+                            <div className="flex flex-col gap-2.5 items-center">
+                                {visibleChildren.map((child, idx) => (
+                                    <React.Fragment key={child.id}>
+                                        {idx > 0 && (
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-0.5 h-3 bg-amber-300 dark:bg-amber-600" />
+                                                <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[5px] border-t-amber-400 -mt-0.5" />
+                                            </div>
+                                        )}
+                                        <PublicNodeCard
+                                            node={child}
+                                            isOutputStack={true}
+                                            highlighted={highlightedId === child.id}
+                                            matchesSearch={matchedIds.has(child.id)}
+                                            isCollapsed={false}
+                                            childCount={0}
+                                            onToggleCollapse={onToggleCollapse}
+                                            onHighlight={onHighlight}
+                                        />
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        /* Horizontal Branch */
+                        <div className="flex flex-col items-center">
+                            <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600" />
+
+                            <div className="flex items-start justify-center gap-6 sm:gap-8">
+                                {visibleChildren.map((child, idx) => {
+                                    const isFirst = idx === 0;
+                                    const isLast = idx === visibleChildren.length - 1;
+                                    const isOnly = visibleChildren.length === 1;
+
+                                    return (
+                                        <div key={child.id} className="relative flex flex-col items-center">
+                                            {!isOnly && (
+                                                <div
+                                                    className={cn(
+                                                        'absolute top-0 h-0.5 bg-slate-300 dark:bg-slate-600',
+                                                        isFirst
+                                                            ? 'left-1/2 right-0'
+                                                            : isLast
+                                                            ? 'left-0 right-1/2'
+                                                            : 'left-0 right-0'
+                                                    )}
+                                                />
+                                            )}
+
+                                            <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600" />
+                                            <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[5px] border-t-slate-400 dark:border-t-slate-500 -mt-0.5 mb-1" />
+
+                                            <PublicSubTree
+                                                node={child}
+                                                visibleLayers={visibleLayers}
+                                                collapsedIds={collapsedIds}
+                                                highlightedId={highlightedId}
+                                                matchedIds={matchedIds}
+                                                onToggleCollapse={onToggleCollapse}
+                                                onHighlight={onHighlight}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+}
+
+// ─── Main Public Page ────────────────────────────────────────────────────────
+export default function PohonKinerjaPublik({
+    tree,
+    organizations,
+    periods,
+    treeLevels,
+    filters,
+}: PohonKinerjaPublikProps) {
+    const [highlightedId, setHighlightedId] = useState<number | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [layerFilterOpen, setLayerFilterOpen] = useState(false);
+
+    // Layer Visibility
+    const [visibleLayers, setVisibleLayers] = useState<Record<string, boolean>>({
+        visi: true,
+        outcome: true,
+        csf: true,
+        kondisi_antara: true,
+        kondisi_operasional: true,
+        output: true,
+    });
+
+    const toggleLayer = (layerKey: string) => {
+        setVisibleLayers((prev) => ({ ...prev, [layerKey]: !prev[layerKey] }));
+    };
+
+    // Helper untuk mengumpulkan seluruh simpul yang memiliki anak agar di-collapse secara default
+    const collectAllParentIds = useCallback((nodes: KinerjaNode[]) => {
+        const ids = new Set<number>();
+        function collect(items: KinerjaNode[]) {
+            for (const n of items) {
+                const c = getNodeChildren(n);
+                if (c.length > 0) {
+                    ids.add(n.id);
+                    collect(c);
+                }
+            }
+        }
+        collect(nodes);
+        return ids;
+    }, []);
+
+    // Collapse State: default collapse saat pertama kali dibuka
+    const [collapsedIds, setCollapsedIds] = useState<Set<number>>(() => collectAllParentIds(tree));
+
+    // Reset collapse state saat data tree berganti (misal filter OPD/periode berubah)
+    useEffect(() => {
+        setCollapsedIds(collectAllParentIds(tree));
+    }, [tree, collectAllParentIds]);
+
+    const toggleCollapse = useCallback((id: number) => {
+        setCollapsedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    }, []);
+
+    const expandAll = useCallback(() => {
+        setCollapsedIds(new Set());
+    }, []);
+
+    const collapseAll = useCallback(() => {
+        setCollapsedIds(collectAllParentIds(tree));
+    }, [tree, collectAllParentIds]);
+
+    // Search matches
+    const { matchedIds, ancestorIds } = useMemo(() => {
+        const matches = new Set<number>();
+        const ancestors = new Set<number>();
+        if (!searchQuery.trim()) return { matchedIds: matches, ancestorIds: ancestors };
+
+        const q = searchQuery.toLowerCase().trim();
+
+        function search(nodes: KinerjaNode[], path: number[]): boolean {
+            let subtreeMatched = false;
+            for (const node of nodes) {
+                const nodeName = node.name?.toLowerCase() || '';
+                const nodeCode = node.code?.toLowerCase() || '';
+                const orgName = node.organization?.name?.toLowerCase() || '';
+                const indName = node.indicator?.name?.toLowerCase() || '';
+
+                const isMatch =
+                    nodeName.includes(q) ||
+                    nodeCode.includes(q) ||
+                    orgName.includes(q) ||
+                    indName.includes(q);
+
+                if (isMatch) {
+                    matches.add(node.id);
+                    subtreeMatched = true;
+                    path.forEach((aId) => ancestors.add(aId));
+                }
+
+                const childMatched = search(getNodeChildren(node), [...path, node.id]);
+                if (childMatched) subtreeMatched = true;
+            }
+            return subtreeMatched;
+        }
+
+        search(tree, []);
+        return { matchedIds: matches, ancestorIds: ancestors };
+    }, [tree, searchQuery]);
+
+    useEffect(() => {
+        if (ancestorIds.size > 0) {
+            setCollapsedIds((prev) => {
+                const next = new Set(prev);
+                ancestorIds.forEach((id) => next.delete(id));
+                return next;
+            });
+        }
+    }, [ancestorIds]);
+
+    // Sinkronisasi nilai filter organisasi & periode (mencocokkan ID atau kode secara fleksibel)
+    const selectedOrgId = useMemo(() => {
+        if (!filters.organization) return '';
+        const match = organizations.find(
+            (o) => String(o.id) === String(filters.organization) || o.code === String(filters.organization)
+        );
+        return match ? String(match.id) : String(filters.organization);
+    }, [filters.organization, organizations]);
+
+    const selectedPeriodYear = useMemo(() => {
+        if (!filters.period) return '';
+        const match = periods.find(
+            (p) => String(p.year) === String(filters.period) || String(p.id) === String(filters.period)
+        );
+        return match ? String(match.year) : String(filters.period);
+    }, [filters.period, periods]);
+
+    const handleFilter = (key: string, value: string) => {
+        router.get('/laporan/pohon-kinerja', { ...filters, [key]: value }, { preserveState: true, replace: true });
+    };
+
+    const backUrl = route('laporan.publik.index', {
+        kategori: 'perencanaan',
+        type: 'pohon_kinerja',
+        ...(filters.organization ? { organization_id: filters.organization } : {}),
+        ...(filters.period ? { year: filters.period } : {}),
+    });
+
+    const handleBack = (e: React.MouseEvent) => {
+        // Jika pengguna datang dari Laporan Publik di sesi browser ini, gunakan window.history.back()
+        // agar state filter, pencarian, dan posisi scroll tetap presisi.
+        const lastLaporanUrl = typeof window !== 'undefined' ? sessionStorage.getItem('laporan_last_url') : null;
+        if (lastLaporanUrl && typeof window !== 'undefined' && window.history.length > 1) {
+            e.preventDefault();
+            window.history.back();
+        }
+    };
+
+    return (
+        <PublicLayout active="laporan" hideFooter={true}>
+            <Head>
+                <title>Pohon Kinerja Publik — e-KASUARI Papua Barat</title>
+                <meta
+                    name="description"
+                    content="Visualisasi Pohon Kinerja (Cascading Kinerja) Pemerintah Provinsi Papua Barat. Telusuri keselarasan tujuan, sasaran strategis, program, dan indikator kinerja seluruh OPD."
+                />
+                <meta
+                    name="keywords"
+                    content="pohon kinerja papua barat, cascading kinerja, sasaran strategis opd, sakip papua barat, akuntabilitas"
+                />
+                <meta property="og:title" content="Pohon Kinerja Publik — e-KASUARI Papua Barat" />
+                <meta
+                    property="og:description"
+                    content="Visualisasi Pohon Kinerja (Cascading Kinerja) Pemerintah Provinsi Papua Barat secara interaktif dan transparan."
+                />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
+            </Head>
+
+            <div className="flex flex-col h-[calc(100vh-4rem)] bg-slate-100 dark:bg-slate-950">
+                {/* Header Toolbar */}
+                <div className="shrink-0 flex flex-col gap-2.5 border-b border-slate-200 bg-white px-4 py-3 dark:border-border dark:bg-card shadow-xs">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                asChild
+                                className="h-8 px-2 text-xs gap-1"
+                            >
+                                <Link href={backUrl} onClick={handleBack}>
+                                    <ArrowLeft className="h-3.5 w-3.5" />
+                                    <span>Kembali ke Laporan</span>
+                                </Link>
+                            </Button>
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                            <div className="flex items-center gap-1.5">
+                                <GitBranch className="h-4 w-4 text-indigo-600" />
+                                <h1 className="text-sm font-bold text-slate-800 dark:text-foreground">
+                                    Pohon Kinerja Publik (Cascading Outcome)
+                                </h1>
+                                <Badge variant="outline" className="text-[10px] hidden sm:inline-flex">
+                                    PermenPAN-RB 89/2021
+                                </Badge>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Button size="sm" variant="outline" asChild className="h-8 text-xs gap-1">
+                                <a
+                                    href={route('planning.trees.print', {
+                                        ...(filters.organization ? { organization: filters.organization } : {}),
+                                        ...(filters.period ? { period: filters.period } : {}),
+                                    })}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Printer className="h-3.5 w-3.5" />
+                                    <span>Cetak PDF</span>
+                                </a>
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Filter & Controls */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <SelectNative
+                                value={selectedOrgId}
+                                onChange={(e) => handleFilter('organization', e.target.value)}
+                                className="h-8 text-xs w-full sm:w-48"
+                            >
+                                <option value="">Semua Organisasi</option>
+                                {organizations.map((o) => (
+                                    <option key={o.id} value={String(o.id)}>
+                                        {o.name}
+                                    </option>
+                                ))}
+                            </SelectNative>
+
+                            <SelectNative
+                                value={selectedPeriodYear}
+                                onChange={(e) => handleFilter('period', e.target.value)}
+                                className="h-8 text-xs w-full sm:w-36"
+                            >
+                                <option value="">Semua Periode</option>
+                                {periods.map((p) => (
+                                    <option key={p.id} value={String(p.year)}>
+                                        {p.year}
+                                    </option>
+                                ))}
+                            </SelectNative>
+
+                            <div className="relative flex-1 sm:w-56">
+                                <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
+                                <Input
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Cari simpul, OPD, IK..."
+                                    className="h-8 pl-8 pr-7 text-xs"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery('')}
+                                        className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
+                            </div>
+                            {matchedIds.size > 0 && (
+                                <Badge variant="secondary" className="text-[11px] h-7 px-2">
+                                    {matchedIds.size} cocok
+                                </Badge>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                            {/* Layer Filter */}
+                            <div className="relative">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setLayerFilterOpen(!layerFilterOpen)}
+                                    className={cn('h-8 text-xs gap-1', layerFilterOpen && 'bg-slate-100')}
+                                >
+                                    <Layers className="h-3.5 w-3.5 text-indigo-500" />
+                                    <span>Layer</span>
+                                    <ChevronDown className="h-3 w-3 opacity-60" />
+                                </Button>
+
+                                {layerFilterOpen && (
+                                    <div className="absolute right-0 top-9 z-50 w-64 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-border dark:bg-card">
+                                        <div className="text-xs font-bold text-slate-800 dark:text-foreground pb-2 mb-1.5 border-b border-slate-100 dark:border-slate-800">
+                                            Filter Layer:
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            {Object.entries(SURABAYA_LEVELS).map(([k, lvl]) => (
+                                                <label key={k} className="flex items-center gap-2 text-xs cursor-pointer p-1 rounded hover:bg-slate-50">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={visibleLayers[k] ?? true}
+                                                        onChange={() => toggleLayer(k)}
+                                                        className="rounded text-primary h-3.5 w-3.5"
+                                                    />
+                                                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: lvl.accent }} />
+                                                    <span>{lvl.label}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <Button size="sm" variant="outline" onClick={expandAll} className="h-8 text-xs gap-1">
+                                <Maximize2 className="h-3.5 w-3.5" />
+                                <span>Expand All</span>
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={collapseAll} className="h-8 text-xs gap-1">
+                                <Minimize2 className="h-3.5 w-3.5" />
+                                <span>Collapse</span>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Interactive Canvas */}
+                <div className="flex-1 overflow-hidden relative">
+                    <TransformWrapper
+                        initialScale={0.8}
+                        minScale={0.15}
+                        maxScale={2.5}
+                        limitToBounds={false}
+                        centerOnInit={true}
+                        wheel={{ step: 0.08 }}
+                    >
+                        {({ zoomIn, zoomOut, resetTransform, centerView, state }) => (
+                            <>
+                                {/* Floating controls */}
+                                <div className="absolute top-4 right-4 z-30 flex items-center gap-1 rounded-xl border border-slate-200 bg-white/90 backdrop-blur-md px-2 py-1 shadow-lg dark:border-slate-800 dark:bg-slate-900/90">
+                                    <button
+                                        type="button"
+                                        onClick={() => zoomIn()}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition"
+                                        title="Zoom In"
+                                    >
+                                        <ZoomIn className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => zoomOut()}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition"
+                                        title="Zoom Out"
+                                    >
+                                        <ZoomOut className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => resetTransform()}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition"
+                                        title="Reset Zoom"
+                                    >
+                                        <RotateCcw className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => centerView(0.8)}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition"
+                                        title="Pusatkan"
+                                    >
+                                        <Maximize className="h-4 w-4" />
+                                    </button>
+                                    <div className="h-4 w-px bg-slate-200 mx-1" />
+                                    <span className="text-[11px] font-mono font-medium text-slate-500 w-12 text-center">
+                                        {Math.round((state?.scale ?? 0.8) * 100)}%
+                                    </span>
+                                </div>
+
+                                <div className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing">
+                                    <TransformComponent
+                                        wrapperStyle={{ width: '100%', height: '100%' }}
+                                        contentStyle={{ width: 'max-content', minWidth: '100%', minHeight: '100%', padding: '60px 80px' }}
+                                    >
+                                        {tree.length > 0 ? (
+                                            <div className="flex flex-col items-center gap-12 select-none">
+                                                {tree.map((rootNode) => (
+                                                    <PublicSubTree
+                                                        key={rootNode.id}
+                                                        node={rootNode}
+                                                        visibleLayers={visibleLayers}
+                                                        collapsedIds={collapsedIds}
+                                                        highlightedId={highlightedId}
+                                                        matchedIds={matchedIds}
+                                                        onToggleCollapse={toggleCollapse}
+                                                        onHighlight={setHighlightedId}
+                                                    />
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center min-h-[400px] w-full text-center gap-2">
+                                                <GitBranch className="h-16 w-16 text-slate-300" />
+                                                <p className="text-sm font-semibold text-slate-500">
+                                                    Belum ada pohon kinerja yang dipublikasikan
+                                                </p>
+                                            </div>
+                                        )}
+                                    </TransformComponent>
+                                </div>
+
+                                <div className="shrink-0 flex flex-wrap items-center gap-4 border-t border-slate-200 bg-white/95 px-4 py-2 text-xs">
+                                    <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider">
+                                        Tingkatan Simpul:
+                                    </span>
+                                    {Object.entries(SURABAYA_LEVELS).map(([k, lvl]) => (
+                                        <div key={k} className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                                            <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: lvl.accent }} />
+                                            <span className="font-medium">{lvl.label}</span>
+                                        </div>
+                                    ))}
+                                    <span className="ml-auto text-[11px] text-slate-400">
+                                        💡 Geser mouse untuk pan • Scroll untuk zoom • Klik bagan simpul untuk buka/tutup turunan
+                                    </span>
+                                </div>
+                            </>
+                        )}
+                    </TransformWrapper>
+                </div>
+            </div>
+        </PublicLayout>
+    );
+}

@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Allow: /informasi
+Allow: /informasi/*
+Allow: /laporan
+Allow: /laporan/*
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /profile
+Disallow: /profile/*
+Disallow: /users
+Disallow: /users/*
+Disallow: /roles
+Disallow: /api/
+Disallow: /settings
+Disallow: /integrations
+Disallow: /mfa/
+
+Sitemap: /sitemap.xml

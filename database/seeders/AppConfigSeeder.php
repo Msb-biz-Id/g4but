@@ -1,0 +1,273 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\AppConfig;
+use Illuminate\Database\Seeder;
+
+class AppConfigSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $configs = [
+            // ─── General ─────────────────────────────────────────────────────
+            [
+                'group' => 'General',
+                'key' => 'app.name',
+                'label' => 'Nama Aplikasi',
+                'description' => 'Nama resmi aplikasi yang ditampilkan di header dan email.',
+                'type' => 'string',
+                'value' => 'e-Kasuari',
+                'default_value' => 'e-Kasuari',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'General',
+                'key' => 'app.timezone',
+                'label' => 'Zona Waktu',
+                'description' => 'Zona waktu default server (contoh: Asia/Jayapura).',
+                'type' => 'string',
+                'value' => 'Asia/Jayapura',
+                'default_value' => 'Asia/Jayapura',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'General',
+                'key' => 'app.maintenance_mode',
+                'label' => 'Mode Pemeliharaan',
+                'description' => 'Aktifkan untuk menonaktifkan akses publik saat pemeliharaan.',
+                'type' => 'boolean',
+                'value' => '0',
+                'default_value' => '0',
+                'is_secret' => false,
+            ],
+
+            // ─── Security ────────────────────────────────────────────────────
+            [
+                'group' => 'Security',
+                'key' => 'security.session_lifetime',
+                'label' => 'Masa Aktif Sesi (menit)',
+                'description' => 'Durasi sesi login sebelum otomatis keluar.',
+                'type' => 'integer',
+                'value' => '120',
+                'default_value' => '120',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'Security',
+                'key' => 'security.max_login_attempts',
+                'label' => 'Maks. Percobaan Login',
+                'description' => 'Jumlah percobaan login gagal sebelum akun dikunci sementara.',
+                'type' => 'integer',
+                'value' => '5',
+                'default_value' => '5',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'Security',
+                'key' => 'security.force_mfa',
+                'label' => 'Wajibkan MFA',
+                'description' => 'Paksa semua pengguna mengaktifkan autentikasi dua faktor.',
+                'type' => 'boolean',
+                'value' => '0',
+                'default_value' => '0',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'Security',
+                'key' => 'security.password_min_length',
+                'label' => 'Panjang Minimum Password',
+                'description' => 'Jumlah karakter minimum untuk password pengguna.',
+                'type' => 'integer',
+                'value' => '8',
+                'default_value' => '8',
+                'is_secret' => false,
+            ],
+
+            // ─── Notifikasi ──────────────────────────────────────────────────
+            [
+                'group' => 'Notifikasi',
+                'key' => 'notification.email_enabled',
+                'label' => 'Notifikasi Email',
+                'description' => 'Aktifkan pengiriman notifikasi melalui email.',
+                'type' => 'boolean',
+                'value' => '1',
+                'default_value' => '1',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'Notifikasi',
+                'key' => 'notification.in_app_enabled',
+                'label' => 'Notifikasi In-App',
+                'description' => 'Aktifkan notifikasi di dalam aplikasi.',
+                'type' => 'boolean',
+                'value' => '1',
+                'default_value' => '1',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'Notifikasi',
+                'key' => 'notification.sender_email',
+                'label' => 'Email Pengirim',
+                'description' => 'Alamat email yang digunakan sebagai pengirim notifikasi.',
+                'type' => 'string',
+                'value' => 'noreply@ekasuari.go.id',
+                'default_value' => 'noreply@ekasuari.go.id',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'Notifikasi',
+                'key' => 'notification.sender_name',
+                'label' => 'Nama Pengirim',
+                'description' => 'Nama yang ditampilkan sebagai pengirim email.',
+                'type' => 'string',
+                'value' => 'e-Kasuari System',
+                'default_value' => 'e-Kasuari System',
+                'is_secret' => false,
+            ],
+
+            // ─── WhatsApp ─────────────────────────────────────────────────────
+            [
+                'group' => 'WhatsApp',
+                'key' => 'whatsapp.enabled',
+                'label' => 'Notifikasi WhatsApp',
+                'description' => 'Aktifkan pengiriman notifikasi melalui WhatsApp.',
+                'type' => 'boolean',
+                'value' => '0',
+                'default_value' => '0',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'WhatsApp',
+                'key' => 'whatsapp.api_url',
+                'label' => 'URL API WhatsApp',
+                'description' => 'Endpoint URL untuk layanan WhatsApp API.',
+                'type' => 'string',
+                'value' => '',
+                'default_value' => '',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'WhatsApp',
+                'key' => 'whatsapp.api_key',
+                'label' => 'API Key WhatsApp',
+                'description' => 'Kunci API untuk autentikasi layanan WhatsApp.',
+                'type' => 'secret',
+                'value' => '',
+                'default_value' => '',
+                'is_secret' => true,
+            ],
+            [
+                'group' => 'WhatsApp',
+                'key' => 'whatsapp.sender_number',
+                'label' => 'Nomor Pengirim',
+                'description' => 'Nomor WhatsApp yang digunakan sebagai pengirim (format: 628xxx).',
+                'type' => 'string',
+                'value' => '',
+                'default_value' => '',
+                'is_secret' => false,
+            ],
+
+            // ─── Early Warning ────────────────────────────────────────────────
+            [
+                'group' => 'Early Warning',
+                'key' => 'ews.enabled',
+                'label' => 'Early Warning System',
+                'description' => 'Aktifkan sistem peringatan dini kinerja.',
+                'type' => 'boolean',
+                'value' => '1',
+                'default_value' => '1',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'Early Warning',
+                'key' => 'ews.threshold_warning',
+                'label' => 'Ambang Batas Peringatan (%)',
+                'description' => 'Persentase realisasi di bawah nilai ini memicu peringatan.',
+                'type' => 'integer',
+                'value' => '70',
+                'default_value' => '70',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'Early Warning',
+                'key' => 'ews.threshold_critical',
+                'label' => 'Ambang Batas Kritis (%)',
+                'description' => 'Persentase realisasi di bawah nilai ini memicu status kritis.',
+                'type' => 'integer',
+                'value' => '50',
+                'default_value' => '50',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'Early Warning',
+                'key' => 'ews.check_interval_hours',
+                'label' => 'Interval Pengecekan (jam)',
+                'description' => 'Seberapa sering sistem memeriksa kondisi peringatan.',
+                'type' => 'integer',
+                'value' => '6',
+                'default_value' => '6',
+                'is_secret' => false,
+            ],
+
+            // ─── AI ───────────────────────────────────────────────────────────
+            [
+                'group' => 'AI',
+                'key' => 'ai.enabled',
+                'label' => 'Fitur AI',
+                'description' => 'Aktifkan fitur AI Performance Intelligence.',
+                'type' => 'boolean',
+                'value' => '0',
+                'default_value' => '0',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'AI',
+                'key' => 'ai.provider',
+                'label' => 'Provider AI',
+                'description' => 'Provider layanan AI yang digunakan (contoh: openai, gemini).',
+                'type' => 'string',
+                'value' => 'openai',
+                'default_value' => 'openai',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'AI',
+                'key' => 'ai.api_key',
+                'label' => 'API Key AI',
+                'description' => 'Kunci API untuk autentikasi layanan AI.',
+                'type' => 'secret',
+                'value' => '',
+                'default_value' => '',
+                'is_secret' => true,
+            ],
+            [
+                'group' => 'AI',
+                'key' => 'ai.model',
+                'label' => 'Model AI',
+                'description' => 'Nama model AI yang digunakan (contoh: gpt-4o, gemini-pro).',
+                'type' => 'string',
+                'value' => 'gpt-4o',
+                'default_value' => 'gpt-4o',
+                'is_secret' => false,
+            ],
+            [
+                'group' => 'AI',
+                'key' => 'ai.max_tokens',
+                'label' => 'Maks. Token per Permintaan',
+                'description' => 'Batas maksimum token untuk setiap permintaan ke AI.',
+                'type' => 'integer',
+                'value' => '2048',
+                'default_value' => '2048',
+                'is_secret' => false,
+            ],
+        ];
+
+        foreach ($configs as $config) {
+            AppConfig::updateOrCreate(
+                ['key' => $config['key']],
+                $config,
+            );
+        }
+    }
+}

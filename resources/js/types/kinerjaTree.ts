@@ -1,0 +1,182 @@
+// ─── Kinerja Tree Types & Utilities (Model Penjenjangan PermenPAN-RB 89/2021) ─────────
+
+export interface Indicator {
+    id: number;
+    code: string;
+    name: string;
+    unit?: string;
+}
+
+export interface Organization {
+    id: number;
+    code: string;
+    name: string;
+    short_name?: string;
+}
+
+export interface Period {
+    id: number;
+    year: number;
+}
+
+export interface KinerjaNode {
+    id: number;
+    level: string;
+    code: string;
+    name: string;
+    description?: string;
+    sort_order?: number;
+    organization_id?: number;
+    performance_period_id?: number;
+    indicator_id?: number | null;
+    parent_id?: number | null;
+    indicator?: Indicator | null;
+    organization?: Organization | null;
+    children?: KinerjaNode[];
+    all_children?: KinerjaNode[];
+}
+
+export function getNodeChildren(node: KinerjaNode): KinerjaNode[] {
+    return node.all_children ?? node.children ?? [];
+}
+
+export const SURABAYA_LEVELS: Record<string, {
+    key: string;
+    label: string;
+    tierName: string;
+    order: number;
+    headerBg: string;
+    headerText: string;
+    cardBg: string;
+    border: string;
+    accent: string;
+    badgeBg: string;
+    badgeText: string;
+    widthClass: string;
+}> = {
+    visi: {
+        key: 'visi',
+        label: 'Visi / Tujuan',
+        tierName: 'VISI / TUJUAN PEMDA',
+        order: 0,
+        headerBg: 'bg-blue-950 text-amber-300',
+        headerText: 'text-amber-300',
+        cardBg: 'bg-white dark:bg-slate-900',
+        border: 'border-blue-900 dark:border-blue-700 shadow-blue-900/10',
+        accent: '#1e3a8a',
+        badgeBg: 'bg-amber-400/20 text-amber-300 border border-amber-400/30',
+        badgeText: 'text-amber-300',
+        widthClass: 'w-80 sm:w-96',
+    },
+    outcome: {
+        key: 'outcome',
+        label: 'Sasaran Strategis',
+        tierName: 'SASARAN STRATEGIS (PEMDA)',
+        order: 1,
+        headerBg: 'bg-orange-600 text-white',
+        headerText: 'text-white',
+        cardBg: 'bg-orange-50/40 dark:bg-slate-900',
+        border: 'border-orange-500 dark:border-orange-600 shadow-orange-500/10',
+        accent: '#ea580c',
+        badgeBg: 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300',
+        badgeText: 'text-orange-800 dark:text-orange-300',
+        widthClass: 'w-72 sm:w-80',
+    },
+    csf: {
+        key: 'csf',
+        label: 'Strategic Outcome',
+        tierName: 'STRATEGIC OUTCOME (CSF)',
+        order: 2,
+        headerBg: 'bg-rose-600 text-white',
+        headerText: 'text-white',
+        cardBg: 'bg-rose-50/40 dark:bg-slate-900',
+        border: 'border-rose-400 dark:border-rose-600 shadow-rose-500/10',
+        accent: '#e11d48',
+        badgeBg: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
+        badgeText: 'text-rose-800 dark:text-rose-300',
+        widthClass: 'w-64 sm:w-72',
+    },
+    kondisi_antara: {
+        key: 'kondisi_antara',
+        label: 'Tactical Outcome',
+        tierName: 'TACTICAL OUTCOME (OPD)',
+        order: 3,
+        headerBg: 'bg-blue-600 text-white',
+        headerText: 'text-white',
+        cardBg: 'bg-blue-50/40 dark:bg-slate-900',
+        border: 'border-blue-400 dark:border-blue-600 shadow-blue-500/10',
+        accent: '#2563eb',
+        badgeBg: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+        badgeText: 'text-blue-800 dark:text-blue-300',
+        widthClass: 'w-60 sm:w-64',
+    },
+    kondisi_operasional: {
+        key: 'kondisi_operasional',
+        label: 'Operational Outcome',
+        tierName: 'OPERATIONAL OUTCOME (BIDANG)',
+        order: 4,
+        headerBg: 'bg-teal-600 text-white',
+        headerText: 'text-white',
+        cardBg: 'bg-teal-50/40 dark:bg-slate-900',
+        border: 'border-teal-400 dark:border-teal-600 shadow-teal-500/10',
+        accent: '#0d9488',
+        badgeBg: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300',
+        badgeText: 'text-teal-800 dark:text-teal-300',
+        widthClass: 'w-56 sm:w-60',
+    },
+    output: {
+        key: 'output',
+        label: 'Output / Kegiatan',
+        tierName: 'OUTPUT / KEGIATAN',
+        order: 5,
+        headerBg: 'bg-amber-400 text-amber-950 font-bold',
+        headerText: 'text-amber-950',
+        cardBg: 'bg-amber-50/70 dark:bg-amber-950/30',
+        border: 'border-amber-400 dark:border-amber-500 shadow-amber-500/10',
+        accent: '#d97706',
+        badgeBg: 'bg-amber-200/70 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200',
+        badgeText: 'text-amber-900 dark:text-amber-200',
+        widthClass: 'w-52 sm:w-56',
+    },
+};
+
+export const LEVEL_ALIASES: Record<string, string> = {
+    // Angka & urutan hierarki numerik
+    '1': 'visi',
+    '2': 'outcome',
+    '3': 'csf',
+    '4': 'kondisi_antara',
+    '5': 'kondisi_operasional',
+    '6': 'output',
+
+    // Istilah perencanaan / SAKIP PermenPAN-RB
+    'visi': 'visi',
+    'tujuan': 'visi',
+    'goal': 'visi',
+    'strategic_goal': 'visi',
+    'sasaran': 'outcome',
+    'sasaran_strategis': 'outcome',
+    'outcome': 'outcome',
+    'csf': 'csf',
+    'critical_success_factor': 'csf',
+    'strategic_outcome': 'csf',
+    'kondisi_antara': 'kondisi_antara',
+    'tactical_outcome': 'kondisi_antara',
+    'program': 'kondisi_antara',
+    'kondisi_operasional': 'kondisi_operasional',
+    'operational_outcome': 'kondisi_operasional',
+    'kegiatan': 'kondisi_operasional',
+    'output': 'output',
+    'sub_kegiatan': 'output',
+};
+
+export function normalizeLevel(level?: string | number | null): string {
+    if (level === undefined || level === null) return 'outcome';
+    const clean = String(level).trim().toLowerCase();
+    return LEVEL_ALIASES[clean] || clean;
+}
+
+export function getSurabayaLevelConfig(level?: string | number | null) {
+    const key = normalizeLevel(level);
+    return SURABAYA_LEVELS[key] ?? SURABAYA_LEVELS['outcome'];
+}

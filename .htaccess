@@ -1,0 +1,25 @@
+# Bypass Imunify360 Anti-bot JS Challenge
+<IfModule mod_headers.c>
+    Header always set X-Imunify-Disable "true"
+    Header always unset X-Imunify360-Check-Status
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Arahkan asset Vite (build/) dan storage ke folder public/
+    RewriteRule ^(build|storage|favicon\.ico)(.*) public/$1$2 [L]
+
+    # Semua request lainnya ke index.php (Laravel bootstrap)
+    # Catatan: !-d dihapus agar root / juga diarahkan ke index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
