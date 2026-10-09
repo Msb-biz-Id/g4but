@@ -145,6 +145,60 @@ class UserExportService
         ]);
     }
 
+    public function exportToXlsx(string $filePath, ?User $scopedUser = null): void
+    {
+        $data = $this->getExportData($scopedUser);
+
+        $spreadsheet = new Spreadsheet;
+        $spreadsheet->removeSheetByIndex(0);
+
+        $sheetConfigs = [
+            ['title' => 'Semua Akun', 'color' => '1E293B', 'rows' => $data['all']],
+            ['title' => 'OPD Induk', 'color' => '1D4ED8', 'rows' => $data['opd']],
+            ['title' => 'Sekretariat', 'color' => '047857', 'rows' => $data['sekretariat']],
+            ['title' => 'Bidang', 'color' => 'B45309', 'rows' => $data['bidang']],
+        ];
+
+        foreach ($sheetConfigs as $config) {
+            $sheet = new Worksheet($spreadsheet, $config['title']);
+            $spreadsheet->addSheet($sheet);
+            $this->populateSheet($sheet, $config['title'], $config['rows'], $config['color']);
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+    }
+
+    public function exportToCsv(string $filePath, ?User $scopedUser = null): void
+    {
+        $data = $this->getExportData($scopedUser);
+        $handle = fopen($filePath, 'w');
+
+        // Header CSV
+        fputcsv($handle, [
+            'No', 'Kluster', 'Kode Unit', 'Nama Unit', 'Nama Pegawai',
+            'Email (Login)', 'Role / Peran', 'NIP', 'Default Password', 'Status Akun',
+        ]);
+
+        foreach ($data['all'] as $row) {
+            fputcsv($handle, [
+                $row['no'],
+                $row['cluster'],
+                $row['code'],
+                $row['org_name'],
+                $row['user_name'],
+                $row['email'],
+                $row['role'],
+                $row['nip'],
+                $row['password'],
+                $row['status'],
+            ]);
+        }
+
+        fclose($handle);
+    }
+
     private function populateSheet(Worksheet $sheet, string $title, array $rows, string $headerColor): void
     {
         $headers = [

@@ -2,12 +2,13 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Enums\Role as RoleEnum;
 use App\Models\User;
 use Database\Seeders\AppConfigSeeder;
-use Database\Seeders\KamarOpdSeeder;
-use Database\Seeders\LocalUserSeeder;
-use Database\Seeders\MasterPeriodSeeder;
+use Database\Seeders\OrganizationSeeder;
+use Database\Seeders\PeriodSeeder;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,67 +22,45 @@ class SeededUserLoginTest extends TestCase
 
         $this->seed([
             RolePermissionSeeder::class,
-            LocalUserSeeder::class,
-            KamarOpdSeeder::class,
+            OrganizationSeeder::class,
+            UserSeeder::class,
+            PeriodSeeder::class,
             AppConfigSeeder::class,
-            MasterPeriodSeeder::class,
         ]);
     }
 
-    public function test_all_demo_accounts_can_login_and_access_dashboard(): void
+    public function test_all_opd_accounts_can_login_and_access_dashboard(): void
     {
-        $demoEmails = [
-            'admin@ekasuari.test',
-            'admin.provinsi@ekasuari.test',
-            'pimpinan@ekasuari.test',
-            'admin.opd@ekasuari.test',
-            'operator.opd@ekasuari.test',
-            'validator.opd@ekasuari.test',
-            'kepala.opd@ekasuari.test',
-            'admin.disdik@ekasuari.test',
-            'admin.dinkes@ekasuari.test',
-            'admin.bappeda@ekasuari.test',
-            'admin.pupr@ekasuari.test',
-            'admin.kominfo@ekasuari.test',
-            'admin.dishub@ekasuari.test',
-            'admin.koperasi@ekasuari.test',
-            'admin.dinsos@ekasuari.test',
-            'admin.dpmptsp@ekasuari.test',
-            'admin.satpol@ekasuari.test',
-            'admin.biro-org@ekasuari.test',
-            'admin.biro-pem@ekasuari.test',
-            'admin.inspektorat@ekasuari.test',
-            'evaluator@ekasuari.test',
-            'inspektorat@ekasuari.test',
-            'auditor@ekasuari.test',
+        $accounts = [
+            'superadmin@ekasuari.local' => RoleEnum::SuperAdmin->value,
+            'admin.opd@ekasuari.local' => RoleEnum::AdminOpd->value,
+            'kepala.opd@ekasuari.local' => RoleEnum::KepalaOpd->value,
+            'admin.sekretariat@ekasuari.local' => RoleEnum::AdminSekretariat->value,
+            'kepala.sekretariat@ekasuari.local' => RoleEnum::KepalaSekretariat->value,
+            'admin.dikdas@ekasuari.local' => RoleEnum::AdminBidang->value,
+            'kabid.dikdas@ekasuari.local' => RoleEnum::KepalaBidang->value,
         ];
 
-        // Specific check: inspektorat must have role Inspektorat (not Admin OPD)
-        $inspUser = User::where('email', 'inspektorat@ekasuari.test')->first();
-        $this->assertTrue($inspUser->hasRole('Inspektorat'), 'inspektorat@ekasuari.test must have role Inspektorat');
-
-        foreach ($demoEmails as $email) {
+        foreach ($accounts as $email => $expectedRole) {
             $user = User::where('email', $email)->first();
-            $this->assertNotNull($user, "Account {$email} must exist in seeded database.");
+            $this->assertNotNull($user, "Akun {$email} harus terdaftar di sistem.");
+            $this->assertTrue($user->roles()->where('name', $expectedRole)->exists(), "Akun {$email} harus memiliki role {$expectedRole}.");
 
-            // Attempt login via POST /login
-            $response = $this->post('/login', [
+            // Attempt login
+            $response = $this->post(route('login'), [
                 'email' => $email,
-                'password' => 'password',
+                'password' => 'Password@123',
             ]);
 
-            $response->assertRedirect(route('dashboard', absolute: false));
+            $response->assertRedirect(route('dashboard'));
             $this->assertAuthenticatedAs($user);
 
             // Access dashboard
-            $dashResponse = $this->actingAs($user)->get('/dashboard');
-            $this->assertTrue(
-                in_array($dashResponse->getStatusCode(), [200, 302]),
-                "User {$email} failed to access dashboard (status {$dashResponse->getStatusCode()})."
-            );
+            $dashResponse = $this->actingAs($user)->get(route('dashboard'));
+            $dashResponse->assertOk();
 
-            // Logout for next user
-            $this->post('/logout');
+            // Logout for next iteration
+            $this->post(route('logout'));
             $this->assertGuest();
         }
     }

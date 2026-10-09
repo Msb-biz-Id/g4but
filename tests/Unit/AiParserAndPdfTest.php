@@ -146,7 +146,7 @@ JSON;
             'appName' => 'e-KASUARI',
         ])->render();
 
-        $this->assertStringContainsString('PEMERINTAH PROVINSI PAPUA BARAT', $html);
+        $this->assertStringContainsString('E-KASUARI &mdash; SISTEM AKUNTABILITAS KINERJA INSTANSI PEMERINTAH', $html);
         $this->assertStringContainsString('EXECUTIVE SUMMARY', $html);
         $this->assertStringContainsString('hdr-table', $html);
         $this->assertStringContainsString('hdr-logo-cell', $html);

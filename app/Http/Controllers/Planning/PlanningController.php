@@ -65,7 +65,7 @@ class PlanningController extends Controller
     public function documents(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && ($user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasRole('Inspektorat'));
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $query = PlanningDocument::with(['organization', 'performancePeriod'])->latest();
@@ -123,8 +123,7 @@ class PlanningController extends Controller
         ];
         $filters = $request->only(['type', 'status', 'organization', 'period']);
         $canApprove = $user->hasRole('Super Admin')
-            || $user->hasRole('Admin Provinsi')
-            || $user->hasRole('Evaluator Provinsi')
+            || $user->hasRole('Kepala OPD')
             || $user->hasPermission('planning:review')
             || $user->hasPermission('planning:approve')
             || $user->hasPermission('agreement:approve');
@@ -376,8 +375,7 @@ class PlanningController extends Controller
         $reviewer = Auth::user();
         $canApprove = $reviewer && (
             $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi')
+            || $reviewer->hasRole('Kepala OPD')
             || $reviewer->hasPermission('planning:review')
             || $reviewer->hasPermission('planning:approve')
             || $reviewer->hasPermission('agreement:approve')
@@ -387,8 +385,7 @@ class PlanningController extends Controller
         }
 
         $isProvincial = $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi');
+            || $reviewer->hasRole('Kepala OPD');
 
         if (! $isProvincial && ! $this->authorization->canAccessOrganization($reviewer, (int) $document->organization_id)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
@@ -416,8 +413,7 @@ class PlanningController extends Controller
         $reviewer = Auth::user();
         $canApprove = $reviewer && (
             $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi')
+            || $reviewer->hasRole('Kepala OPD')
             || $reviewer->hasPermission('planning:review')
             || $reviewer->hasPermission('planning:approve')
             || $reviewer->hasPermission('agreement:approve')
@@ -427,8 +423,7 @@ class PlanningController extends Controller
         }
 
         $isProvincial = $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi');
+            || $reviewer->hasRole('Kepala OPD');
 
         if (! $isProvincial && ! $this->authorization->canAccessOrganization($reviewer, (int) $document->organization_id)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
@@ -453,8 +448,7 @@ class PlanningController extends Controller
         $user = Auth::user();
         $canLock = $user && (
             $user->hasRole('Super Admin')
-            || $user->hasRole('Admin Provinsi')
-            || $user->hasRole('Evaluator Provinsi')
+            || $user->hasRole('Kepala OPD')
             || $user->hasPermission('planning:review')
             || $user->hasPermission('planning:approve')
             || $user->hasPermission('agreement:approve')
@@ -464,8 +458,7 @@ class PlanningController extends Controller
         }
 
         $isProvincial = $user->hasRole('Super Admin')
-            || $user->hasRole('Admin Provinsi')
-            || $user->hasRole('Evaluator Provinsi');
+            || $user->hasRole('Kepala OPD');
 
         if (! $isProvincial && ! $this->authorization->canAccessOrganization($user, (int) $document->organization_id)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
@@ -570,7 +563,7 @@ class PlanningController extends Controller
     public function agreements(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && ($user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasRole('Inspektorat'));
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $query = Agreement::with(['organization', 'performancePeriod'])->withCount('indicators')->latest();
@@ -600,8 +593,7 @@ class PlanningController extends Controller
             ->get(['id', 'code', 'name', 'owner_organization_id']);
         $filters = $request->only(['organization', 'period', 'status']);
         $canApprove = $user->hasRole('Super Admin')
-            || $user->hasRole('Admin Provinsi')
-            || $user->hasRole('Evaluator Provinsi')
+            || $user->hasRole('Kepala OPD')
             || $user->hasPermission('planning:review')
             || $user->hasPermission('planning:approve')
             || $user->hasPermission('agreement:approve');
@@ -699,8 +691,7 @@ class PlanningController extends Controller
         $reviewer = Auth::user();
         $canApprove = $reviewer && (
             $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi')
+            || $reviewer->hasRole('Kepala OPD')
             || $reviewer->hasPermission('planning:review')
             || $reviewer->hasPermission('planning:approve')
             || $reviewer->hasPermission('agreement:approve')
@@ -710,8 +701,7 @@ class PlanningController extends Controller
         }
 
         $isProvincial = $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi');
+            || $reviewer->hasRole('Kepala OPD');
 
         if (! $isProvincial && ! $this->authorization->canAccessOrganization($reviewer, (int) $agreement->organization_id)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
@@ -738,8 +728,7 @@ class PlanningController extends Controller
         $reviewer = Auth::user();
         $canApprove = $reviewer && (
             $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi')
+            || $reviewer->hasRole('Kepala OPD')
             || $reviewer->hasPermission('planning:review')
             || $reviewer->hasPermission('planning:approve')
             || $reviewer->hasPermission('agreement:approve')
@@ -749,8 +738,7 @@ class PlanningController extends Controller
         }
 
         $isProvincial = $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi');
+            || $reviewer->hasRole('Kepala OPD');
 
         if (! $isProvincial && ! $this->authorization->canAccessOrganization($reviewer, (int) $agreement->organization_id)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
@@ -774,8 +762,7 @@ class PlanningController extends Controller
         $user = Auth::user();
         $canLock = $user && (
             $user->hasRole('Super Admin')
-            || $user->hasRole('Admin Provinsi')
-            || $user->hasRole('Evaluator Provinsi')
+            || $user->hasRole('Kepala OPD')
             || $user->hasPermission('planning:review')
             || $user->hasPermission('planning:approve')
             || $user->hasPermission('agreement:approve')
@@ -785,8 +772,7 @@ class PlanningController extends Controller
         }
 
         $isProvincial = $user->hasRole('Super Admin')
-            || $user->hasRole('Admin Provinsi')
-            || $user->hasRole('Evaluator Provinsi');
+            || $user->hasRole('Kepala OPD');
 
         if (! $isProvincial && ! $this->authorization->canAccessOrganization($user, (int) $agreement->organization_id)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
@@ -858,7 +844,7 @@ class PlanningController extends Controller
     public function actionPlans(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && ($user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Evaluator Provinsi') || $user->hasRole('Inspektorat'));
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $query = ActionPlan::with(['organization', 'indicator', 'performancePeriod'])->latest();
@@ -1022,7 +1008,7 @@ class PlanningController extends Controller
     public function trees(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $organizations = Organization::query()
@@ -1122,7 +1108,7 @@ class PlanningController extends Controller
     public function treeBuilder(Request $request, PlanningTree $tree): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         if (! $isProvincialAdmin && (int) $tree->organization_id !== 1 && ! in_array((int) $tree->organization_id, $accessibleOrgIds, true)) {
@@ -1266,7 +1252,7 @@ class PlanningController extends Controller
     public function storeTree(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $data = $request->validate([
@@ -1311,7 +1297,7 @@ class PlanningController extends Controller
     public function updateTree(Request $request, PlanningTree $tree): RedirectResponse
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         if (! $isProvincialAdmin && ! in_array((int) $tree->organization_id, $accessibleOrgIds, true)) {
@@ -1345,7 +1331,7 @@ class PlanningController extends Controller
     public function destroyTree(Request $request, PlanningTree $tree): RedirectResponse
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         if (! $isProvincialAdmin && ! in_array((int) $tree->organization_id, $accessibleOrgIds, true)) {
@@ -1432,7 +1418,7 @@ class PlanningController extends Controller
     public function cascading(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $query = CascadingRelation::with([
@@ -1472,7 +1458,7 @@ class PlanningController extends Controller
     public function storeCascading(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $data = $request->validate([
@@ -1503,7 +1489,7 @@ class PlanningController extends Controller
     public function destroyCascading(CascadingRelation $cascading): RedirectResponse
     {
         $user = Auth::user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         if (! $isProvincialAdmin) {
@@ -1525,7 +1511,7 @@ class PlanningController extends Controller
     public function crosscutting(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $query = CrosscuttingRelation::with([
@@ -1581,7 +1567,7 @@ class PlanningController extends Controller
     public function destroyCrosscutting(CrosscuttingRelation $crosscutting): RedirectResponse
     {
         $user = Auth::user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         if (! $isProvincialAdmin && ! in_array((int) $crosscutting->organization_id, $accessibleOrgIds, true) && ! in_array((int) $crosscutting->related_organization_id, $accessibleOrgIds, true)) {
@@ -1598,7 +1584,7 @@ class PlanningController extends Controller
     public function risks(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $query = Risk::with(['organization', 'indicator'])
@@ -1752,7 +1738,7 @@ class PlanningController extends Controller
     {
         $this->authorize('view-planning-docs');
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $format = $request->string('format', 'pdf')->lower();
@@ -1824,7 +1810,7 @@ class PlanningController extends Controller
     {
         $this->authorize('view-planning-docs');
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isProvincialAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         if (! $isProvincialAdmin && $request->organization && ! in_array((int) $request->organization, $accessibleOrgIds, true)) {

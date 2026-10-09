@@ -615,22 +615,33 @@ class IkuController extends Controller
     private function storeTargets(Indicator $iku, array $targets): void
     {
         $version = IndicatorVersion::firstOrCreate(
-            ['indicator_id' => $iku->id, 'version' => 1],
-            ['effective_start' => now()->toDateString(), 'status' => 'draft']
+            ['indicator_id' => $iku->id, 'version_number' => 1],
+            [
+                'name' => $iku->name,
+                'definition' => $iku->definition,
+                'measurement_unit_id' => $iku->measurement_unit_id,
+                'formula_notes' => $iku->formula_notes,
+                'frequency' => $iku->frequency ?? 'annual',
+                'data_source' => $iku->data_source,
+                'created_by' => auth()->id() ?? $iku->responsible_officer_id,
+            ]
         );
+
+        if (! $iku->current_version_id) {
+            $iku->update(['current_version_id' => $version->id]);
+        }
 
         $orgId = $iku->owner_organization_id;
 
         foreach ($targets as $t) {
             IndicatorTarget::updateOrCreate(
                 [
-                    'indicator_id' => $iku->id,
-                    'year' => $t['year'],
-                ],
-                [
                     'indicator_version_id' => $version->id,
                     'organization_id' => $orgId,
                     'planning_period_id' => $iku->planning_period_id,
+                    'year' => $t['year'],
+                ],
+                [
                     'target_value' => $t['target_value'],
                     'status' => 'draft',
                 ]

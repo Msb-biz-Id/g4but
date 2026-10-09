@@ -27,9 +27,9 @@ class RoleManagementTest extends TestCase
         $this->superAdmin->roles()->attach($this->superAdminRole);
 
         $org = Organization::create([
-            'code' => 'PROV-TEST',
-            'name' => 'Provinsi Test',
-            'type' => 'province',
+            'code' => 'OPD-TEST',
+            'name' => 'OPD Test',
+            'type' => 'opd',
         ]);
         $this->superAdmin->organizations()->attach($org, ['is_default' => true]);
     }
@@ -53,32 +53,32 @@ class RoleManagementTest extends TestCase
             'module' => 'reporting',
         ]);
 
-        $operator = Role::create(['name' => RoleEnum::OperatorOpd->value]);
+        $adminBidang = Role::create(['name' => RoleEnum::AdminBidang->value]);
 
         $this->actingAs($this->superAdmin)
-            ->get(route('roles.edit', $operator))
+            ->get(route('roles.edit', $adminBidang))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Roles/Edit')
-                ->where('role.id', $operator->id));
+                ->where('role.id', $adminBidang->id));
 
         $this->actingAs($this->superAdmin)
-            ->put(route('roles.update', $operator), [
-                'name' => $operator->name,
-                'description' => 'Operator OPD',
+            ->put(route('roles.update', $adminBidang), [
+                'name' => $adminBidang->name,
+                'description' => 'Admin Bidang',
                 'permission_ids' => [$permission->id],
             ])
             ->assertRedirect()
             ->assertSessionHas('success');
 
         $this->assertTrue(
-            $operator->permissions()->whereKey($permission->id)->exists(),
+            $adminBidang->permissions()->whereKey($permission->id)->exists(),
         );
 
         $this->assertDatabaseHas('audit_logs', [
             'action' => 'update',
             'resource_type' => 'role',
-            'resource_id' => $operator->id,
+            'resource_id' => $adminBidang->id,
         ]);
     }
 

@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Indicator;
 use App\Models\Organization;
 use App\Models\User;
+use App\Policies\IkuPolicy;
 use Illuminate\Support\Facades\Gate;
 
 class AuthorizationService
@@ -21,6 +23,8 @@ class AuthorizationService
 
             return null;
         });
+
+        Gate::policy(Indicator::class, IkuPolicy::class);
 
         // User & Role management
         Gate::define('manage-users', fn (User $user) => $user->isOpdAdmin() || $user->hasPermission('user:create'));
@@ -54,8 +58,8 @@ class AuthorizationService
         Gate::define('create-realizations', fn (User $user) => $user->isOpdAdmin() || $user->hasPermission('realization:create'));
         Gate::define('update-realizations', fn (User $user) => $user->isOpdAdmin() || $user->hasPermission('realization:update'));
         Gate::define('submit-realizations', fn (User $user) => $user->isOpdAdmin() || $user->hasPermission('realization:submit'));
-        Gate::define('approve-realizations', fn (User $user) => $user->isLeadership() || $user->isOpdAdmin() || $user->hasPermission('realization:approve'));
-        Gate::define('reject-realizations', fn (User $user) => $user->isLeadership() || $user->isOpdAdmin() || $user->hasPermission('realization:reject'));
+        Gate::define('approve-realizations', fn (User $user) => $user->isLeadership() || $user->hasPermission('realization:approve'));
+        Gate::define('reject-realizations', fn (User $user) => $user->isLeadership() || $user->hasPermission('realization:reject'));
         Gate::define('view-evidences', fn (User $user) => $user->hasPermission('evidence:view'));
         Gate::define('upload-evidences', fn (User $user) => $user->isOpdAdmin() || $user->hasPermission('evidence:upload'));
 
@@ -107,8 +111,8 @@ class AuthorizationService
         Gate::define('update-iku', fn (User $user) => $user->isOpdAdmin() || $user->hasPermission('iku:update') || $user->hasPermission('indicator:update'));
         Gate::define('submit-iku', fn (User $user) => $user->isOpdAdmin() || $user->hasPermission('iku:submit') || $user->hasPermission('indicator:update'));
         Gate::define('review-iku', fn (User $user) => $user->isLeadership() || $user->isOpdAdmin() || $user->hasPermission('iku:review'));
-        Gate::define('finalize-iku', fn (User $user) => $user->hasRole('Kepala OPD') || $user->isOpdAdmin() || $user->hasPermission('iku:finalize'));
-        Gate::define('deactivate-iku', fn (User $user) => $user->hasRole('Kepala OPD') || $user->isOpdAdmin() || $user->hasPermission('iku:deactivate'));
+        Gate::define('finalize-iku', fn (User $user) => $user->hasRole('Kepala OPD') || $user->hasPermission('iku:finalize'));
+        Gate::define('deactivate-iku', fn (User $user) => $user->hasRole('Kepala OPD') || $user->hasPermission('iku:deactivate'));
         Gate::define('delete-iku', fn (User $user) => $user->isOpdAdmin() || $user->hasPermission('iku:delete'));
         Gate::define('import-iku', fn (User $user) => $user->isOpdAdmin() || $user->hasPermission('iku:import'));
         Gate::define('export-iku', fn (User $user) => $user->hasPermission('iku:export') || $user->hasPermission('indicator:view'));

@@ -119,7 +119,7 @@ class EvaluationController extends Controller
         $evaluations = Evaluation::query()
             ->with(['organization:id,code,name', 'planningPeriod:id,code,name,year'])
             ->withCount('scores', 'recommendations')
-            ->when(! $isProvincialAuditor, function ($q) use ($user) {
+            ->when(! $isOpdAdmin, function ($q) use ($user) {
                 $q->whereIn('organization_id', $this->authorization->accessibleOrganizationIds($user));
             })
             ->when($request->filled('organization_id'), fn ($q) => $q->where('organization_id', $request->integer('organization_id')))

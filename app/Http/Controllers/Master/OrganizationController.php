@@ -276,7 +276,7 @@ class OrganizationController extends Controller
         $this->authorize('manage-organizations');
 
         if ($organization->children()->exists()) {
-            return back()->withErrors(['delete' => 'Organisasi tidak dapat dihapus karena masih memiliki unit di bawahnya.']);
+            return back()->withErrors(['error' => 'Organisasi tidak dapat dihapus karena masih memiliki unit di bawahnya.']);
         }
 
         DB::transaction(function () use ($organization) {

@@ -215,13 +215,13 @@ class MasterDataTest extends TestCase
         }
     }
 
-    public function test_admin_provinsi_can_create_organization_with_short_name(): void
+    public function test_admin_opd_can_create_organization_with_short_name(): void
     {
-        $adminProvRole = Role::create(['name' => RoleEnum::AdminProvinsi->value]);
-        $adminProv = User::factory()->create();
-        $adminProv->roles()->attach($adminProvRole);
+        $adminOpdRole = Role::create(['name' => RoleEnum::AdminOpd->value]);
+        $adminOpd = User::factory()->create();
+        $adminOpd->roles()->attach($adminOpdRole);
 
-        $this->actingAs($adminProv)
+        $this->actingAs($adminOpd)
             ->post(route('organizations.store'), [
                 'code' => 'BAPENDA-PB',
                 'name' => 'Badan Pendapatan Daerah',
@@ -363,14 +363,14 @@ class MasterDataTest extends TestCase
         $parent = Organization::create([
             'code' => 'PARENT-ORG',
             'name' => 'Organisasi Induk',
-            'type' => 'province',
+            'type' => 'opd',
             'is_active' => true,
         ]);
 
         Organization::create([
             'code' => 'CHILD-ORG',
             'name' => 'Organisasi Anak',
-            'type' => 'opd',
+            'type' => 'bidang',
             'parent_id' => $parent->id,
             'is_active' => true,
         ]);

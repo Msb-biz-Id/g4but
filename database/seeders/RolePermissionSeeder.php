@@ -96,6 +96,9 @@ class RolePermissionSeeder extends Seeder
         ['evidence', 'upload', 'measurement'],
         ['evidence', 'download', 'measurement'],
 
+        // Dashboard
+        ['dashboard', 'view', 'dashboard'],
+
         // Reporting
         ['report', 'view', 'reporting'],
         ['report', 'generate', 'reporting'],
