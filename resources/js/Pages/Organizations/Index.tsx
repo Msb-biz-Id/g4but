@@ -51,11 +51,9 @@ interface Props extends PageProps {
 }
 
 const typeLabels: Record<string, string> = {
-    province: 'Provinsi',
-    opd: 'OPD',
-    biro: 'Biro',
-    inspektorat: 'Inspektorat',
-    unit: 'Unit',
+    opd: 'OPD Induk',
+    sekretariat: 'Sekretariat',
+    bidang: 'Bidang',
 };
 
 export default function OrganizationsIndex({ auth, organizations, filters }: Props) {
@@ -65,17 +63,17 @@ export default function OrganizationsIndex({ auth, organizations, filters }: Pro
     const [deleteOrgTarget, setDeleteOrgTarget] = useState<{ id: number; name: string } | null>(null);
 
     const roles = auth.user?.roles ?? [];
-    const isProvincialAdmin = roles.some((r: any) => {
+    const isOpdAdmin = roles.some((r: any) => {
         const name = typeof r === 'string' ? r : r?.name;
-        return name === 'Super Admin' || name === 'Admin Provinsi';
+        return name === 'Super Admin' || name === 'Admin OPD';
     });
     const userOrgIds = (auth.user?.organizations ?? []).map((o) => o.id);
 
-    // Hanya Super Admin & Admin Provinsi atau yang memiliki permission create yang boleh menambah master OPD baru
-    const canCreate = isProvincialAdmin || (auth.user?.permissions ?? []).includes('organization:create');
+    // Hanya Super Admin & Admin OPD atau yang memiliki permission create yang boleh menambah master organisasi baru
+    const canCreate = isOpdAdmin || (auth.user?.permissions ?? []).includes('organization:create');
 
-    // Edit hanya boleh jika Admin Provinsi ATAU jika baris OPD adalah OPD milik user yang sedang login
-    const canEdit = (orgId: number) => isProvincialAdmin || userOrgIds.includes(orgId);
+    // Edit boleh jika Admin OPD ATAU jika baris organisasi adalah unit milik user yang sedang login
+    const canEdit = (orgId: number) => isOpdAdmin || userOrgIds.includes(orgId);
 
     const confirmDeleteOrg = () => {
         if (!deleteOrgTarget) return;
@@ -263,7 +261,7 @@ export default function OrganizationsIndex({ auth, organizations, filters }: Pro
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    {!canEdit(org.id) && !isProvincialAdmin ? (
+                                                    {!canEdit(org.id) && !isOpdAdmin ? (
                                                         <span className="text-gray-300 dark:text-gray-600 text-xs select-none">
                                                             —
                                                         </span>
@@ -289,7 +287,7 @@ export default function OrganizationsIndex({ auth, organizations, filters }: Pro
                                                                             </Link>
                                                                         </DropdownMenuItem>
                                                                     )}
-                                                                    {isProvincialAdmin && (
+                                                                    {isOpdAdmin && (
                                                                         <>
                                                                             {canEdit(org.id) && <DropdownMenuSeparator />}
                                                                             <DropdownMenuItem

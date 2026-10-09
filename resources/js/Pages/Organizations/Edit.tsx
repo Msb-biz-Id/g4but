@@ -143,11 +143,9 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
  }
  className={cn("mt-1 block w-full", !isProvincialAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
  >
- <option value="province">Provinsi</option>
- <option value="opd">OPD</option>
- <option value="biro">Biro</option>
- <option value="inspektorat">Inspektorat</option>
- <option value="unit">Unit</option>
+ <option value="opd">OPD Induk (Dinas / Badan)</option>
+ <option value="sekretariat">Sekretariat</option>
+ <option value="bidang">Bidang / Bagian</option>
  </SelectNative>
  </div>
  </div>

@@ -267,10 +267,13 @@ class DashboardController extends Controller
         $filterStatus = $filters['status_kinerja'];
 
         // ── 1. Organisasi ──────────────────────────────────────────────────
-        $provinsi = Organization::where('code', 'PROV-PAPBAR')->first()
-            ?? Organization::where('type', 'province')->first();
+        // ── 1. Organisasi & Unit (OPD Induk, Sekretariat, Bidang) ──────────
+        $provinsi = null;
 
-        $allOpdQuery = Organization::where('type', 'opd')->orderBy('name');
+        $allOpdQuery = Organization::whereIn('type', ['opd', 'sekretariat', 'bidang'])
+            ->where('is_active', true)
+            ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
+            ->orderBy('name');
         if (! $isProvincialAdmin) {
             $allOpdQuery->whereIn('id', $accessibleOrgIds);
         }
@@ -280,16 +283,26 @@ class DashboardController extends Controller
         $allOpd = $allOpdQuery->get();
         $totalOpd = max($allOpd->count(), 1);
 
-        // ── 2. Kelengkapan Dokumen Pemda (Dinamis 13 Parameter) & SAKIP Pemda ──────────────
-        $pemdaMatrix = $this->sakipDocService->getSakipPemdaMatrix($tahun);
-        $sakipPemda = $this->opdAnalytics->getSakipPemdaMatrix($tahun);
-        $docsRequired = $pemdaMatrix['total_required'];
-        $docsAvailable = $pemdaMatrix['available'];
-        $kelengkapanPctPemda = $pemdaMatrix['percentage'];
-        $statusPemda = $pemdaMatrix['status'];
+        // ── 2. Kelengkapan Dokumen SAKIP Pemda dinonaktifkan (Rumah Besar OPD) ──────────
+        $pemdaMatrix = [
+            'total_required' => 0,
+            'available' => 0,
+            'percentage' => 0.0,
+            'status' => 'Lengkap',
+            'rows' => [],
+        ];
+        $sakipPemda = [
+            'nilai' => 0.0,
+            'predikat' => 'BELUM DINILAI',
+            'komponen' => [],
+        ];
+        $docsRequired = 0;
+        $docsAvailable = 0;
+        $kelengkapanPctPemda = 0.0;
+        $statusPemda = 'Lengkap';
 
         // ── 3. Kelengkapan Dokumen OPD (Dinamis 12 Dokumen Baku) ────────────
-        $opdMatrix = $this->sakipDocService->getSakipOpdMatrix($tahun, $filterOpdId);
+        $opdMatrix = $this->sakipDocService->getSakipOpdMatrix($tahun, $filterOpdId, $accessibleOrgIds);
         $opdLengkap = $opdMatrix['opd_lengkap'];
         $opdLengkapPct = $opdMatrix['pct_lengkap'];
 
@@ -602,7 +615,10 @@ class DashboardController extends Controller
             $availableYears = range(2025, 2029);
         }
 
-        $orgFilterQuery = Organization::where('type', 'opd')->orderBy('name');
+        $orgFilterQuery = Organization::whereIn('type', ['opd', 'sekretariat', 'bidang'])
+            ->where('is_active', true)
+            ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
+            ->orderBy('name');
         if (! $isProvincialAdmin) {
             $orgFilterQuery->whereIn('id', $accessibleOrgIds);
         }
@@ -1073,16 +1089,7 @@ class DashboardController extends Controller
             }
 
             if ($type === 'sakip_pemda') {
-                $matrix = $this->sakipDocService->getSakipPemdaMatrix($tahun);
-                $filename = 'matriks-sakip-pemda-'.$tahun.'-'.now()->format('YmdHis').'.pdf';
-
-                return Pdf::loadView('pdf.dashboard.sakip-pemda', [
-                    'matrix' => $matrix,
-                    'year' => $tahun,
-                    'generatedAt' => $generatedAt,
-                ])->setPaper('a4', 'portrait')
-                    ->setOptions(['defaultFont' => 'DejaVu Sans', 'isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false])
-                    ->download($filename);
+                abort(404, 'Modul SAKIP Pemda telah dinonaktifkan.');
             }
 
             if ($type === 'sakip_opd') {
@@ -1186,35 +1193,9 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Tipe 2: SAKIP Pemda Matrix (13 Dokumen)
+        // Tipe 2: SAKIP Pemda Matrix (dinonaktifkan)
         if ($type === 'sakip_pemda') {
-            $pemdaMatrix = $this->sakipDocService->getSakipPemdaMatrix($tahun);
-            $filename = 'matriks-sakip-pemda-'.$tahun.'-'.now()->format('Ymd-His').'.csv';
-
-            return response()->stream(function () use ($pemdaMatrix) {
-                $out = fopen('php://output', 'w');
-                fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
-                fputcsv($out, ['No', 'Dokumen Pemerintah Daerah', 'Tipe', 'Tahun/Periode', 'Ketersediaan', 'Status', 'Nomor Dokumen', 'Judul Dokumen', 'Tanggal Persetujuan', 'Ada Berkas Fisik']);
-
-                foreach ($pemdaMatrix['rows'] as $row) {
-                    fputcsv($out, [
-                        $row['no'],
-                        $row['name'],
-                        $row['type'],
-                        $row['period'],
-                        $row['is_available'] ? 'Tersedia' : 'Belum Tersedia',
-                        $row['status'],
-                        $row['document_number'] ?? '-',
-                        $row['document_title'] ?? '-',
-                        $row['approved_at'] ?? '-',
-                        ! empty($row['has_file']) ? 'Ya' : 'Tidak',
-                    ]);
-                }
-                fclose($out);
-            }, 200, [
-                'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => "attachment; filename={$filename}",
-            ]);
+            abort(404, 'Modul SAKIP Pemda telah dinonaktifkan.');
         }
 
         // Tipe 3: SAKIP OPD Matrix (12 Dokumen)

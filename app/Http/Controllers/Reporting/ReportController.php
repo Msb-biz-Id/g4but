@@ -87,6 +87,8 @@ class ReportController extends Controller
                 'no' => $idx + 1,
                 'organization_id' => $opd->id,
                 'perangkat_daerah' => $opd->name,
+                'type' => $opd->type,
+                'short_name' => $opd->short_name ?? $opd->name,
                 'tahun' => $selectedYear,
                 'file_lkip' => $hasFile
                     ? ($doc->title ?: "LKIP {$opd->name} {$selectedYear}.pdf")
@@ -138,7 +140,7 @@ class ReportController extends Controller
         $this->authorize('view-reports');
 
         $validated = $request->validate([
-            'target_type' => ['nullable', 'string', 'in:opd'],
+            'target_type' => ['nullable', 'string', 'in:opd,unit,sekretariat,bidang'],
             'organization_id' => ['required', 'integer', 'exists:organizations,id'],
             'year' => ['required', 'integer', 'min:2000', 'max:2099'],
             'file' => ['required', 'file', 'mimes:pdf', 'max:25600'],

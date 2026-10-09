@@ -32,40 +32,12 @@ class EvaluationController extends Controller
 
     public function canManageProvincialEvaluations(?User $user): bool
     {
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->hasRole('Super Admin')) {
-            return true;
-        }
-
-        $isProvincialManager = $user->hasRole('Admin Provinsi')
-            || $user->hasRole('Inspektorat')
-            || $user->hasRole('Evaluator Provinsi');
-
-        return $isProvincialManager || ($user->isProvincialLevel() && $user->can('manage-evaluations'));
+        return false;
     }
 
     public function isProvinceOrganization(Organization|int|null $org): bool
     {
-        if (! $org) {
-            return false;
-        }
-
-        if (is_numeric($org)) {
-            $org = Organization::find((int) $org);
-        }
-
-        if (! $org) {
-            return false;
-        }
-
-        if ($org->type === 'opd') {
-            return false;
-        }
-
-        return $org->type === 'province' || $org->code === 'PROV-PAPBAR' || (int) $org->id === 1;
+        return false;
     }
 
     public function index(Request $request): Response
@@ -73,9 +45,13 @@ class EvaluationController extends Controller
         $this->authorize('view-evaluations');
 
         $user = $request->user();
-        $isProvincialAuditor = $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Inspektorat') || $user->hasRole('Evaluator Provinsi') || $user->hasRole('Pimpinan Provinsi') || $user->hasRole('Auditor');
-        $canManagePemda = $this->canManageProvincialEvaluations($user);
-        $canManage = $canManagePemda || $user->can('manage-evaluations');
+        $isOpdAdmin = $user && $user->isOpdAdmin();
+        $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
+        $canManage = $isOpdAdmin
+            || $user->hasRole('Admin Sekretariat')
+            || $user->hasRole('Admin Bidang')
+            || $user->can('manage-evaluations');
+        $canManagePemda = false;
 
         $defaultYear = (int) (PlanningPeriod::where('status', 'active')->value('year')
             ?? PlanningPeriod::orderByDesc('year')->value('year')
@@ -103,16 +79,14 @@ class EvaluationController extends Controller
 
         $sakipPemdaData = null;
 
-        // 2. SAKIP OPD
+        // SAKIP OPD / Unit (OPD Induk, Sekretariat, Bidang)
         $opdList = Organization::query()
-            ->where(function ($q) {
-                $q->where('type', 'opd')->orWhere('type', '!=', 'province');
-            })
-            ->when(! $isProvincialAuditor, function ($q) use ($user) {
-                $q->whereIn('id', $this->authorization->accessibleOrganizationIds($user));
-            })
-            ->orderBy('id')
-            ->get(['id', 'code', 'name']);
+            ->whereIn('type', ['opd', 'sekretariat', 'bidang'])
+            ->where('is_active', true)
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'type']);
 
         $evaluationsOpd = Evaluation::with('scores')
             ->whereIn('organization_id', $opdList->pluck('id'))
@@ -126,20 +100,16 @@ class EvaluationController extends Controller
             $sakipOpdData[] = $this->formatSakipItem($opd, $ev, $idx + 1);
         }
 
-        // 3. PKO Pemda dihapus
+        // PKO Pemda dihapus
         $pkoPemda = null;
 
-        // 4. PKO Perangkat Daerah (OPD)
-        if ($isProvincialAuditor) {
-            $defaultOpd = Organization::where('code', 'DPMPTSP-PB')->first() ?? $opdList->first();
-            $selectedOpdId = (int) $request->get('opd_id', $defaultOpd?->id ?? 0);
-        } else {
-            $defaultOpd = $opdList->first();
-            $requestedOpdId = (int) $request->get('opd_id', $defaultOpd?->id ?? 0);
-            $selectedOpdId = in_array($requestedOpdId, $this->authorization->accessibleOrganizationIds($user), true)
-                ? $requestedOpdId
-                : ($defaultOpd?->id ?? 0);
-        }
+        // PKO Unit (OPD / Sekretariat / Bidang)
+        $defaultOpd = $opdList->first();
+        $requestedOpdId = (int) $request->get('opd_id', $defaultOpd?->id ?? 0);
+        $selectedOpdId = ($isOpdAdmin || in_array($requestedOpdId, $accessibleOrgIds, true))
+            ? $requestedOpdId
+            : ($defaultOpd?->id ?? 0);
+
         $pkoOpd = PkoEvaluation::with('indicators')
             ->where('year', $year)
             ->where('organization_id', $selectedOpdId)

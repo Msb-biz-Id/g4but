@@ -129,90 +129,57 @@ class PerformanceMeasurementController extends Controller
     }
 
     /**
-     * Cek apakah user adalah Provincial-level Administrator (Super Admin / Admin Provinsi / Evaluator).
+     * Cek apakah user memiliki hak akses tingkat OPD menyeluruh (Super Admin / Admin OPD / Kepala OPD).
      */
+    private function isOpdWideAdmin(User $user): bool
+    {
+        return $user->isSuperAdmin()
+            || $user->isOpdAdmin()
+            || $user->hasRole('Kepala OPD');
+    }
+
     private function isProvincialAdmin(User $user): bool
     {
-        return $user->hasRole('Super Admin')
-            || $user->hasRole('Admin Provinsi')
-            || $user->hasRole('Evaluator Provinsi');
+        return $this->isOpdWideAdmin($user);
     }
 
-    /**
-     * Cek apakah user adalah Bappeda (Organisasi Bappeda atau Role Bappeda).
-     */
     private function isBappedaUser(User $user): bool
     {
-        if ($user->hasRole('Bappeda') || $user->hasRole('Admin Bappeda') || $user->hasRole('Operator Bappeda')
-            || $user->hasRole('Badan Perencanaan') || $user->hasRole('SP Bappeda')) {
-            return true;
-        }
-
-        $org = $user->organization;
-        if ($org) {
-            $orgNameLower = strtolower($org->name ?? '');
-            $orgCodeUpper = strtoupper($org->code ?? '');
-            $isBappeda = $org->is_bappeda
-                || strtolower($org->type ?? '') === 'bappeda'
-                || str_contains($orgNameLower, 'bappeda')
-                || str_contains($orgNameLower, 'bapppeda')
-                || str_contains($orgNameLower, 'bappedalitbang')
-                || str_contains($orgNameLower, 'badan perencanaan')
-                || str_contains($orgCodeUpper, 'BAPPEDA')
-                || str_contains($orgCodeUpper, 'BAPPPEDA')
-                || str_contains($orgCodeUpper, 'BAPPEDALITBANG');
-            if ($isBappeda) {
-                return true;
-            }
-        }
-
-        return $user->organizations()->where(function ($q) {
-            $q->where('is_bappeda', true)
-                ->orWhere('type', 'bappeda')
-                ->orWhere('code', 'like', '%BAPPEDA%')
-                ->orWhere('name', 'like', '%Bappeda%')
-                ->orWhere('name', 'like', '%Badan Perencanaan%');
-        })->exists();
+        return false;
     }
 
-    /**
-     * Cek apakah user adalah SP / Bappeda (Super Admin / Admin Provinsi / Evaluator / Bappeda)
-     * yang berwenang mengampu RPJMD dan IKU PEMDA (Modul 4.1 & 4.2).
-     */
     private function isSpBappeda(User $user): bool
     {
-        return $this->isProvincialAdmin($user) || $this->isBappedaUser($user);
+        return $this->isOpdWideAdmin($user);
     }
 
     /**
-     * Pastikan user berhak mengelola (mutate) data OPD tertentu (4.3, 4.4, 4.5).
-     * Super Admin & Admin Provinsi memiliki hak akses kelola lintas OPD.
-     * User OPD (termasuk Bappeda) hanya berhak mengelola data unit kerjanya sendiri.
+     * Pastikan user berhak mengelola (mutate) data unit kerja tertentu.
      */
     private function checkOpdAccess(User $user, int $organizationId): void
     {
-        if ($this->isProvincialAdmin($user)) {
+        if ($user->isSuperAdmin() || $user->isOpdAdmin()) {
             return;
         }
 
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
         if (! in_array($organizationId, $accessibleOrgIds, true)) {
-            abort(403, 'Anda tidak memiliki hak akses untuk mengelola data Perangkat Daerah ini.');
+            abort(403, 'Anda tidak memiliki hak akses untuk mengelola data unit kerja ini.');
         }
     }
 
     /**
-     * Pastikan user berhak melihat/export data OPD tertentu.
+     * Pastikan user berhak melihat/export data unit kerja tertentu.
      */
     private function checkOpdViewAccess(User $user, int $organizationId): void
     {
-        if ($this->isSpBappeda($user)) {
+        if ($this->isOpdWideAdmin($user)) {
             return;
         }
 
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
         if (! in_array($organizationId, $accessibleOrgIds, true)) {
-            abort(403, 'Anda tidak memiliki hak akses untuk melihat data Perangkat Daerah ini.');
+            abort(403, 'Anda tidak memiliki hak akses untuk melihat data unit kerja ini.');
         }
     }
 
@@ -227,9 +194,12 @@ class PerformanceMeasurementController extends Controller
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $organizations = Organization::query()
+            ->whereIn('type', ['opd', 'sekretariat', 'bidang'])
+            ->where('is_active', true)
             ->when(! $isSpBappeda, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
             ->orderBy('name')
-            ->get(['id', 'code', 'name']);
+            ->get(['id', 'code', 'name', 'type']);
 
         $selectedOrgId = $this->parseIntegerInput($request, 'organization_id', $organizations->first()?->id ?? null);
 
@@ -875,9 +845,12 @@ class PerformanceMeasurementController extends Controller
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $organizations = Organization::query()
+            ->whereIn('type', ['opd', 'sekretariat', 'bidang'])
+            ->where('is_active', true)
             ->when(! $isSpBappeda, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
             ->orderBy('name')
-            ->get(['id', 'code', 'name']);
+            ->get(['id', 'code', 'name', 'type']);
 
         $selectedOrgId = $this->parseIntegerInput($request, 'organization_id', $organizations->first()?->id ?? null);
 
@@ -1055,9 +1028,12 @@ class PerformanceMeasurementController extends Controller
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $organizations = Organization::query()
+            ->whereIn('type', ['opd', 'sekretariat', 'bidang'])
+            ->where('is_active', true)
             ->when(! $isSpBappeda, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
             ->orderBy('name')
-            ->get(['id', 'code', 'name']);
+            ->get(['id', 'code', 'name', 'type']);
 
         $selectedOrgId = $this->parseIntegerInput($request, 'organization_id', $organizations->first()?->id ?? null);
 

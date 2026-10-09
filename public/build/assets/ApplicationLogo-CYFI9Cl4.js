@@ -1,0 +1,1 @@
+import{u as p,j as c}from"./app-CIW4Z0o1.js";import{c as e}from"./utils-D0EtOKoh.js";function m({className:o,alt:s="Logo e-KASUARI Papua Barat",src:r,...a}){const{appConfig:t}=p().props,n=r||t?.logoUrl||"/logo.webp";return c.jsx("img",{src:n,alt:s,className:e("object-contain shrink-0",o),...a})}export{m as A};

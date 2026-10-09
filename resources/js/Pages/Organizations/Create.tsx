@@ -63,11 +63,9 @@ export default function OrganizationsCreate({ parents }: Props) {
                                         onChange={(e) => setData('type', e.target.value)}
                                         className="mt-1 block w-full"
                                     >
-                                        <option value="province">Pemerintah Provinsi</option>
-                                        <option value="opd">Perangkat Daerah (OPD / Dinas / Badan)</option>
-                                        <option value="biro">Biro Sekretariat Daerah</option>
-                                        <option value="inspektorat">Inspektorat</option>
-                                        <option value="unit">Unit Pelaksana Teknis (UPT)</option>
+                                        <option value="opd">OPD Induk (Dinas / Badan)</option>
+                                        <option value="sekretariat">Sekretariat</option>
+                                        <option value="bidang">Bidang / Bagian</option>
                                     </SelectNative>
                                 </div>
                             </div>

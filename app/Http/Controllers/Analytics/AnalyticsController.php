@@ -15,7 +15,6 @@ use App\Services\AchievementCalculator;
 use App\Services\AuthorizationService;
 use App\Services\EarlyWarningAnalyticsService;
 use App\Services\OpdAnalyticsService;
-use App\Services\RpjmdAnalyticsService;
 use App\Services\SakipDocumentService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -31,7 +30,6 @@ class AnalyticsController extends Controller
         private readonly AuthorizationService $authorization,
         private readonly AchievementCalculator $calculator,
         private readonly SakipDocumentService $sakipDocService,
-        private readonly RpjmdAnalyticsService $rpjmdService,
         private readonly OpdAnalyticsService $opdAnalytics,
         private readonly EarlyWarningAnalyticsService $ewsAnalytics,
     ) {}
@@ -60,12 +58,21 @@ class AnalyticsController extends Controller
         $ikuAnalysis = Cache::remember($cacheKey.'.iku', $cacheTtl, fn () => $this->buildIkuAnalysis($filters));
         $heatmap = Cache::remember('analytics.heatmap', $cacheTtl, fn () => $this->buildHeatmap());
         $sakipDocs = Cache::remember($cacheKey.'.sakip_docs', $cacheTtl, fn () => $this->buildSakipDocs($filters));
-        $rpjmdAnalysis = Cache::remember($cacheKey.'.rpjmd', $cacheTtl, fn () => $this->rpjmdService->getRpjmdMatrix($filters['year'], null, $filters['organization_id'] ?? null));
+        $rpjmdAnalysis = [
+            'summary' => ['rata_capaian' => 0, 'total_indikator' => 0, 'tercapai' => 0, 'breakdown' => []],
+            'rows' => [],
+            'trend' => [],
+            'years' => [],
+        ];
 
-        // 6 Baris Dashboard Analitik Komprehensif (Sesuai Panduan DASHBOARD ANALITIK.docx)
+        // 6 Baris Dashboard Analitik Komprehensif
         $ikuPemdaMatrix = Cache::remember($cacheKey.'.iku_pemda', $cacheTtl, fn () => $this->opdAnalytics->getIkuPemdaMatrix($filters['year'], $filters['status'] ?? null));
         $opdRankingMatrix = Cache::remember($cacheKey.'.opd_ranking', $cacheTtl, fn () => $this->opdAnalytics->getOpdPerformanceRanking($filters['year'], $filters['organization_id'] ?? null, $filters['status'] ?? null));
-        $sakipPemdaMatrix = Cache::remember($cacheKey.'.sakip_pemda', $cacheTtl, fn () => $this->opdAnalytics->getSakipPemdaMatrix($filters['year']));
+        $sakipPemdaMatrix = [
+            'nilai' => 0.0,
+            'predikat' => 'BELUM DINILAI',
+            'komponen' => [],
+        ];
         $sakipEvaluations = Cache::remember($cacheKey.'.sakip_eval', $cacheTtl, fn () => $this->opdAnalytics->getSakipEvaluationMatrix($filters['year'], $filters['organization_id'] ?? null));
         $pkoAnalysis = Cache::remember($cacheKey.'.pko', $cacheTtl, fn () => $this->opdAnalytics->getPkoMatrix($filters['year'], $filters['organization_id'] ?? null));
         $actionPlans = Cache::remember($cacheKey.'.action_plans', $cacheTtl, fn () => $this->opdAnalytics->getActionPlansMatrix($filters['year'], $filters['triwulan'] ?? 'TW II', $filters['organization_id'] ?? null));
@@ -498,7 +505,14 @@ class AnalyticsController extends Controller
         $year = (int) ($filters['year'] ?? $this->getDefaultYear());
         $filterOpdId = ! empty($filters['organization_id']) ? (int) $filters['organization_id'] : null;
 
-        $pemdaMatrix = $this->sakipDocService->getSakipPemdaMatrix($year);
+        $pemdaMatrix = [
+            'total_required' => 0,
+            'available' => 0,
+            'missing' => 0,
+            'percentage' => 0.0,
+            'status' => 'Lengkap',
+            'rows' => [],
+        ];
         $opdMatrix = $this->sakipDocService->getSakipOpdMatrix($year, $filterOpdId, $orgIds);
 
         return [
@@ -705,37 +719,7 @@ class AnalyticsController extends Controller
         fwrite($csv, "\xEF\xBB\xBF");
 
         if ($type === 'rpjmd') {
-            $year = (int) ($request->get('year', $this->getDefaultYear()));
-            $filename = 'analitik-capaian-rpjmd-'.$year.'-'.now()->format('YmdHis').'.csv';
-            $matrix = $this->rpjmdService->getRpjmdMatrix($year, null, $filters['organization_id'] ?? null);
-            $years = ! empty($matrix['years']) ? $matrix['years'] : PlanningPeriod::getAvailableYears();
-            $headers = ['No', 'Tujuan', 'Sasaran RPJMD', 'Indikator', 'Satuan', 'Target '.$year, 'Realisasi '.$year, 'Capaian '.$year.' (%)', 'Status', 'OPD Pengampu'];
-            foreach ($years as $yr) {
-                $headers[] = 'Target '.$yr;
-                $headers[] = 'Realisasi '.$yr;
-                $headers[] = 'Capaian '.$yr.' (%)';
-            }
-            fputcsv($csv, $headers);
-            foreach ($matrix['rows'] as $row) {
-                $line = [
-                    $row['no'],
-                    $row['tujuan'],
-                    $row['sasaran'],
-                    $row['indikator'],
-                    $row['satuan'],
-                    $row['target'] ?? '-',
-                    $row['realisasi'] ?? '-',
-                    $row['capaian'] !== null ? $row['capaian'].'%' : '-',
-                    $row['status'],
-                    $row['opd_pengampu'],
-                ];
-                foreach ($years as $yr) {
-                    $line[] = $row['yearly'][$yr]['target'] ?? '-';
-                    $line[] = $row['yearly'][$yr]['realization'] ?? '-';
-                    $line[] = $row['yearly'][$yr]['achievement'] !== null ? $row['yearly'][$yr]['achievement'].'%' : '-';
-                }
-                fputcsv($csv, $line);
-            }
+            abort(404, 'Modul RPJMD telah dinonaktifkan.');
         } elseif ($type === 'trend') {
             $filename = 'analitik-tren-capaian-'.now()->format('YmdHis').'.csv';
             $rows = $this->buildTrend($filters);
@@ -873,28 +857,7 @@ class AnalyticsController extends Controller
                 fputcsv($csv, $line);
             }
         } elseif ($type === 'sakip_pemda') {
-            $year = (int) ($request->get('year', $this->getDefaultYear()));
-            $filename = 'analitik-evaluasi-sakip-pemda-'.$year.'-'.now()->format('YmdHis').'.csv';
-            $matrix = $this->opdAnalytics->getSakipPemdaMatrix($year);
-            $headers = ['No', 'Komponen Akuntabilitas', 'Bobot (%)', 'Nilai Capaian', 'Persentase Capaian (%)', 'Predikat Mutu', 'Deskripsi Komponen'];
-            fputcsv($csv, $headers);
-            foreach ($matrix['komponen'] as $k) {
-                fputcsv($csv, [
-                    $k['no'],
-                    $k['komponen'],
-                    $k['bobot'],
-                    $k['nilai'],
-                    $k['persen'].'%',
-                    $k['predikat'],
-                    $k['deskripsi'],
-                ]);
-            }
-            fputcsv($csv, []);
-            fputcsv($csv, ['Total Nilai SAKIP Pemda', '', 100, $matrix['nilai'], $matrix['nilai'].'%', $matrix['predikat'], 'Predikat Evaluasi Akuntabilitas Kinerja Instansi Pemerintah']);
-            fputcsv($csv, ['Nomor LHE', $matrix['lhe']['nomor_lhe']]);
-            fputcsv($csv, ['Evaluator', $matrix['lhe']['evaluator']]);
-            fputcsv($csv, ['Catatan Evaluasi', $matrix['lhe']['catatan']]);
-            fputcsv($csv, ['Rekomendasi', $matrix['lhe']['rekomendasi']]);
+            abort(404, 'Modul SAKIP Pemda telah dinonaktifkan.');
         } elseif ($type === 'sakip_eval') {
             $year = (int) ($request->get('year', $this->getDefaultYear()));
             $filename = 'analitik-evaluasi-sakip-opd-'.$year.'-'.now()->format('YmdHis').'.csv';
@@ -1097,12 +1060,11 @@ class AnalyticsController extends Controller
         $data = ['generatedAt' => $generatedAt, 'year' => $year];
         $filename = 'analitik-'.$type.'-'.$year.'-'.now()->format('YmdHis').'.pdf';
 
-        if ($type === 'rpjmd') {
-            $matrix = $this->rpjmdService->getRpjmdMatrix($year, null, $filters['organization_id'] ?? null);
-            $data = array_merge($data, ['rows' => $matrix['rows'] ?? [], 'stats' => $matrix['stats'] ?? [], 'summary' => $matrix['summary'] ?? []]);
-            $view = 'pdf.analytics.rpjmd';
-            $filename = 'analitik-capaian-rpjmd-'.$year.'-'.now()->format('YmdHis').'.pdf';
-        } elseif ($type === 'trend') {
+        if (in_array($type, ['rpjmd', 'sakip_docs_pemda', 'sakip_pemda', 'pko_pemda'], true)) {
+            abort(404, 'Modul provinsi telah dinonaktifkan.');
+        }
+
+        if ($type === 'trend') {
             $rows = $this->buildTrend($filters);
             $data = array_merge($data, ['rows' => $rows]);
             $view = 'pdf.analytics.trend';
