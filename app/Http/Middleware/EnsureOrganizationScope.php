@@ -19,7 +19,8 @@ class EnsureOrganizationScope
         $organizationId = $request->route('organization')
             ?? $request->route('organization_id')
             ?? $request->input('organization_id')
-            ?? $request->input('owner_organization_id');
+            ?? $request->input('owner_organization_id')
+            ?? $request->input('unit_id');
 
         if ($organizationId !== null && $organizationId !== '') {
             $organizationId = is_object($organizationId) ? $organizationId->getKey() : (int) $organizationId;

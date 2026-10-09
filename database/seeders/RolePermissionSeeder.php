@@ -71,7 +71,7 @@ class RolePermissionSeeder extends Seeder
         ['planning', 'review', 'planning'],
         ['planning', 'approve', 'planning'],
 
-        // IKU (Indikator Kinerja Utama) — FINAL SPEC
+        // IKU (Indikator Kinerja Utama)
         ['iku', 'view', 'planning'],
         ['iku', 'create', 'planning'],
         ['iku', 'update', 'planning'],
@@ -102,7 +102,6 @@ class RolePermissionSeeder extends Seeder
         ['report', 'export_pdf', 'reporting'],
         ['report', 'export_xlsx', 'reporting'],
         ['report', 'export_csv', 'reporting'],
-        ['dashboard', 'view', 'reporting'],
 
         // Evaluation
         ['evaluation', 'view', 'evaluation'],
@@ -116,20 +115,20 @@ class RolePermissionSeeder extends Seeder
         ['followup', 'verify', 'evaluation'],
 
         // Early Warning System
-        ['alert', 'view', 'ews'],
-        ['alert', 'acknowledge', 'ews'],
-        ['alert', 'resolve', 'ews'],
-        ['alert_rule', 'view', 'ews'],
-        ['alert_rule', 'manage', 'ews'],
+        ['alert', 'view', 'early_warning'],
+        ['alert', 'acknowledge', 'early_warning'],
+        ['alert', 'resolve', 'early_warning'],
+        ['alert_rule', 'view', 'early_warning'],
+        ['alert_rule', 'manage', 'early_warning'],
 
-        // Notification
-        ['notification', 'view', 'notification'],
-        ['notification', 'send', 'notification'],
+        // Notifications
+        ['notification', 'view', 'communication'],
+        ['notification', 'send', 'communication'],
 
-        // Audit
+        // Audit Trail
         ['audit_log', 'view', 'audit'],
 
-        // Knowledge
+        // Knowledge Management
         ['knowledge', 'view', 'knowledge'],
         ['knowledge', 'manage', 'knowledge'],
         ['knowledge', 'publish', 'knowledge'],
@@ -146,177 +145,150 @@ class RolePermissionSeeder extends Seeder
     ];
 
     /**
-     * Pemetaan permission ke role sesuai TUPOKSI SAKIP.
-     * Format: bisa berupa exact permission "resource:action" atau wildcard resource "*".
+     * Pemetaan permission ke 7 role baru Rumah Besar OPD (Matriks 2.3).
      *
      * @var array<string, list<string>>
      */
     private const ROLE_PERMISSIONS = [
         RoleEnum::SuperAdmin->value => ['*'],
 
-        RoleEnum::AdminProvinsi->value => [
-            // Master Data & IAM se-Provinsi
-            'user', 'role', 'permission', 'organization', 'organization_unit', 'planning_period',
-            'measurement_period', 'indicator', 'unit', 'reference', 'import', 'migration',
-            // Planning & IKU
-            'goal', 'objective', 'target', 'performance_node', 'agreement', 'action_plan', 'risk',
-            'planning:submit', 'planning:review', 'planning:approve',
-            'iku:view', 'iku:create', 'iku:update', 'iku:submit', 'iku:review', 'iku:finalize',
-            'iku:deactivate', 'iku:delete', 'iku:export', 'iku:import',
-            // Measurement & Reporting (Biro Organisasi)
-            'realization:view', 'realization:create', 'realization:update', 'realization:submit',
-            'evidence:view', 'evidence:upload', 'evidence:download',
-            'report', 'dashboard:view',
-            // Pengelolaan Evaluasi SAKIP se-Provinsi (Biro Organisasi / Tim Evaluator)
-            'evaluation:view', 'evaluation:manage', 'evaluation:score', 'evaluation:submit',
-            'recommendation:view', 'recommendation:manage', 'followup:view',
-            'alert', 'alert_rule', 'notification', 'audit_log:view', 'knowledge', 'ai', 'config',
-            'integration',
-        ],
-
         RoleEnum::AdminOpd->value => [
-            // IAM internal OPD — dibatasi mengelola akun staf/pejabat OPD sendiri
-            'user:view', 'user:create', 'user:update', 'user:reset_password',
-            // Perencanaan Kinerja OPD
-            'goal:view', 'goal:manage', 'objective:view', 'objective:manage',
-            'target:view', 'target:manage', 'performance_node:view', 'performance_node:manage',
-            'agreement:view', 'agreement:manage', 'action_plan:view', 'action_plan:manage',
-            'risk:view', 'risk:manage', 'planning:submit',
-            // IKU OPD (input & submit, review/finalize adalah wewenang Bappeda)
-            'iku:view', 'iku:create', 'iku:update', 'iku:submit', 'iku:export', 'iku:import',
-            // Pengukuran & Realisasi internal OPD (Input, Update, Submit & Evidence)
+            // IAM internal OPD
+            'user', 'role:view', 'permission:view',
+            // Master data
+            'organization', 'organization_unit', 'planning_period', 'measurement_period',
+            'indicator', 'unit', 'reference', 'import', 'migration',
+            // Perencanaan Kinerja
+            'goal', 'objective', 'target', 'performance_node', 'agreement', 'action_plan', 'risk',
+            'planning:submit', 'planning:review',
+            // IKU OPD (Maker & Workflow)
+            'iku:view', 'iku:create', 'iku:update', 'iku:submit', 'iku:review', 'iku:export', 'iku:import',
+            // Pengukuran & Realisasi
             'realization:view', 'realization:create', 'realization:update', 'realization:submit',
             'evidence:view', 'evidence:upload', 'evidence:download',
-            // Pelaporan Internal OPD
-            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx', 'report:export_csv',
-            'dashboard:view',
-            // Evaluasi SAKIP — OPD melihat hasil evaluasi, mengelola SAKIP & PKO OPD-nya sendiri, serta mengisi Tindak Lanjut Rekomendasi (followup)
-            'evaluation:view', 'evaluation:manage', 'recommendation:view', 'followup:view', 'followup:manage',
-            // EWS, Notifikasi, Knowledge, AI
-            'alert:view', 'alert:acknowledge', 'notification:view', 'notification:send',
-            'knowledge:view', 'ai:use',
-        ],
-
-        RoleEnum::OperatorOpd->value => [
-            // Perencanaan Kinerja OPD (Maker / Input Dokumen)
-            'goal:view', 'objective:view', 'target:view', 'performance_node:view',
-            'agreement:view', 'action_plan:view', 'action_plan:manage', 'risk:view',
-            'planning:submit',
-            // IKU (Input Draft & Submit)
-            'iku:view', 'iku:create', 'iku:update', 'iku:submit', 'iku:export',
-            // Pengukuran Kinerja (Maker — Input, Edit Draft, Submit & Upload Evidence)
-            // STRICTLY NO realization:approve / reject (Maker-Checker segregation)
-            'realization:view', 'realization:create', 'realization:update', 'realization:submit',
-            'evidence:view', 'evidence:upload', 'evidence:download',
-            // Pelaporan & Evaluasi OPD (Read-only)
-            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx',
-            'evaluation:view', 'recommendation:view', 'followup:view',
-            // Notifikasi, Pusat Informasi, Dashboard
-            'notification:view', 'knowledge:view', 'dashboard:view',
-        ],
-
-        RoleEnum::ValidatorOpd->value => [
-            // Perencanaan Kinerja OPD (Checker / Review)
-            'goal:view', 'objective:view', 'target:view', 'performance_node:view',
-            'agreement:view', 'action_plan:view', 'risk:view',
-            // IKU
-            'iku:view', 'iku:export',
-            // Pengukuran Kinerja (Checker — Verifikasi, Approve, Reject, Minta Revisi)
-            // STRICTLY NO realization:create / update (tidak menginput data teknis)
-            'realization:view', 'realization:approve', 'realization:reject', 'realization:revision',
-            'evidence:view', 'evidence:download',
-            // Pelaporan & Evaluasi OPD (Read-only)
-            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx',
-            'evaluation:view', 'recommendation:view', 'followup:view',
-            // Notifikasi, Pusat Informasi, Dashboard
-            'notification:view', 'notification:send', 'knowledge:view', 'dashboard:view',
+            // Pelaporan & Dashboard
+            'report', 'dashboard:view',
+            // Evaluasi SAKIP & PKO per unit
+            'evaluation:view', 'evaluation:manage', 'evaluation:score', 'evaluation:submit',
+            'recommendation:view', 'recommendation:manage', 'followup:view', 'followup:manage',
+            // EWS, Notifikasi, Audit Log, Knowledge, AI, Integrasi, Config
+            'alert', 'alert_rule', 'notification', 'audit_log:view', 'knowledge', 'ai:use', 'config', 'integration',
         ],
 
         RoleEnum::KepalaOpd->value => [
             'dashboard:view', 'ai:use',
-            // Pengesahan Perjanjian Kinerja OPD
+            // Read Master Data
+            'user:view', 'organization:view', 'organization_unit:view', 'planning_period:view',
+            'measurement_period:view', 'indicator:view', 'unit:view', 'reference:view',
+            // Pengesahan Perencanaan & Perjanjian Kinerja
             'goal:view', 'objective:view', 'target:view', 'performance_node:view',
             'agreement:view', 'agreement:approve', 'action_plan:view', 'risk:view',
-            'iku:view', 'iku:export',
-            // Monitoring Realisasi Kinerja OPD
-            'realization:view', 'evidence:view', 'evidence:download',
-            // Pelaporan OPD
-            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx', 'report:export_csv',
-            // Monitoring Evaluasi & Tindak Lanjut LHE
+            'planning:view', 'planning:approve',
+            // IKU (Pengesahan Final & Nonaktif)
+            'iku:view', 'iku:finalize', 'iku:deactivate', 'iku:export',
+            // Pengukuran & Realisasi (Pengesahan/Persetujuan)
+            'realization:view', 'realization:approve', 'realization:reject', 'realization:revision',
+            'evidence:view', 'evidence:download',
+            // Pelaporan
+            'report:view', 'report:export_pdf', 'report:export_xlsx', 'report:export_csv',
+            // Pengesahan Hasil Evaluasi SAKIP & PKO
             'evaluation:view', 'recommendation:view', 'followup:view', 'followup:manage',
-            // EWS, Notifikasi, Pusat Informasi
+            // EWS, Notifikasi, Pusat Informasi, Audit Log
+            'alert:view', 'alert:acknowledge', 'notification:view', 'knowledge:view', 'audit_log:view',
+        ],
+
+        RoleEnum::AdminSekretariat->value => [
+            // Read Master Data
+            'organization:view', 'organization_unit:view', 'planning_period:view', 'measurement_period:view',
+            'indicator:view', 'unit:view', 'reference:view',
+            // Perencanaan Sekretariat (Maker)
+            'goal:view', 'goal:manage', 'objective:view', 'objective:manage',
+            'target:view', 'target:manage', 'performance_node:view', 'performance_node:manage',
+            'agreement:view', 'agreement:manage', 'action_plan:view', 'action_plan:manage',
+            'risk:view', 'risk:manage', 'planning:submit',
+            // IKU Unit (Maker)
+            'iku:view', 'iku:create', 'iku:update', 'iku:submit', 'iku:export', 'iku:import',
+            // Pengukuran & Realisasi (Maker)
+            'realization:view', 'realization:create', 'realization:update', 'realization:submit',
+            'evidence:view', 'evidence:upload', 'evidence:download',
+            // Pelaporan LKIP Unit
+            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx',
+            'dashboard:view',
+            // Evaluasi SAKIP/PKO Unit
+            'evaluation:view', 'evaluation:manage', 'evaluation:score',
+            'recommendation:view', 'followup:view', 'followup:manage',
+            // Notifikasi, Knowledge, AI, EWS
+            'alert:view', 'alert:acknowledge', 'notification:view', 'notification:send',
+            'knowledge:view', 'knowledge:manage', 'ai:use',
+        ],
+
+        RoleEnum::KepalaSekretariat->value => [
+            'dashboard:view', 'ai:use',
+            // Read Master Data
+            'organization:view', 'organization_unit:view', 'planning_period:view', 'measurement_period:view',
+            'indicator:view', 'unit:view', 'reference:view',
+            // Review & Pengesahan Unit Sekretariat (Checker)
+            'goal:view', 'objective:view', 'target:view', 'performance_node:view',
+            'agreement:view', 'agreement:approve', 'action_plan:view', 'risk:view',
+            'planning:view', 'planning:review',
+            // IKU Review Unit
+            'iku:view', 'iku:review', 'iku:export',
+            // Pengukuran & Realisasi (Checker)
+            'realization:view', 'realization:approve', 'realization:reject', 'realization:revision',
+            'evidence:view', 'evidence:download',
+            // Pelaporan LKIP
+            'report:view', 'report:export_pdf', 'report:export_xlsx',
+            // Evaluasi SAKIP/PKO Unit (Review/Verify)
+            'evaluation:view', 'recommendation:view', 'followup:view', 'followup:verify', 'followup:manage',
+            // EWS, Notifikasi, Knowledge
             'alert:view', 'alert:acknowledge', 'notification:view', 'knowledge:view',
         ],
 
-        RoleEnum::EvaluatorProvinsi->value => [
-            'dashboard:view', 'ai:use',
-            // Asistensi, Monitoring & Review Perencanaan Seluruh OPD
-            'goal:view', 'objective:view', 'target:view', 'performance_node:view',
-            'agreement:view', 'action_plan:view', 'risk:view', 'planning:review',
-            // Review & Finalisasi IKU OPD se-Provinsi
-            'iku:view', 'iku:review', 'iku:finalize', 'iku:export',
-            // Monitoring Realisasi & Evidence Seluruh OPD
-            'realization:view', 'evidence:view', 'evidence:download',
-            // Laporan Kinerja se-Provinsi
-            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx', 'report:export_csv',
-            // Tim Evaluator SAKIP: Input Nilai LKE, 4 Komponen SAKIP, Rekomendasi, LHE, TL
-            'evaluation:view', 'evaluation:manage', 'evaluation:score', 'evaluation:submit',
-            'recommendation:view', 'recommendation:manage', 'followup:view', 'followup:manage',
-            // EWS, Notifikasi, Pusat Informasi
-            'alert:view', 'alert:acknowledge', 'notification:view', 'notification:send',
-            'knowledge:view',
-        ],
-
-        RoleEnum::Inspektorat->value => [
-            'dashboard:view', 'ai:use',
-            // Pengawasan Perencanaan Seluruh OPD
-            'goal:view', 'objective:view', 'target:view', 'performance_node:view',
-            'agreement:view', 'action_plan:view', 'risk:view', 'risk:manage', 'planning:review',
-            'iku:view', 'iku:export',
-            // Pengawasan Pengukuran & Realisasi
-            'realization:view', 'realization:revision', 'evidence:view', 'evidence:download',
-            // Wewenang Khusus APIP: Evaluasi SAKIP Independen, Nilai AKIP, LHE, Verifikasi TL
-            'evaluation:view', 'evaluation:manage', 'evaluation:score', 'evaluation:submit',
-            'recommendation:view', 'recommendation:manage',
-            'followup:view', 'followup:verify',
-            // Pelaporan, Audit Trail Log, EWS, Notifikasi, Pusat Informasi
-            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx', 'report:export_csv',
-            'audit_log:view',
-            'alert:view', 'alert:acknowledge', 'notification:view', 'notification:send',
-            'knowledge:view',
-        ],
-
-        RoleEnum::PimpinanProvinsi->value => [
-            // Executive Decision Maker (Gubernur, Wagub, Sekda) — Read-Only Eksekutif
-            'dashboard:view', 'ai:use',
-            // Monitoring Perencanaan Seluruh OPD & Matriks Monitoring
-            'goal:view', 'objective:view', 'target:view', 'performance_node:view',
-            'agreement:view', 'action_plan:view', 'planning:review',
-            'iku:view', 'iku:export',
-            // Monitoring Realisasi & Evidence
-            'realization:view', 'evidence:view', 'evidence:download',
-            // Pelaporan & Evaluasi Eksekutif
-            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx', 'report:export_csv',
-            'evaluation:view', 'recommendation:view', 'followup:view',
-            // EWS, Notifikasi, Pusat Informasi
-            'alert:view', 'alert:acknowledge', 'notification:view',
-            'knowledge:view',
-        ],
-
-        RoleEnum::Auditor->value => [
-            // Pemeriksa Eksternal (BPK, BPKP, KemenPAN-RB) — 100% Read-Only Pemeriksaan
+        RoleEnum::AdminBidang->value => [
+            // Read Master Data
+            'organization:view', 'organization_unit:view', 'planning_period:view', 'measurement_period:view',
+            'indicator:view', 'unit:view', 'reference:view',
+            // Perencanaan Bidang (Maker)
+            'goal:view', 'goal:manage', 'objective:view', 'objective:manage',
+            'target:view', 'target:manage', 'performance_node:view', 'performance_node:manage',
+            'agreement:view', 'agreement:manage', 'action_plan:view', 'action_plan:manage',
+            'risk:view', 'risk:manage', 'planning:submit',
+            // IKU Unit (Maker)
+            'iku:view', 'iku:create', 'iku:update', 'iku:submit', 'iku:export', 'iku:import',
+            // Pengukuran & Realisasi (Maker)
+            'realization:view', 'realization:create', 'realization:update', 'realization:submit',
+            'evidence:view', 'evidence:upload', 'evidence:download',
+            // Pelaporan LKIP Unit
+            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx',
             'dashboard:view',
-            // Perencanaan (Read-Only)
+            // Usulan PKO / Evaluasi Unit
+            'evaluation:view', 'evaluation:manage', 'evaluation:score',
+            'recommendation:view', 'followup:view', 'followup:manage',
+            // Notifikasi, Knowledge, AI, EWS
+            'alert:view', 'alert:acknowledge', 'notification:view', 'notification:send',
+            'knowledge:view', 'knowledge:manage', 'ai:use',
+        ],
+
+        RoleEnum::KepalaBidang->value => [
+            'dashboard:view', 'ai:use',
+            // Read Master Data
+            'organization:view', 'organization_unit:view', 'planning_period:view', 'measurement_period:view',
+            'indicator:view', 'unit:view', 'reference:view',
+            // Review & Pengesahan Unit Bidang (Checker)
             'goal:view', 'objective:view', 'target:view', 'performance_node:view',
-            'agreement:view', 'action_plan:view', 'risk:view',
-            'iku:view', 'iku:export',
-            // Realisasi & Evidence (Read-Only)
-            'realization:view', 'evidence:view', 'evidence:download',
-            // Pelaporan & Evaluasi (Read-Only)
-            'report:view', 'report:generate', 'report:export_pdf', 'report:export_xlsx', 'report:export_csv',
-            'evaluation:view', 'recommendation:view', 'followup:view',
-            // Audit Log & Pusat Informasi
-            'audit_log:view', 'knowledge:view',
+            'agreement:view', 'agreement:approve', 'action_plan:view', 'risk:view',
+            'planning:view', 'planning:review',
+            // IKU Review Unit
+            'iku:view', 'iku:review', 'iku:export',
+            // Pengukuran & Realisasi (Checker)
+            'realization:view', 'realization:approve', 'realization:reject', 'realization:revision',
+            'evidence:view', 'evidence:download',
+            // Pelaporan LKIP
+            'report:view', 'report:export_pdf', 'report:export_xlsx',
+            // Evaluasi SAKIP/PKO Unit (Review/Verify)
+            'evaluation:view', 'recommendation:view', 'followup:view', 'followup:verify', 'followup:manage',
+            // EWS, Notifikasi, Knowledge
+            'alert:view', 'alert:acknowledge', 'notification:view', 'knowledge:view',
         ],
     ];
 
@@ -346,7 +318,6 @@ class RolePermissionSeeder extends Seeder
                         return true;
                     }
 
-                    // Cocok jika match exact "resource:action" atau match nama resource
                     return in_array($permission->name, $allowed, true)
                         || in_array($permission->resource, $allowed, true);
                 });

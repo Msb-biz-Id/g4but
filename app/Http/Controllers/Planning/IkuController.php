@@ -17,7 +17,6 @@ use App\Services\AuditService;
 use App\Services\AuthorizationService;
 use App\Services\IkuWorkflowService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,10 +53,9 @@ class IkuController extends Controller
         }
 
         $user = $request->user();
-        $isBappeda = $this->userIsBappeda($user);
-        $isProvincialAdmin = $isBappeda || $this->authorization->isProvincialAdmin($user);
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
-        $isAdminOpd = ! $isProvincialAdmin;
+        $isAdminOpd = ! $isOpdAdmin;
         $userOpdId = $user->organization?->id ?? ($accessibleOrgIds[0] ?? null);
 
         $query = Indicator::query()
@@ -71,14 +69,11 @@ class IkuController extends Controller
                 'responsibleOfficer:id,name',
                 'targets:id,indicator_version_id,year,target_value',
             ])
-            // Scope OPD: user OPD hanya melihat IKU OPD-nya sendiri dan IKU Pemda
-            ->when(! $isProvincialAdmin, fn ($q) => $q->where(function ($sub) use ($accessibleOrgIds) {
-                $sub->whereIn('owner_organization_id', $accessibleOrgIds)
-                    ->orWhere('level', 'pemda');
-            }))
+            // Scoping unit: Unit kerja hanya melihat IKU dalam lingkup organisasinya
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
             ->when($request->filled('period_id'), fn ($q) => $q->byPeriod($request->integer('period_id')))
             ->when($request->filled('level'), fn ($q) => $q->byLevel($request->string('level')))
-            ->when($request->filled('org_id') && $isProvincialAdmin, fn ($q) => $q->where('owner_organization_id', $request->integer('org_id')))
+            ->when($request->filled('org_id') && $isOpdAdmin, fn ($q) => $q->where('owner_organization_id', $request->integer('org_id')))
             ->when($request->filled('goal_id'), fn ($q) => $q->where('strategic_goal_id', $request->integer('goal_id')))
             ->when($request->filled('objective_id'), fn ($q) => $q->where('strategic_objective_id', $request->integer('objective_id')))
             ->when($request->filled('iku_status'), fn ($q) => $q->byIkuStatus($request->string('iku_status')))
@@ -88,7 +83,7 @@ class IkuController extends Controller
             ->withQueryString();
 
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('code')
             ->get(['id', 'code', 'name']);
 
@@ -102,7 +97,8 @@ class IkuController extends Controller
             'organizations' => $organizations,
             'statusOptions' => $this->statusOptions(),
             'isAdminOpd' => $isAdminOpd,
-            'isProvincialAdmin' => $isProvincialAdmin,
+            'isOpdAdmin' => $isOpdAdmin,
+            'isProvincialAdmin' => $isOpdAdmin,
             'accessibleOrgIds' => $accessibleOrgIds,
             'userOpdId' => $userOpdId,
         ]);
@@ -113,34 +109,30 @@ class IkuController extends Controller
     public function create(Request $request): Response
     {
         $user = $request->user();
-        $isBappeda = $this->userIsBappeda($user);
-        $isProvincialAdmin = $isBappeda || $this->authorization->isProvincialAdmin($user);
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
-        $isAdminOpd = ! $isProvincialAdmin;
+        $isAdminOpd = ! $isOpdAdmin;
         $userOpdId = $user->organization?->id ?? ($accessibleOrgIds[0] ?? null);
 
         $organizations = Organization::orderBy('code')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->get(['id', 'code', 'name']);
 
         $officers = User::orderBy('name')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereHas('organizations', fn ($oq) => $oq->whereIn('organizations.id', $accessibleOrgIds)))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereHas('organizations', fn ($oq) => $oq->whereIn('organizations.id', $accessibleOrgIds)))
             ->get(['id', 'name']);
-
-        $levelOptions = $isAdminOpd
-            ? [['value' => 'perangkat_daerah', 'label' => 'Perangkat Daerah']]
-            : $this->levelOptions();
 
         return Inertia::render('Planning/Iku/Create', [
             'periods' => PlanningPeriod::orderByDesc('year')->get(['id', 'code', 'name', 'year', 'start_date', 'end_date']),
             'organizations' => $organizations,
             'units' => MeasurementUnit::where('is_active', true)->orderBy('name')->get(['id', 'name', 'symbol']),
             'officers' => $officers,
-            'levelOptions' => $levelOptions,
+            'levelOptions' => $this->levelOptions(),
             'polarizationOptions' => $this->polarizationOptions(),
             'frequencyOptions' => $this->frequencyOptions(),
             'isAdminOpd' => $isAdminOpd,
-            'isProvincialAdmin' => $isProvincialAdmin,
+            'isOpdAdmin' => $isOpdAdmin,
+            'isProvincialAdmin' => $isOpdAdmin,
             'accessibleOrgIds' => $accessibleOrgIds,
             'userOpdId' => $userOpdId,
         ]);
@@ -149,31 +141,32 @@ class IkuController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $isAdminOpd = $this->userIsAdminOpd($user);
+        $isOpdAdmin = $user && $user->isOpdAdmin();
+        $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
         $userOpdId = $user->organization_id ?? $user->organization?->id;
 
-        // Admin OPD: cegah manipulasi ke level pemda dan kunci owner_organization_id
-        if ($isAdminOpd) {
-            if ($request->input('level') === 'pemda') {
-                abort(403, 'Hanya Administrator / Evaluator Provinsi yang berwenang membuat IKU Pemda.');
-            }
-            if ($userOpdId) {
-                $request->merge([
-                    'level' => 'perangkat_daerah',
-                    'owner_organization_id' => $userOpdId,
-                ]);
-            }
+        // Jika level 'perangkat_daerah', normalisasi ke 'opd'
+        if ($request->input('level') === 'perangkat_daerah') {
+            $request->merge(['level' => 'opd']);
+        }
+
+        // Unit-scoped user: kunci owner_organization_id ke organisasi yang berhak
+        if (! $isOpdAdmin && $userOpdId) {
+            $request->merge([
+                'owner_organization_id' => $userOpdId,
+            ]);
         }
 
         $validated = $request->validate($this->rules(), $this->messages());
 
         $iku = DB::transaction(function () use ($validated, $request) {
+            $level = $validated['level'] ?? 'opd';
             $iku = Indicator::create([
                 ...$validated,
                 'is_iku' => true,
                 'iku_status' => Indicator::IKU_STATUS_DRAFT,
                 'status' => 'draft',
-                'code' => $this->generateCode($validated['owner_organization_id'] ?? null),
+                'code' => $this->generateCode($validated['owner_organization_id'] ?? null, $level),
             ]);
 
             // Catat history CREATE
@@ -202,12 +195,7 @@ class IkuController extends Controller
     public function show(Indicator $iku): Response
     {
         $user = request()->user();
-        $isAdminOpd = $this->userIsAdminOpd($user);
-        $userOpdId = $user?->organization_id ?? $user?->organization?->id;
-
-        $canEdit = $iku->canBeEdited() && (
-            ! $isAdminOpd || ($iku->level === 'perangkat_daerah' && (int) $iku->owner_organization_id === (int) $userOpdId)
-        );
+        $canEdit = $user && $user->can('update', $iku);
 
         $iku->load([
             'planningPeriod', 'strategicGoal', 'strategicObjective',
@@ -219,7 +207,7 @@ class IkuController extends Controller
         return Inertia::render('Planning/Iku/Show', [
             'iku' => $iku,
             'canEdit' => $canEdit,
-            'isBappeda' => $this->userIsBappeda($user),
+            'isBappeda' => $user ? ($user->isOpdAdmin() || $user->hasRole('Kepala OPD')) : false,
         ]);
     }
 
@@ -227,38 +215,23 @@ class IkuController extends Controller
 
     public function edit(Request $request, Indicator $iku): Response
     {
-        abort_unless($iku->canBeEdited(), 403, 'IKU dengan status ini tidak dapat diedit.');
+        $this->authorize('update', $iku);
 
         $user = $request->user();
-        $isBappeda = $this->userIsBappeda($user);
-        $isProvincialAdmin = $isBappeda || $this->authorization->isProvincialAdmin($user);
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
-        $isAdminOpd = ! $isProvincialAdmin;
+        $isAdminOpd = ! $isOpdAdmin;
         $userOpdId = $user->organization?->id ?? ($accessibleOrgIds[0] ?? null);
-
-        // Batasan OPD: Admin OPD hanya dapat mengedit IKU milik OPD-nya (bukan IKU Pemda atau OPD lain)
-        if ($isAdminOpd) {
-            if ($iku->level === 'pemda' || ! $iku->owner_organization_id) {
-                abort(403, 'Anda tidak memiliki hak untuk mengedit IKU Pemerintah Daerah.');
-            }
-            if (! in_array((int) $iku->owner_organization_id, $accessibleOrgIds, true)) {
-                abort(403, 'Anda tidak memiliki akses untuk mengedit IKU ini.');
-            }
-        }
 
         $iku->load(['targets', 'planningPeriod', 'strategicGoal', 'strategicObjective', 'ownerOrganization']);
 
         $organizations = Organization::orderBy('code')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->get(['id', 'code', 'name']);
 
         $officers = User::orderBy('name')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereHas('organizations', fn ($oq) => $oq->whereIn('organizations.id', $accessibleOrgIds)))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereHas('organizations', fn ($oq) => $oq->whereIn('organizations.id', $accessibleOrgIds)))
             ->get(['id', 'name']);
-
-        $levelOptions = $isAdminOpd
-            ? [['value' => 'perangkat_daerah', 'label' => 'Perangkat Daerah']]
-            : $this->levelOptions();
 
         return Inertia::render('Planning/Iku/Create', [
             'iku' => $iku,
@@ -268,11 +241,12 @@ class IkuController extends Controller
             'officers' => $officers,
             'goals' => StrategicGoal::where('planning_period_id', $iku->planning_period_id)->get(['id', 'name']),
             'objectives' => StrategicObjective::where('strategic_goal_id', $iku->strategic_goal_id)->get(['id', 'name']),
-            'levelOptions' => $levelOptions,
+            'levelOptions' => $this->levelOptions(),
             'polarizationOptions' => $this->polarizationOptions(),
             'frequencyOptions' => $this->frequencyOptions(),
             'isAdminOpd' => $isAdminOpd,
-            'isProvincialAdmin' => $isProvincialAdmin,
+            'isOpdAdmin' => $isOpdAdmin,
+            'isProvincialAdmin' => $isOpdAdmin,
             'accessibleOrgIds' => $accessibleOrgIds,
             'userOpdId' => $userOpdId,
         ]);
@@ -280,24 +254,18 @@ class IkuController extends Controller
 
     public function update(Request $request, Indicator $iku): RedirectResponse
     {
-        abort_unless($iku->canBeEdited(), 403, 'IKU dengan status ini tidak dapat diedit.');
+        $this->authorize('update', $iku);
 
         $user = $request->user();
-        $isAdminOpd = $this->userIsAdminOpd($user);
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $userOpdId = $user->organization_id ?? $user->organization?->id;
 
-        // Batasan OPD: Admin OPD hanya dapat mengedit IKU milik OPD-nya (bukan IKU Pemda atau OPD lain)
-        if ($isAdminOpd) {
-            if ($iku->level === 'pemda' || ! $iku->owner_organization_id) {
-                abort(403, 'Anda tidak memiliki hak untuk mengedit IKU Pemerintah Daerah.');
-            }
-            if ((int) $iku->owner_organization_id !== (int) $userOpdId) {
-                abort(403, 'Anda tidak memiliki akses untuk mengedit IKU ini.');
-            }
+        if ($request->input('level') === 'perangkat_daerah') {
+            $request->merge(['level' => 'opd']);
+        }
 
-            // Kunci level dan owner_organization_id ke OPD milik user
+        if (! $isOpdAdmin && $userOpdId) {
             $request->merge([
-                'level' => 'perangkat_daerah',
                 'owner_organization_id' => $userOpdId,
             ]);
         }
@@ -330,20 +298,7 @@ class IkuController extends Controller
 
     public function submit(Request $request, Indicator $iku): RedirectResponse
     {
-        abort_unless($iku->canBeSubmitted(), 403, 'IKU tidak dapat diajukan.');
-
-        $user = $request->user();
-        $isAdminOpd = $this->userIsAdminOpd($user);
-        $userOpdId = $user->organization_id ?? $user->organization?->id;
-
-        if ($isAdminOpd) {
-            if ($iku->level === 'pemda' || ! $iku->owner_organization_id) {
-                abort(403, 'Anda tidak memiliki hak untuk mengajukan review IKU Pemerintah Daerah.');
-            }
-            if ((int) $iku->owner_organization_id !== (int) $userOpdId) {
-                abort(403, 'Anda tidak memiliki wewenang untuk mengajukan review IKU ini.');
-            }
-        }
+        $this->authorize('submit', $iku);
 
         try {
             $this->workflow->submit($iku, $request->user());
@@ -356,7 +311,7 @@ class IkuController extends Controller
 
     public function review(Request $request, Indicator $iku): RedirectResponse
     {
-        abort_unless($this->userIsBappeda($request->user()), 403, 'Hanya Admin Bappeda yang dapat memulai review.');
+        $this->authorize('review', $iku);
 
         try {
             $this->workflow->startReview($iku, $request->user());
@@ -369,7 +324,7 @@ class IkuController extends Controller
 
     public function returnRevision(Request $request, Indicator $iku): RedirectResponse
     {
-        abort_unless($this->userIsBappeda($request->user()), 403, 'Hanya Admin Bappeda yang dapat mengembalikan IKU.');
+        $this->authorize('returnRevision', $iku);
 
         $request->validate(['notes' => ['required', 'string', 'max:1000']]);
 
@@ -384,7 +339,7 @@ class IkuController extends Controller
 
     public function finalize(Request $request, Indicator $iku): RedirectResponse
     {
-        abort_unless($this->userIsBappeda($request->user()), 403, 'Hanya Admin Bappeda yang dapat memfinalisasi IKU.');
+        $this->authorize('finalize', $iku);
 
         try {
             $this->workflow->finalize($iku, $request->user());
@@ -397,7 +352,7 @@ class IkuController extends Controller
 
     public function deactivate(Request $request, Indicator $iku): RedirectResponse
     {
-        abort_unless($this->userIsBappeda($request->user()), 403, 'Hanya Admin Bappeda yang dapat menonaktifkan IKU.');
+        $this->authorize('deactivate', $iku);
 
         try {
             $this->workflow->deactivate($iku, $request->user());
@@ -412,29 +367,7 @@ class IkuController extends Controller
 
     public function destroy(Request $request, Indicator $iku): RedirectResponse
     {
-        if ($iku->isFinal()) {
-            return back()->with('error', 'IKU berstatus Final tidak dapat dihapus.');
-        }
-
-        if ($iku->iku_status === Indicator::IKU_STATUS_NONAKTIF) {
-            return back()->with('error', 'IKU berstatus Nonaktif tidak dapat dihapus.');
-        }
-
-        abort_unless(
-            in_array($iku->iku_status, [Indicator::IKU_STATUS_DRAFT, Indicator::IKU_STATUS_PERBAIKAN]),
-            403,
-            'Hanya IKU berstatus Draft atau Perbaikan yang dapat dihapus.'
-        );
-
-        $user = $request->user();
-        if ($this->userIsAdminOpd($user)) {
-            $userOpdId = $user->organization_id ?? $user->organization?->id;
-            if ($iku->level === 'pemda' || ! $iku->owner_organization_id || (int) $iku->owner_organization_id !== (int) $userOpdId) {
-                abort(403, 'Anda tidak memiliki akses untuk menghapus IKU ini.');
-            }
-        } elseif (! $this->userIsBappeda($user)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk menghapus IKU.');
-        }
+        $this->authorize('delete', $iku);
 
         DB::transaction(function () use ($iku, $request) {
             $this->workflow->recordHistory(
@@ -443,8 +376,9 @@ class IkuController extends Controller
                 'Dihapus (soft delete)', $request->user()->id
             );
             $iku->delete();
-            $this->audit->log('delete', 'iku', $iku->id);
         });
+
+        $this->audit->log('delete', 'iku', $iku->id);
 
         return redirect()->route('planning.iku.index')
             ->with('success', "IKU '{$iku->name}' berhasil dihapus.");
@@ -454,74 +388,77 @@ class IkuController extends Controller
 
     public function exportExcel(Request $request): StreamedResponse
     {
-        $activeYear = $request->integer('active_year') ?: 2025;
+        $user = $request->user();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
+        $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
-        $ikus = Indicator::query()
+        $defaultYear = (int) (
+            PlanningPeriod::where('status', 'active')->whereNotNull('year')->value('year')
+            ?? PlanningPeriod::orderByDesc('year')->value('year')
+            ?? (int) date('Y')
+        );
+        $activeYear = $request->integer('active_year') ?: $defaultYear;
+
+        $period = $request->filled('period_id')
+            ? PlanningPeriod::find($request->integer('period_id'))
+            : (PlanningPeriod::where('status', 'active')->orderByDesc('year')->first() ?? PlanningPeriod::orderByDesc('year')->first());
+
+        $years = ($period && $period->start_year && $period->end_year)
+            ? range($period->start_year, $period->end_year)
+            : PlanningPeriod::getAvailableYears();
+        if (empty($years)) {
+            $years = [$activeYear];
+        }
+
+        $query = Indicator::query()
             ->iku()
-            ->with([
-                'planningPeriod',
-                'strategicGoal:id,name',
-                'strategicObjective:id,name',
-                'ownerOrganization:id,code,name',
-                'measurementUnit:id,symbol,name',
-                'responsibleOfficer:id,name',
-                'targets:id,indicator_version_id,year,target_value',
-            ])
+            ->with(['strategicObjective:id,name', 'ownerOrganization:id,name', 'measurementUnit:id,symbol', 'targets'])
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
             ->when($request->filled('period_id'), fn ($q) => $q->byPeriod($request->integer('period_id')))
             ->when($request->filled('level'), fn ($q) => $q->byLevel($request->string('level')))
-            ->when($request->filled('org_id'), fn ($q) => $q->where('owner_organization_id', $request->integer('org_id')))
-            ->when($request->filled('objective_id'), fn ($q) => $q->where('strategic_objective_id', $request->integer('objective_id')))
+            ->when($request->filled('org_id') && $isOpdAdmin, fn ($q) => $q->where('owner_organization_id', $request->integer('org_id')))
             ->when($request->filled('iku_status'), fn ($q) => $q->byIkuStatus($request->string('iku_status')))
-            ->when($request->filled('search'), fn ($q) => $q->where('name', 'like', '%'.$request->string('search').'%'))
-            ->latest('id')
-            ->get();
+            ->orderBy('id');
+
+        $ikus = $query->get();
 
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Daftar IKU');
 
-        $headers = [
-            'No', 'Kode', 'Level', 'Perangkat Daerah', 'Tujuan', 'Sasaran',
-            'Nama Indikator', 'Satuan', 'Baseline', 'Target '.$activeYear, 'Polarisasi',
-            'Definisi Operasional', 'Formula', 'Sumber Data', 'Frekuensi',
-            'Penanggung Jawab', 'Status',
-        ];
-
-        foreach ($headers as $idx => $h) {
-            $colLetter = Coordinate::stringFromColumnIndex($idx + 1);
-            $cell = $colLetter.'1';
-            $sheet->setCellValue($cell, $h);
-            $sheet->getStyle($cell)->getFont()->setBold(true);
-            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        $headers = ['No', 'Kode IKU', 'Level', 'Unit / OPD', 'Sasaran Strategis', 'Indikator Kinerja Utama', 'Satuan', 'Status'];
+        foreach ($years as $y) {
+            $headers[] = "Target {$y}";
         }
 
-        $row = 2;
-        foreach ($ikus as $i => $item) {
-            $targetVal = $item->targets->firstWhere('year', $activeYear)?->target_value;
-            $targetStr = $targetVal !== null ? number_format((float) $targetVal, 2, ',', '.') : '-';
+        foreach ($headers as $colIdx => $text) {
+            $colLetter = Coordinate::stringFromColumnIndex($colIdx + 1);
+            $sheet->setCellValue("{$colLetter}1", $text);
+            $sheet->getStyle("{$colLetter}1")->getFont()->setBold(true);
+            $sheet->getColumnDimensionByColumn($colIdx + 1)->setAutoSize(true);
+        }
 
-            $sheet->setCellValue('A'.$row, $i + 1);
-            $sheet->setCellValue('B'.$row, $item->code);
-            $sheet->setCellValue('C'.$row, $item->level === 'pemda' ? 'Pemerintah Daerah' : 'Perangkat Daerah');
-            $sheet->setCellValue('D'.$row, $item->ownerOrganization?->name ?? 'Pemerintah Provinsi');
-            $sheet->setCellValue('E'.$row, $item->strategicGoal?->name ?? '-');
-            $sheet->setCellValue('F'.$row, $item->strategicObjective?->name ?? '-');
-            $sheet->setCellValue('G'.$row, $item->name);
-            $sheet->setCellValue('H'.$row, $item->measurementUnit?->symbol ?? '-');
-            $sheet->setCellValue('I'.$row, $item->formatted_baseline);
-            $sheet->setCellValue('J'.$row, $targetStr);
-            $sheet->setCellValue('K'.$row, ucfirst($item->polarization ?? '-'));
-            $sheet->setCellValue('L'.$row, $item->definition ?? '-');
-            $sheet->setCellValue('M'.$row, $item->formula_notes ?? '-');
-            $sheet->setCellValue('N'.$row, $item->data_source ?? '-');
-            $sheet->setCellValue('O'.$row, ucfirst($item->frequency ?? '-'));
-            $sheet->setCellValue('P'.$row, $item->responsibleOfficer?->name ?? '-');
-            $sheet->setCellValue('Q'.$row, ucfirst($item->iku_status));
-            $row++;
+        $rowIdx = 2;
+        foreach ($ikus as $i => $item) {
+            $colIdx = 1;
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIdx++)."{$rowIdx}", $i + 1);
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIdx++)."{$rowIdx}", $item->code);
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIdx++)."{$rowIdx}", strtoupper($item->level));
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIdx++)."{$rowIdx}", $item->ownerOrganization?->name ?? '-');
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIdx++)."{$rowIdx}", $item->strategicObjective?->name ?? '-');
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIdx++)."{$rowIdx}", $item->name);
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIdx++)."{$rowIdx}", $item->measurementUnit?->symbol ?? '-');
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIdx++)."{$rowIdx}", ucfirst($item->iku_status));
+
+            foreach ($years as $y) {
+                $val = $item->targets?->firstWhere('year', $y)?->target_value;
+                $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIdx++)."{$rowIdx}", $val !== null ? (float) $val : '-');
+            }
+            $rowIdx++;
         }
 
         $writer = new Xlsx($spreadsheet);
-        $filename = 'Export-IKU-'.date('Ymd-His').'.xlsx';
+        $filename = 'Export-IKU-'.date('YmdHis').'.xlsx';
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
@@ -532,21 +469,25 @@ class IkuController extends Controller
 
     public function exportPdfRekap(Request $request)
     {
-        $activeYear = (int) $request->input('active_year', date('Y'));
+        $defaultYear = (int) (
+            PlanningPeriod::where('status', 'active')->whereNotNull('year')->value('year')
+            ?? PlanningPeriod::orderByDesc('year')->value('year')
+            ?? (int) date('Y')
+        );
+        $activeYear = $request->integer('active_year') ?: $defaultYear;
+
+        $user = $request->user();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
+        $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
+
         $ikus = Indicator::query()
             ->iku()
-            ->with([
-                'planningPeriod', 'strategicGoal', 'strategicObjective',
-                'ownerOrganization', 'measurementUnit', 'responsibleOfficer', 'targets',
-            ])
+            ->with(['strategicObjective:id,name', 'measurementUnit:id,symbol', 'targets'])
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
             ->when($request->filled('period_id'), fn ($q) => $q->byPeriod($request->integer('period_id')))
             ->when($request->filled('level'), fn ($q) => $q->byLevel($request->string('level')))
-            ->when($request->filled('org_id'), fn ($q) => $q->where('owner_organization_id', $request->integer('org_id')))
-            ->when($request->filled('objective_id'), fn ($q) => $q->where('strategic_objective_id', $request->integer('objective_id')))
             ->when($request->filled('iku_status'), fn ($q) => $q->byIkuStatus($request->string('iku_status')))
-            ->when($request->filled('search'), fn ($q) => $q->where('name', 'like', '%'.$request->string('search').'%'))
-            ->orderBy('level')
-            ->orderBy('name')
+            ->latest('id')
             ->get();
 
         $rows = $ikus->map(function ($item, $idx) use ($activeYear) {
@@ -581,7 +522,23 @@ class IkuController extends Controller
             'ownerOrganization', 'measurementUnit', 'responsibleOfficer', 'targets',
         ]);
 
-        $pdf = Pdf::loadView('pdf.iku-detail', ['iku' => $iku]);
+        $rows = collect([[
+            'no' => 1,
+            'sasaran' => $iku->strategicObjective?->name ?? '-',
+            'indikator' => $iku->name,
+            'satuan' => $iku->measurementUnit?->symbol ?? '-',
+            'karakter' => ucfirst($iku->polarization ?? 'Positif'),
+            'target' => $iku->targets?->first()?->target_value ?? '-',
+            'realisasi' => '-',
+            'capaian' => null,
+            'status' => ucfirst($iku->iku_status),
+        ]]);
+
+        $pdf = Pdf::loadView('pdf.analytics.iku', [
+            'year' => (int) date('Y'),
+            'rows' => $rows,
+            'generatedAt' => now()->translatedFormat('d F Y H:i'),
+        ]);
 
         return $pdf->download("IKU-{$iku->code}.pdf");
     }
@@ -591,24 +548,16 @@ class IkuController extends Controller
     private function rules(?int $ignoreId = null): array
     {
         $periodId = request()->input('planning_period_id');
-        $level = request()->input('level');
+        $level = request()->input('level') === 'perangkat_daerah' ? 'opd' : request()->input('level');
         $orgId = request()->input('owner_organization_id');
         $objectiveId = request()->input('strategic_objective_id');
-        $name = request()->input('name');
 
-        // Validasi duplikasi: kombinasi periode + level + OPD + sasaran + nama harus unik
         $duplicateCheck = Rule::unique('indicators', 'name')
             ->where('is_iku', true)
             ->where('planning_period_id', $periodId)
             ->where('level', $level)
             ->where('strategic_objective_id', $objectiveId)
-            ->where(function ($q) use ($level, $orgId) {
-                if ($level === 'pemda') {
-                    $q->whereNull('owner_organization_id');
-                } else {
-                    $q->where('owner_organization_id', $orgId);
-                }
-            });
+            ->where('owner_organization_id', $orgId);
 
         if ($ignoreId) {
             $duplicateCheck->ignore($ignoreId);
@@ -616,10 +565,9 @@ class IkuController extends Controller
 
         return [
             // Step 1 — Identitas
-            'level' => ['required', Rule::in(['pemda', 'perangkat_daerah'])],
+            'level' => ['required', Rule::in(['opd', 'unit', 'perangkat_daerah'])],
             'planning_period_id' => ['required', 'integer', 'exists:planning_periods,id'],
-            'owner_organization_id' => ['nullable', 'integer', 'exists:organizations,id',
-                Rule::requiredIf(fn () => request()->input('level') === 'perangkat_daerah')],
+            'owner_organization_id' => ['nullable', 'integer', 'exists:organizations,id'],
             'strategic_goal_id' => ['required', 'integer', 'exists:strategic_goals,id'],
             'strategic_objective_id' => ['required', 'integer', 'exists:strategic_objectives,id'],
             'name' => ['required', 'string', 'max:255', $duplicateCheck],
@@ -646,91 +594,56 @@ class IkuController extends Controller
         ];
     }
 
-    /**
-     * Pesan validasi kustom yang ramah pengguna.
-     */
     private function messages(): array
     {
         return [
-            'name.unique' => 'Indikator dengan nama yang sama sudah tersedia pada sasaran tersebut untuk periode ini. Mohon gunakan nama indikator yang berbeda.',
+            'name.required' => 'Nama IKU wajib diisi.',
+            'name.unique' => 'IKU dengan nama ini sudah terdaftar pada sasaran dan periode yang sama.',
+            'planning_period_id.required' => 'Periode perencanaan wajib dipilih.',
+            'strategic_goal_id.required' => 'Tujuan strategis wajib dipilih.',
+            'strategic_objective_id.required' => 'Sasaran strategis wajib dipilih.',
+            'measurement_unit_id.required' => 'Satuan pengukuran wajib dipilih.',
+            'definition.required' => 'Definisi operasional wajib diisi.',
+            'formula_notes.required' => 'Formula / cara perhitungan wajib diisi.',
+            'baseline_year.required' => 'Tahun baseline wajib diisi.',
+            'polarization.required' => 'Polarisasi target wajib dipilih.',
+            'data_source.required' => 'Sumber data wajib diisi.',
+            'frequency.required' => 'Frekuensi pelaporan wajib dipilih.',
         ];
     }
 
     private function storeTargets(Indicator $iku, array $targets): void
     {
-        // Hapus target lama (jika edit), lalu insert baru
-        if ($iku->current_version_id) {
-            IndicatorTarget::where('indicator_version_id', $iku->current_version_id)->delete();
-        }
+        $version = IndicatorVersion::firstOrCreate(
+            ['indicator_id' => $iku->id, 'version' => 1],
+            ['effective_start' => now()->toDateString(), 'status' => 'draft']
+        );
 
-        // Buat/ambil version jika belum ada
-        $version = $iku->currentVersion ?? IndicatorVersion::create([
-            'indicator_id' => $iku->id,
-            'version_number' => 1,
-            'name' => $iku->name,
-            'definition' => $iku->definition,
-            'frequency' => $iku->frequency,
-            'data_source' => $iku->data_source,
-            'formula_notes' => $iku->formula_notes,
-            'baseline_value' => $iku->baseline_value,
-            'measurement_unit_id' => $iku->measurement_unit_id,
-        ]);
-
-        if (! $iku->current_version_id) {
-            $iku->update(['current_version_id' => $version->id]);
-        }
-
-        $orgId = $iku->owner_organization_id ?? 1; // Fallback to 1 (Pemerintah Provinsi Papua Barat) if null
+        $orgId = $iku->owner_organization_id;
 
         foreach ($targets as $t) {
-            IndicatorTarget::create([
-                'indicator_version_id' => $version->id,
-                'organization_id' => $orgId,
-                'planning_period_id' => $iku->planning_period_id,
-                'year' => $t['year'],
-                'target_value' => $t['target_value'],
-                'status' => 'draft',
-            ]);
+            IndicatorTarget::updateOrCreate(
+                [
+                    'indicator_id' => $iku->id,
+                    'year' => $t['year'],
+                ],
+                [
+                    'indicator_version_id' => $version->id,
+                    'organization_id' => $orgId,
+                    'planning_period_id' => $iku->planning_period_id,
+                    'target_value' => $t['target_value'],
+                    'status' => 'draft',
+                ]
+            );
         }
     }
 
-    private function generateCode(?int $orgId): string
+    private function generateCode(?int $orgId, string $level = 'opd'): string
     {
-        $prefix = $orgId ? 'IKU-PD' : 'IKU-PEMDA';
+        $prefix = $level === 'unit' ? 'IKU-UNIT' : 'IKU-OPD';
         $seq = Indicator::iku()->count() + 1;
 
         return strtoupper($prefix.'-'.str_pad($seq, 4, '0', STR_PAD_LEFT));
-    }
-
-    private function userIsBappeda(?Authenticatable $user): bool
-    {
-        if (! $user) {
-            return false;
-        }
-
-        return $user->hasRole('Super Admin')
-            || $user->hasRole('super_admin')
-            || $user->hasRole('Admin Provinsi')
-            || $user->hasRole('admin_provinsi')
-            || $user->hasRole('Evaluator Provinsi');
-    }
-
-    private function userIsAdminOpd(?Authenticatable $user): bool
-    {
-        if (! $user) {
-            return false;
-        }
-        // User yang punya role Provinsi bukan Admin OPD
-        if ($this->userIsBappeda($user)) {
-            return false;
-        }
-
-        return $user->hasRole('Admin OPD')
-            || $user->hasRole('admin_opd')
-            || $user->hasRole('Operator OPD')
-            || $user->hasRole('operator_opd')
-            || $user->hasRole('Validator OPD')
-            || $user->hasRole('Kepala OPD');
     }
 
     private function statusOptions(): array
@@ -748,8 +661,8 @@ class IkuController extends Controller
     private function levelOptions(): array
     {
         return [
-            ['value' => 'pemda',            'label' => 'Pemerintah Daerah'],
-            ['value' => 'perangkat_daerah', 'label' => 'Perangkat Daerah'],
+            ['value' => 'opd',  'label' => 'OPD Induk'],
+            ['value' => 'unit', 'label' => 'Unit (Sekretariat / Bidang)'],
         ];
     }
 

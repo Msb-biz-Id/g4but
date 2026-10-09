@@ -94,22 +94,73 @@ class User extends Authenticatable
         return $this->defaultOrganization()?->id;
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return $this->roles()->where('name', 'Super Admin')->exists();
+    }
+
+    public function isOpdAdmin(): bool
+    {
+        return $this->roles()->whereIn('name', ['Super Admin', 'Admin OPD'])->exists();
+    }
+
+    public function isLeadership(): bool
+    {
+        return $this->roles()->whereIn('name', [
+            'Kepala OPD', 'Kepala Sekretariat', 'Kepala Bidang',
+        ])->exists();
+    }
+
+    public function isUnitScoped(): bool
+    {
+        return $this->roles()->whereIn('name', [
+            'Admin Sekretariat', 'Kepala Sekretariat', 'Admin Bidang', 'Kepala Bidang',
+        ])->exists();
+    }
+
+    public function unitOrganization(): ?Organization
+    {
+        return $this->organizations()
+            ->whereIn('type', ['sekretariat', 'bidang'])
+            ->first() ?? $this->defaultOrganization();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function scopeOrganizationIds(): array
+    {
+        if ($this->isOpdAdmin() || $this->hasRole('Kepala OPD')) {
+            return Organization::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        }
+
+        $org = $this->unitOrganization();
+        if (! $org) {
+            return [];
+        }
+
+        return Organization::query()
+            ->where('id', $org->id)
+            ->orWhere('parent_id', $org->id)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
     public function isProvincialAdmin(): bool
     {
-        return $this->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        return $this->isOpdAdmin();
     }
 
     public function isProvincialLevel(): bool
     {
-        return $this->roles()->whereIn('name', [
-            'Super Admin', 'Admin Provinsi', 'Pimpinan Provinsi', 'Evaluator Provinsi', 'Inspektorat', 'Auditor',
-        ])->exists();
+        return $this->isOpdAdmin() || $this->hasRole('Kepala OPD');
     }
 
     public function isOpdLevel(): bool
     {
         return $this->roles()->whereIn('name', [
-            'Admin OPD', 'Operator OPD', 'Validator OPD', 'Kepala OPD',
+            'Admin OPD', 'Kepala OPD', 'Admin Sekretariat', 'Kepala Sekretariat', 'Admin Bidang', 'Kepala Bidang',
         ])->exists();
     }
 

@@ -53,14 +53,18 @@ class HandleInertiaRequests extends Middleware
                         ->merge($user->roles()->with('permissions')->get()->pluck('permissions.*.name')->flatten())
                         ->unique()
                         ->values(),
-                    'organizations' => $user->organizations()->get(['id', 'code', 'name'])->map(
+                    'organizations' => $user->organizations()->get(['organizations.id', 'organizations.code', 'organizations.name', 'organizations.type'])->map(
                         fn ($org) => [
                             'id' => $org->id,
                             'code' => $org->code,
                             'name' => $org->name,
+                            'type' => $org->type,
                             'is_default' => (bool) $org->pivot->is_default,
                         ],
                     ),
+                    'is_opd_admin' => $user->isOpdAdmin(),
+                    'is_leadership' => $user->isLeadership(),
+                    'is_unit_scoped' => $user->isUnitScoped(),
                 ] : null,
             ],
             'flash' => [

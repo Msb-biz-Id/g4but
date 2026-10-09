@@ -14,7 +14,13 @@ use Symfony\Component\HttpFoundation\Response;
 class RequireMfa
 {
     /** Role yang wajib MFA sebelum bisa akses sistem */
-    private const MFA_REQUIRED_ROLES = ['Super Admin', 'Admin Provinsi', 'Evaluator'];
+    private const MFA_REQUIRED_ROLES = [
+        'Super Admin',
+        'Admin OPD',
+        'Kepala OPD',
+        'Kepala Sekretariat',
+        'Kepala Bidang',
+    ];
 
     public function handle(Request $request, Closure $next): Response
     {

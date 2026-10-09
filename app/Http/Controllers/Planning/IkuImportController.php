@@ -19,8 +19,13 @@ class IkuImportController extends Controller
     public function upload(Request $request): RedirectResponse|Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
-        abort_unless($user && ($user->hasPermission('iku:import') || $isProvincialAdmin), 403, 'Tidak memiliki izin untuk impor IKU.');
+        $canImport = $user && (
+            $user->isOpdAdmin()
+            || $user->hasRole('Admin Sekretariat')
+            || $user->hasRole('Admin Bidang')
+            || $user->hasPermission('iku:import')
+        );
+        abort_unless($canImport, 403, 'Tidak memiliki izin untuk impor IKU.');
 
         $request->validate([
             'file' => ['required', 'file', 'mimes:xlsx,xls', 'max:5120'],
@@ -44,8 +49,13 @@ class IkuImportController extends Controller
     public function commit(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
-        abort_unless($user && ($user->hasPermission('iku:import') || $isProvincialAdmin), 403, 'Tidak memiliki izin untuk impor IKU.');
+        $canImport = $user && (
+            $user->isOpdAdmin()
+            || $user->hasRole('Admin Sekretariat')
+            || $user->hasRole('Admin Bidang')
+            || $user->hasPermission('iku:import')
+        );
+        abort_unless($canImport, 403, 'Tidak memiliki izin untuk impor IKU.');
 
         $preview = session('iku_import_preview');
 

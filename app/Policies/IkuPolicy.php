@@ -4,130 +4,130 @@ namespace App\Policies;
 
 use App\Models\Indicator;
 use App\Models\User;
+use App\Services\AuthorizationService;
 
 /**
- * Policy untuk IKU (Indikator Kinerja Utama).
+ * Policy untuk IKU (Indikator Kinerja Utama) dalam arsitektur Rumah Besar OPD.
  *
- * Aturan hak akses berdasarkan iku_status dan role Bappeda:
- *   - Admin OPD  : view, create, edit Draft/Perbaikan, submit
- *   - Admin Bappeda : semua di atas + review, return, finalize, deactivate, delete Draft
- *   - Pimpinan   : view saja
- *   - IKU Final  : tidak boleh hard delete oleh siapapun
+ * Maker-Checker Segregation:
+ *   - Admin OPD / Super Admin : Maker & Admin tingkat OPD lintas unit.
+ *   - Kepala OPD             : Checker & Pimpinan tingkat OPD (sahkan / finalisasi).
+ *   - Admin Unit             : Maker di unit masing-masing (Sekretariat / Bidang).
+ *   - Kepala Unit            : Checker di unit masing-masing (review / persetujuan).
+ *   - IKU Final              : Tidak dapat dihapus secara permanen.
  */
 class IkuPolicy
 {
-    // ── View ──────────────────────────────────────────────────────────────────
-
     public function viewAny(User $user): bool
     {
-        return true; // Semua user yang sudah login bisa lihat daftar IKU
+        return true;
     }
 
     public function view(User $user, Indicator $iku): bool
     {
-        return true; // Detail IKU bisa dilihat semua
+        return true;
     }
-
-    // ── Create ────────────────────────────────────────────────────────────────
 
     public function create(User $user): bool
     {
-        return $this->isAdminOpd($user) || $this->isBappeda($user);
+        return $user->isOpdAdmin()
+            || $user->hasRole('Admin Sekretariat')
+            || $user->hasRole('Admin Bidang')
+            || $user->hasPermission('iku:create');
     }
-
-    // ── Edit (hanya Draft/Perbaikan) ──────────────────────────────────────────
 
     public function update(User $user, Indicator $iku): bool
     {
         if (! $iku->canBeEdited()) {
             return false;
         }
-        if ($this->isBappeda($user)) {
+
+        if ($user->isOpdAdmin()) {
             return true;
         }
 
-        return $this->isAdminOpd($user) && $this->ownsIku($user, $iku);
+        return ($user->hasRole('Admin Sekretariat') || $user->hasRole('Admin Bidang'))
+            && $this->ownsIku($user, $iku);
     }
-
-    // ── Submit ke Review ──────────────────────────────────────────────────────
 
     public function submit(User $user, Indicator $iku): bool
     {
         if (! $iku->canBeSubmitted()) {
             return false;
         }
-        if ($this->isBappeda($user)) {
+
+        if ($user->isOpdAdmin()) {
             return true;
         }
 
-        return $this->isAdminOpd($user) && $this->ownsIku($user, $iku);
+        return ($user->hasRole('Admin Sekretariat') || $user->hasRole('Admin Bidang'))
+            && $this->ownsIku($user, $iku);
     }
-
-    // ── Review, Return, Finalize, Deactivate — hanya Bappeda ─────────────────
 
     public function review(User $user, Indicator $iku): bool
     {
-        return $this->isBappeda($user) && $iku->iku_status === Indicator::IKU_STATUS_DIAJUKAN;
+        if ($iku->iku_status !== Indicator::IKU_STATUS_DIAJUKAN) {
+            return false;
+        }
+
+        if ($user->isOpdAdmin() || $user->hasRole('Kepala OPD')) {
+            return true;
+        }
+
+        return $user->isLeadership() && $this->ownsIku($user, $iku);
     }
 
     public function returnRevision(User $user, Indicator $iku): bool
     {
-        return $this->isBappeda($user) && $iku->iku_status === Indicator::IKU_STATUS_REVIEW;
+        if ($iku->iku_status !== Indicator::IKU_STATUS_REVIEW) {
+            return false;
+        }
+
+        if ($user->isOpdAdmin() || $user->hasRole('Kepala OPD')) {
+            return true;
+        }
+
+        return $user->isLeadership() && $this->ownsIku($user, $iku);
     }
 
     public function finalize(User $user, Indicator $iku): bool
     {
-        return $this->isBappeda($user) && $iku->iku_status === Indicator::IKU_STATUS_REVIEW;
+        if ($iku->iku_status !== Indicator::IKU_STATUS_REVIEW) {
+            return false;
+        }
+
+        if ($user->isOpdAdmin() || $user->hasRole('Kepala OPD')) {
+            return true;
+        }
+
+        return $user->isLeadership() && $this->ownsIku($user, $iku);
     }
 
     public function deactivate(User $user, Indicator $iku): bool
     {
-        return $this->isBappeda($user) && $iku->iku_status === Indicator::IKU_STATUS_FINAL;
-    }
+        if ($iku->iku_status !== Indicator::IKU_STATUS_FINAL) {
+            return false;
+        }
 
-    // ── Delete — hanya Draft/Perbaikan, IKU Final TIDAK BOLEH dihapus ─────────
+        return $user->isOpdAdmin() || $user->hasRole('Kepala OPD');
+    }
 
     public function delete(User $user, Indicator $iku): bool
     {
-        // IKU Final atau Nonaktif tidak bisa dihapus siapapun
         if ($iku->isFinal() || $iku->iku_status === Indicator::IKU_STATUS_NONAKTIF) {
             return false;
         }
 
-        // Hanya Draft atau Perbaikan yang bisa dihapus
-        if (! in_array($iku->iku_status, [Indicator::IKU_STATUS_DRAFT, Indicator::IKU_STATUS_PERBAIKAN])) {
+        if (! in_array($iku->iku_status, [Indicator::IKU_STATUS_DRAFT, Indicator::IKU_STATUS_PERBAIKAN], true)) {
             return false;
         }
 
-        if ($this->isBappeda($user)) {
+        if ($user->isOpdAdmin()) {
             return true;
         }
 
-        // Admin OPD hanya boleh menghapus IKU draft/perbaikan milik OPD-nya sendiri
-        return $this->isAdminOpd($user) && $this->ownsIku($user, $iku);
-    }
-
-    // ── Private Helpers ───────────────────────────────────────────────────────
-
-    private function isBappeda(User $user): bool
-    {
-        return $user->hasRole('Super Admin')
-            || $user->hasRole('super_admin')
-            || $user->hasRole('Admin Provinsi')
-            || $user->hasRole('admin_provinsi')
-            || $user->hasRole('Evaluator Provinsi');
-    }
-
-    private function isAdminOpd(User $user): bool
-    {
-        return $user->hasRole('Admin OPD')
-            || $user->hasRole('admin_opd')
-            || $user->hasRole('Operator OPD')
-            || $user->hasRole('operator_opd')
-            || $user->hasRole('Validator OPD')
-            || $user->hasRole('Kepala OPD')
-            || $user->hasRole('Super Admin')
-            || $user->hasRole('Admin Provinsi');
+        return ($user->hasRole('Admin Sekretariat') || $user->hasRole('Admin Bidang'))
+            && $this->ownsIku($user, $iku);
     }
 
     private function ownsIku(User $user, Indicator $iku): bool
@@ -136,11 +136,8 @@ class IkuPolicy
             return false;
         }
 
-        $userOrgIds = $user->organizations()->pluck('organizations.id')->all();
-        if ($user->organization) {
-            $userOrgIds[] = $user->organization->id;
-        }
+        $accessibleOrgIds = app(AuthorizationService::class)->accessibleOrganizationIds($user);
 
-        return in_array($iku->owner_organization_id, $userOrgIds);
+        return in_array((int) $iku->owner_organization_id, $accessibleOrgIds, true);
     }
 }

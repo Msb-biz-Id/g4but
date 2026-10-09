@@ -32,7 +32,7 @@ class IssueIntegrationToken extends Command
             ]);
 
             $role = Role::query()->where('name', 'System')->first()
-                ?? Role::query()->where('name', 'Admin Provinsi')->first();
+                ?? Role::query()->where('name', 'Admin OPD')->first();
 
             if ($role) {
                 $user->roles()->attach($role);

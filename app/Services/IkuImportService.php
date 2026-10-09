@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\IkuHistory;
 use App\Models\Indicator;
-use App\Models\IndicatorTarget;
-use App\Models\IndicatorVersion;
 use App\Models\MeasurementUnit;
 use App\Models\Organization;
 use App\Models\PlanningPeriod;
@@ -14,7 +12,6 @@ use App\Models\StrategicObjective;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -23,10 +20,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class IkuImportService
 {
-    // Kolom wajib di template
-    const REQUIRED_COLUMNS = [
-        'Level', 'Nama OPD', 'Tujuan', 'Sasaran', 'Nama Indikator',
-        'Satuan', 'Tahun Baseline', 'Definisi Operasional',
+    /** Kolom wajib ada di baris header Excel */
+    public const REQUIRED_HEADERS = [
+        'Level', 'Nama OPD', 'Periode (RPJMD)', 'Tujuan', 'Sasaran', 'Nama Indikator', 'Satuan',
+        'Tahun Baseline', 'Nilai Baseline', 'Keterangan Baseline', 'Definisi Operasional',
         'Formula', 'Polarisasi', 'Sumber Data', 'Frekuensi',
     ];
 
@@ -36,7 +33,8 @@ class IkuImportService
     public function preview(UploadedFile $file, User|int $user): array
     {
         $userObj = $user instanceof User ? $user : User::find($user);
-        $isProvincialAdmin = $userObj && $userObj->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isOpdAdmin = $userObj && $userObj->isOpdAdmin();
+        $accessibleOrgIds = $userObj ? app(AuthorizationService::class)->accessibleOrganizationIds($userObj) : [];
 
         $spreadsheet = IOFactory::load($file->getPathname());
         $sheet = $spreadsheet->getActiveSheet();
@@ -64,10 +62,10 @@ class IkuImportService
                 continue;
             }
 
-            $errors = $this->validateRow($row, $rowNum, $userObj, $isProvincialAdmin);
+            $errors = $this->validateRow($row, $rowNum, $userObj, $isOpdAdmin, $accessibleOrgIds);
 
             if (empty($errors)) {
-                $validRows[] = $this->mapRow($row, $userObj, $isProvincialAdmin);
+                $validRows[] = $this->mapRow($row, $userObj, $isOpdAdmin, $accessibleOrgIds);
             } else {
                 $errorRows[] = [
                     'row' => $rowNum,
@@ -92,24 +90,23 @@ class IkuImportService
     {
         $userObj = $user instanceof User ? $user : User::find($user);
         $userId = $userObj?->id ?? (int) $user;
-        $isProvincialAdmin = $userObj && $userObj->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
-        $userOrgId = $userObj?->organization_id ?? $userObj?->organizations()->value('organizations.id');
+        $isOpdAdmin = $userObj && $userObj->isOpdAdmin();
+        $accessibleOrgIds = $userObj ? app(AuthorizationService::class)->accessibleOrganizationIds($userObj) : [];
 
         $count = 0;
         $workflowService = app(IkuWorkflowService::class);
 
-        DB::transaction(function () use ($validRows, $userId, &$count, $workflowService, $isProvincialAdmin, $userOrgId) {
+        DB::transaction(function () use ($validRows, $userId, &$count, $workflowService, $isOpdAdmin, $accessibleOrgIds) {
             $baseSeq = Indicator::iku()->count() + 1;
             foreach ($validRows as $row) {
-                // Keamanan isolasi: Pengguna OPD hanya boleh mengimpor untuk OPD-nya sendiri
-                if (! $isProvincialAdmin) {
-                    if (($row['level'] ?? '') === 'pemda' || (int) ($row['owner_organization_id'] ?? 0) !== (int) $userOrgId) {
-                        continue;
-                    }
+                // Keamanan isolasi unit: Pengguna unit hanya boleh mengimpor untuk unit yang diizinkan
+                $targetOrgId = (int) ($row['owner_organization_id'] ?? 0);
+                if (! $isOpdAdmin && ! in_array($targetOrgId, $accessibleOrgIds, true)) {
+                    continue;
                 }
 
                 try {
-                    $prefix = ($row['level'] ?? '') === 'pemda' ? 'IKU-PEMDA' : 'IKU-PD';
+                    $prefix = ($row['level'] ?? '') === 'unit' ? 'IKU-UNIT' : 'IKU-OPD';
                     $code = strtoupper($prefix.'-'.str_pad($baseSeq + $count, 4, '0', STR_PAD_LEFT));
 
                     // Pisahkan targets dari field IKU utama
@@ -137,7 +134,6 @@ class IkuImportService
 
                     $count++;
                 } catch (\Exception $e) {
-                    // Log tapi jangan hentikan batch
                     logger()->warning('IKU import row failed: '.$e->getMessage(), $row);
                 }
             }
@@ -167,7 +163,7 @@ class IkuImportService
         // Header
         $targetCols = array_map(fn ($y) => "Target {$y}", $years);
         $columns = array_merge([
-            'Level', 'Nama OPD', 'Periode (RPJMD)', 'Tujuan', 'Sasaran', 'Nama Indikator',
+            'Level', 'Nama OPD / Unit', 'Periode (Renstra)', 'Tujuan', 'Sasaran', 'Nama Indikator',
             'Satuan', 'Tahun Baseline', 'Nilai Baseline', 'Keterangan Baseline',
             'Definisi Operasional', 'Formula', 'Polarisasi',
             'Sumber Data', 'Frekuensi', 'Unit Penanggung Jawab',
@@ -183,14 +179,14 @@ class IkuImportService
 
         // Baris contoh
         $exampleTargets = array_map(fn ($idx) => (string) (86 + $idx), array_keys($years));
-        $periodName = $period ? $period->name : 'RPJMD Papua Barat 2025-2029';
+        $periodName = $period ? $period->name : 'Renstra 2025-2029';
         $example = array_merge([
-            'perangkat_daerah', 'Dinas Pendidikan', $periodName,
+            'opd', 'Dinas Pendidikan', $periodName,
             'Meningkatnya mutu pendidikan', 'Meningkatnya akses pendidikan',
             'Angka Partisipasi Kasar (APK) SMA',
             '%', (string) ($years[0] - 1), '85.5', '', 'Perbandingan jumlah siswa SMA dgn populasi usia 16-18',
             '(Jumlah siswa SMA / Populasi usia 16-18) × 100', 'positif',
-            'Dapodik / Dinas Pendidikan', 'annual', 'Kepala Bidang Kurikulum',
+            'Dapodik / Dinas Pendidikan', 'annual', 'Kepala Bidang SMA',
         ], $exampleTargets);
 
         foreach ($example as $i => $val) {
@@ -201,15 +197,15 @@ class IkuImportService
         // Petunjuk sheet
         $note = $spreadsheet->createSheet();
         $note->setTitle('Petunjuk');
-        $note->setCellValue('A1', 'PETUNJUK PENGISIAN TEMPLATE IKU');
+        $note->setCellValue('A1', 'PETUNJUK PENGISIAN TEMPLATE IKU OPD');
         $note->getStyle('A1')->getFont()->setBold(true)->setSize(13);
 
         $petunjuk = [
-            ['Level',           'Isi dengan: pemda (untuk Pemerintah Daerah) atau perangkat_daerah'],
-            ['Nama OPD',        'Kosongkan jika Level = pemda. Isi nama OPD jika Level = perangkat_daerah'],
-            ['Periode (RPJMD)', 'Nama periode perencanaan. Contoh: RPJMD Papua Barat 2025-2029'],
-            ['Tujuan',          'Nama tujuan strategis sesuai master Tujuan yang telah didaftarkan'],
-            ['Sasaran',         'Nama sasaran di bawah tujuan yang dipilih'],
+            ['Level',           'Isi dengan: opd (untuk IKU Induk OPD) atau unit (untuk Sekretariat / Bidang)'],
+            ['Nama OPD / Unit', 'Nama unit organisasi penanggung jawab'],
+            ['Periode (Renstra)', 'Nama periode perencanaan'],
+            ['Tujuan',          'Nama tujuan strategis'],
+            ['Sasaran',         'Nama sasaran strategis'],
             ['Polarisasi',      'Isi dengan: positif, negatif, atau stabil'],
             ['Frekuensi',       'Isi dengan: monthly, quarterly, semester, atau annual'],
             ['Target Tahun',    'Isi nilai numerik saja (tanpa satuan)'],
@@ -221,7 +217,7 @@ class IkuImportService
         }
 
         $writer = new Xlsx($spreadsheet);
-        $filename = 'Template-Import-IKU.xlsx';
+        $filename = 'Template-Import-IKU-OPD.xlsx';
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
@@ -232,7 +228,7 @@ class IkuImportService
 
     // ── Private ───────────────────────────────────────────────────────────────
 
-    private function validateRow(array $row, int $rowNum, ?User $user = null, bool $isProvincialAdmin = false): array
+    private function validateRow(array $row, int $rowNum, ?User $user = null, bool $isOpdAdmin = false, array $accessibleOrgIds = []): array
     {
         $errors = [];
 
@@ -240,19 +236,22 @@ class IkuImportService
             $errors[] = 'Nama Indikator wajib diisi';
         }
 
-        $level = strtolower($row['Level'] ?? '');
-        if (! in_array($level, ['pemda', 'perangkat_daerah'])) {
-            $errors[] = 'Level tidak valid (gunakan: pemda / perangkat_daerah)';
-        } elseif ($level === 'pemda' && ! $isProvincialAdmin) {
-            $errors[] = 'Pengguna OPD tidak memiliki wewenang untuk mengimpor IKU tingkat Pemerintah Daerah.';
+        $rawLevel = strtolower(trim($row['Level'] ?? ''));
+        if ($rawLevel === 'perangkat_daerah') {
+            $rawLevel = 'opd';
         }
 
-        if ($level === 'perangkat_daerah' && ! $isProvincialAdmin && $user) {
-            if (! empty($row['Nama OPD'])) {
-                $org = Organization::where('name', 'like', '%'.$row['Nama OPD'].'%')->first();
-                if ($org && (int) $org->id !== (int) $user->organization_id) {
-                    $errors[] = 'Pengguna OPD hanya diizinkan mengimpor IKU untuk unit kerja sendiri ('.($user->organization?->name ?? 'OPD Anda').').';
-                }
+        if ($rawLevel === 'pemda') {
+            $errors[] = 'Level pemda tidak lagi berlaku. Gunakan: opd atau unit.';
+        } elseif (! in_array($rawLevel, ['opd', 'unit'], true)) {
+            $errors[] = 'Level tidak valid (gunakan: opd / unit)';
+        }
+
+        $orgName = trim($row['Nama OPD / Unit'] ?? $row['Nama OPD'] ?? '');
+        if (! empty($orgName)) {
+            $org = Organization::where('name', 'like', '%'.$orgName.'%')->first();
+            if ($org && ! $isOpdAdmin && ! in_array((int) $org->id, $accessibleOrgIds, true)) {
+                $errors[] = "Anda tidak memiliki akses untuk mengimpor IKU pada unit '{$org->name}'.";
             }
         }
 
@@ -276,7 +275,7 @@ class IkuImportService
             $errors[] = 'Satuan wajib diisi';
         }
 
-        // Cek duplikasi: nama + sasaran
+        // Cek duplikasi: nama
         $exists = Indicator::where('name', $row['Nama Indikator'])
             ->where('is_iku', true)
             ->exists();
@@ -288,122 +287,110 @@ class IkuImportService
         return $errors;
     }
 
-    private function mapRow(array $row, ?User $user = null, bool $isProvincialAdmin = false): array
+    private function mapRow(array $row, ?User $user = null, bool $isOpdAdmin = false, array $accessibleOrgIds = []): array
     {
-        $level = strtolower($row['Level'] ?? 'perangkat_daerah');
-        if (! $isProvincialAdmin) {
-            $level = 'perangkat_daerah';
+        $level = strtolower(trim($row['Level'] ?? 'opd'));
+        if ($level === 'perangkat_daerah') {
+            $level = 'opd';
+        }
+        if (! in_array($level, ['opd', 'unit'], true)) {
+            $level = 'opd';
         }
 
         // Resolve organization
+        $orgName = trim($row['Nama OPD / Unit'] ?? $row['Nama OPD'] ?? '');
         $org = null;
-        if ($level === 'perangkat_daerah') {
-            if ($isProvincialAdmin && ! empty($row['Nama OPD'])) {
-                $org = Organization::where('name', 'like', '%'.$row['Nama OPD'].'%')->first();
-            } else {
-                $org = $user?->organization ?? ($user?->organization_id ? Organization::find($user->organization_id) : null);
-            }
+        if (! empty($orgName)) {
+            $org = Organization::where('name', 'like', '%'.$orgName.'%')->first();
         }
 
-        // Resolve measurement unit by symbol or name
+        if (! $org) {
+            $org = $user?->unitOrganization() ?? $user?->defaultOrganization();
+        }
+
+        // Resolve measurement unit
         $unit = MeasurementUnit::where('symbol', $row['Satuan'])
             ->orWhere('name', $row['Satuan'])
             ->first();
 
-        // Resolve planning period by name
+        // Resolve planning period
+        $periodName = trim($row['Periode (Renstra)'] ?? $row['Periode (RPJMD)'] ?? '');
         $period = null;
-        if (! empty($row['Periode (RPJMD)'])) {
-            $period = PlanningPeriod::where('name', 'like', '%'.$row['Periode (RPJMD)'].'%')->first();
+        if (! empty($periodName)) {
+            $period = PlanningPeriod::where('name', 'like', '%'.$periodName.'%')->first();
         }
-        // Fallback: ambil periode aktif terbaru jika tidak ditemukan
         if (! $period) {
             $period = PlanningPeriod::where('status', 'active')->orderByDesc('year')->first()
                 ?? PlanningPeriod::orderByDesc('year')->first();
         }
 
-        // Resolve strategic goal by name within the period
+        // Resolve Goal
         $goal = null;
-        if (! empty($row['Tujuan']) && $period) {
-            $goal = StrategicGoal::where('planning_period_id', $period->id)
-                ->where('name', 'like', '%'.$row['Tujuan'].'%')
+        if (! empty($row['Tujuan'])) {
+            $goal = StrategicGoal::where('name', 'like', '%'.$row['Tujuan'].'%')
+                ->when($period, fn ($q) => $q->where('planning_period_id', $period->id))
                 ->first();
         }
+        if (! $goal && $period) {
+            $goal = StrategicGoal::where('planning_period_id', $period->id)->first();
+        }
 
-        // Resolve strategic objective by name under the goal
+        // Resolve Objective
         $objective = null;
-        if (! empty($row['Sasaran']) && $goal) {
-            $objective = StrategicObjective::where('strategic_goal_id', $goal->id)
-                ->where('name', 'like', '%'.$row['Sasaran'].'%')
+        if (! empty($row['Sasaran'])) {
+            $objective = StrategicObjective::where('name', 'like', '%'.$row['Sasaran'].'%')
+                ->when($goal, fn ($q) => $q->where('strategic_goal_id', $goal->id))
                 ->first();
         }
+        if (! $objective && $goal) {
+            $objective = StrategicObjective::where('strategic_goal_id', $goal->id)->first();
+        }
 
-        // Collect yearly targets dynamically (Target YYYY)
+        // Extra target tahunan
         $targets = [];
-        foreach ($row as $colKey => $val) {
-            if (preg_match('/^Target\s+(\d{4})$/i', trim((string) $colKey), $m)) {
-                $yr = (int) $m[1];
-                if ($val !== null && $val !== '' && is_numeric($val)) {
-                    $targets[] = ['year' => $yr, 'target_value' => (float) $val];
-                }
+        foreach ($row as $colName => $val) {
+            if (preg_match('/^Target\s+(\d{4})$/i', (string) $colName, $m) && is_numeric($val)) {
+                $targets[(int) $m[1]] = (float) $val;
             }
         }
 
         return [
-            'name' => $row['Nama Indikator'],
             'level' => $level,
             'owner_organization_id' => $org?->id,
-            'measurement_unit_id' => $unit?->id,
             'planning_period_id' => $period?->id,
             'strategic_goal_id' => $goal?->id,
             'strategic_objective_id' => $objective?->id,
-            'definition' => $row['Definisi Operasional'] ?? null,
-            'formula_notes' => $row['Formula'] ?? null,
-            'polarization' => strtolower($row['Polarisasi'] ?? 'positif'),
-            'baseline_year' => is_numeric($row['Tahun Baseline'] ?? null) ? (int) $row['Tahun Baseline'] : null,
-            'baseline_value' => is_numeric($row['Nilai Baseline'] ?? null) ? (float) $row['Nilai Baseline'] : null,
+            'name' => trim($row['Nama Indikator']),
+            'measurement_unit_id' => $unit?->id,
+            'baseline_year' => ! empty($row['Tahun Baseline']) ? (int) $row['Tahun Baseline'] : null,
+            'baseline_value' => ! empty($row['Nilai Baseline']) ? (float) $row['Nilai Baseline'] : null,
             'baseline_note' => $row['Keterangan Baseline'] ?? null,
-            'data_source' => $row['Sumber Data'] ?? null,
+            'definition' => $row['Definisi Operasional'] ?? '',
+            'formula_notes' => $row['Formula'] ?? '',
+            'polarization' => strtolower($row['Polarisasi'] ?? 'positif'),
+            'data_source' => $row['Sumber Data'] ?? '',
             'frequency' => strtolower($row['Frekuensi'] ?? 'annual'),
-            '_targets' => $targets, // akan diproses di commit(), bukan disimpan ke DB langsung
+            '_targets' => $targets,
         ];
     }
 
-    /**
-     * Simpan target tahunan ke indicator_targets setelah IKU dibuat.
-     */
     private function saveTargets(Indicator $iku, array $targets, int $userId): void
     {
-        // Buat/ambil version
-        $version = $iku->currentVersion ?? IndicatorVersion::create([
-            'indicator_id' => $iku->id,
-            'version_number' => 1,
-            'name' => $iku->name,
-            'definition' => $iku->definition,
-            'frequency' => $iku->frequency,
-            'data_source' => $iku->data_source,
-            'formula_notes' => $iku->formula_notes,
-            'baseline_value' => $iku->baseline_value,
-            'measurement_unit_id' => $iku->measurement_unit_id,
-        ]);
-
-        if (! $iku->current_version_id) {
-            $iku->update(['current_version_id' => $version->id]);
-        }
-
-        $orgId = $iku->owner_organization_id ?? 1;
-
-        foreach ($targets as $t) {
-            // Pastikan tahun target dalam periode IKU
-            IndicatorTarget::firstOrCreate(
+        foreach ($targets as $year => $value) {
+            DB::table('indicator_targets')->updateOrInsert(
                 [
-                    'indicator_version_id' => $version->id,
-                    'year' => $t['year'],
+                    'indicator_id' => $iku->id,
+                    'year' => $year,
                 ],
                 [
-                    'organization_id' => $orgId,
+                    'organization_id' => $iku->owner_organization_id,
                     'planning_period_id' => $iku->planning_period_id,
-                    'target_value' => $t['target_value'],
+                    'target_value' => $value,
                     'status' => 'draft',
+                    'created_by' => $userId,
+                    'updated_by' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]
             );
         }
