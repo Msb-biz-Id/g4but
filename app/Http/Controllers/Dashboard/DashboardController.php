@@ -474,33 +474,14 @@ class DashboardController extends Controller
             return array_merge($item, ['rank' => $idx + 1]);
         }, array_values($pkoOpdData), array_keys($pkoOpdData));
 
-        // Nilai Rata Rata PKO Pemda = Σ nilai PKO seluruh OPD yang sudah dievaluasi ÷ jumlah OPD dievaluasi
+        // Nilai Rata-rata PKO Unit Kerja = Σ nilai PKO seluruh unit yang sudah dievaluasi ÷ jumlah unit dievaluasi
         $evaluatedPko = array_filter($pkoOpdData, fn ($p) => $p['nilai_pko'] > 0);
         $rataRataPkoPemda = count($evaluatedPko) > 0
             ? round(array_sum(array_column($evaluatedPko, 'nilai_pko')) / count($evaluatedPko), 2)
             : 0.0;
         $predikatRataRataPkoPemda = count($evaluatedPko) > 0 ? $this->getPredikatPko($rataRataPkoPemda) : 'BELUM DINILAI';
-
-        // Nilai PKO Pemda: Diambil langsung dari hasil evaluasi PKO Pemerintah Daerah (PkoEvaluation)
-        $pemdaOrg = Organization::where('type', 'province')->first()
-            ?? Organization::where('code', 'PROV-PAPBAR')->first()
-            ?? Organization::find(1);
-
-        $pkoPemdaEval = null;
-        if ($pemdaOrg) {
-            $pkoPemdaEval = PkoEvaluation::where('organization_id', $pemdaOrg->id)
-                ->where('year', $tahun)
-                ->first();
-        }
-
-        if ($pkoPemdaEval && (float) $pkoPemdaEval->nko > 0) {
-            $nilaiPkoPemda = (float) $pkoPemdaEval->nko;
-            $predikatPkoPemda = $pkoPemdaEval->predikat ?: $this->getPredikatPko($nilaiPkoPemda);
-        } else {
-            // Jika tahun berjalan belum ada di tabel pko_evaluations, nilai 0.0 & BELUM DINILAI
-            $nilaiPkoPemda = 0.0;
-            $predikatPkoPemda = 'BELUM DINILAI';
-        }
+        $nilaiPkoPemda = $rataRataPkoPemda;
+        $predikatPkoPemda = $predikatRataRataPkoPemda;
 
         // ── 9. Tren 5 Tahun Dinamis ──────────────────────────────────────────
         $years = $rpjmdMatrix['years'] ?? $this->opdAnalytics->resolveYears($tahun);
@@ -515,22 +496,23 @@ class DashboardController extends Controller
             ];
         }, $ikuMatrix['trend'] ?? []);
 
-        $pkoPemdaByYear = $pemdaOrg
-            ? PkoEvaluation::where('organization_id', $pemdaOrg->id)->pluck('nko', 'year')
-            : collect();
+        $pkoAvgByYear = PkoEvaluation::whereIn('organization_id', $allOpd->pluck('id'))
+            ->selectRaw('year, AVG(nko) as avg_nko')
+            ->groupBy('year')
+            ->pluck('avg_nko', 'year');
 
-        $pkoTrend = array_map(function ($y) use ($tahun, $nilaiPkoPemda, $pkoPemdaByYear) {
+        $pkoTrend = array_map(function ($y) use ($tahun, $nilaiPkoPemda, $pkoAvgByYear) {
             if ($y > $tahun) {
                 return ['tahun' => $y, 'nilai' => null];
             }
             if ($y === $tahun) {
                 return ['tahun' => $y, 'nilai' => $nilaiPkoPemda > 0 ? $nilaiPkoPemda : null];
             }
-            $val = $pkoPemdaByYear->get($y);
+            $val = $pkoAvgByYear->get($y);
 
             return [
                 'tahun' => $y,
-                'nilai' => $val !== null ? (float) $val : null,
+                'nilai' => $val !== null ? round((float) $val, 2) : null,
             ];
         }, $years);
 

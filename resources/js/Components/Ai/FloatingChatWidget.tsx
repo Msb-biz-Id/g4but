@@ -95,25 +95,25 @@ export default function FloatingChatWidget({
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const isAllProvinsi = Array.isArray(user?.roles)
+    const isOpdWide = Array.isArray(user?.roles)
         ? user.roles.some((r: any) =>
             typeof r === 'string'
-                ? ['Super Admin', 'Admin Provinsi', 'Pimpinan'].includes(r)
-                : ['Super Admin', 'Admin Provinsi', 'Pimpinan'].includes(r?.name)
+                ? ['Super Admin', 'Admin OPD', 'Kepala OPD'].includes(r)
+                : ['Super Admin', 'Admin OPD', 'Kepala OPD'].includes(r?.name)
         )
         : false;
 
     const userOrgName = user?.organizations?.[0]?.name || (user as any)?.organization?.name;
-    const scopeLabel = isAllProvinsi
-        ? 'Akses: Provinsi Papua Barat'
+    const scopeLabel = isOpdWide
+        ? 'Akses: Seluruh Unit Kerja (OPD)'
         : userOrgName
             ? `Akses: ${userOrgName}`
-            : 'Akses: OPD Terotorisasi';
+            : 'Akses: Unit Kerja Terotorisasi';
 
     const defaultWelcome: ChatMessage = {
         id: 'welcome',
         role: 'assistant',
-        content: `Selamat datang **${user?.name || 'Bapak/Ibu'}**.\n\nSaya adalah **AI Asisten SAKIP e-KASUARI Pemerintah Provinsi Papua Barat** yang bertugas mendampingi Anda dalam analisis dan pemantauan akuntabilitas kinerja secara objektif, transparan, dan berbasis data resmi sistem tanpa halusinasi.\n\nSilakan pilih salah satu menu analisis cepat di bawah atau ajukan pertanyaan spesifik terkait indikator, dokumen, anggaran, dan evaluasi SAKIP.`,
+        content: `Selamat datang **${user?.name || 'Bapak/Ibu'}**.\n\nSaya adalah **AI Asisten SAKIP & Kinerja e-KASUARI Perangkat Daerah** yang bertugas mendampingi Anda dalam analisis dan pemantauan akuntabilitas kinerja unit kerja secara objektif, transparan, dan berbasis data resmi sistem tanpa halusinasi.\n\nSilakan pilih salah satu menu analisis cepat di bawah atau ajukan pertanyaan spesifik terkait indikator, dokumen, anggaran, dan evaluasi SAKIP.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
@@ -549,7 +549,7 @@ export default function FloatingChatWidget({
                                         Otorisasi RBAC Aktif • Bebas Halusinasi
                                     </span>
                                     <span className="text-[9px]">
-                                        e-KASUARI Papua Barat
+                                        e-KASUARI
                                     </span>
                                 </div>
                             </div>

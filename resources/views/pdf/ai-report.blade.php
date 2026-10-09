@@ -92,9 +92,9 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
       @endif
     </td>
     <td class="hdr-title-cell">
-      <div class="instansi">PEMERINTAH {{ strtoupper($provinceName ?? 'PROVINSI PAPUA BARAT') }}</div>
+      <div class="instansi">{{ strtoupper($appName ?? 'e-KASUARI') }} &mdash; SISTEM AKUNTABILITAS KINERJA INSTANSI PEMERINTAH</div>
       <div class="doc-title">{{ strtoupper($title) }}</div>
-      <div class="doc-sub">Modul AI Asisten SAKIP &nbsp;|&nbsp; Lingkup: {{ $scope }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-KASUARI' }} SAKIP</div>
+      <div class="doc-sub">Modul AI Asisten SAKIP &nbsp;|&nbsp; Lingkup: {{ $scope }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-KASUARI' }}</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
@@ -188,7 +188,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
     <td style="width: 58%;">
       <div class="legal-note">
         <strong>Catatan Legalitas &amp; Sistem:</strong><br>
-        Dokumen ini diterbitkan secara resmi oleh modul AI Asisten SAKIP {{ $appName ?? 'e-KASUARI' }} Pemerintah {{ $provinceName ?? 'Provinsi Papua Barat' }} berdasarkan agregasi data kinerja dan keuangan yang tervalidasi. Informasi ini merupakan telaah analitis otomatis untuk mendukung perumusan kebijakan dan akuntabilitas kinerja instansi pemerintah.
+        Dokumen ini diterbitkan secara resmi oleh modul AI Asisten SAKIP {{ $appName ?? 'e-KASUARI' }} Perangkat Daerah berdasarkan agregasi data kinerja dan keuangan yang tervalidasi. Informasi ini merupakan telaah analitis otomatis untuk mendukung perumusan kebijakan dan akuntabilitas kinerja unit kerja.
       </div>
     </td>
     <td style="width: 42%;">
@@ -203,7 +203,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 
 {{-- FOOTER HALAMAN DOKUMEN --}}
 <div class="footer">
-  <div class="fl">Sistem {{ $appName ?? 'e-KASUARI' }} — SAKIP {{ $provinceName ?? 'Provinsi Papua Barat' }}</div>
+  <div class="fl">Sistem {{ $appName ?? 'e-KASUARI' }} &mdash; SAKIP &amp; Kinerja Perangkat Daerah</div>
   <div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div>
 </div>
 

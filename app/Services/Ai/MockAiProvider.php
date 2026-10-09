@@ -38,7 +38,7 @@ class MockAiProvider implements AiProvider
      */
     private function executiveSummary(array $context): string
     {
-        $scope = $context['scope'] ?? 'Pemerintah Provinsi Papua Barat';
+        $scope = $context['scope'] ?? 'Perangkat Daerah';
         $period = $context['period'] ?? 'Tahun Anggaran Berjalan';
         $totalOpd = $context['total_opd'] ?? 10;
         $totalDocs = $context['total_docs'] ?? 0;
@@ -115,7 +115,7 @@ class MockAiProvider implements AiProvider
      */
     private function insight(array $context): string
     {
-        $scope = $context['scope'] ?? 'Pemerintah Provinsi Papua Barat';
+        $scope = $context['scope'] ?? 'Perangkat Daerah';
         $insights = $context['insights'] ?? [];
 
         $lines = [];
@@ -145,7 +145,7 @@ class MockAiProvider implements AiProvider
      */
     private function prediction(array $context): string
     {
-        $scope = $context['scope'] ?? 'Pemerintah Provinsi Papua Barat';
+        $scope = $context['scope'] ?? 'Perangkat Daerah';
         $year = $context['year'] ?? date('Y');
         $serapanSekarang = $context['current_serapan'] ?? 0.0;
         $proyeksiSerapan = $context['projected_serapan'] ?? 0.0;
@@ -176,7 +176,7 @@ class MockAiProvider implements AiProvider
      */
     private function recommendation(array $context): string
     {
-        $scope = $context['scope'] ?? 'Pemerintah Provinsi Papua Barat';
+        $scope = $context['scope'] ?? 'Perangkat Daerah';
 
         $lines = [];
         $lines[] = "Rekomendasi Tindak Lanjut Penguatan SAKIP — {$scope}";
@@ -201,7 +201,7 @@ class MockAiProvider implements AiProvider
      */
     private function opdStatus(array $context): string
     {
-        $scope = $context['scope'] ?? 'Pemerintah Provinsi Papua Barat';
+        $scope = $context['scope'] ?? 'Perangkat Daerah';
         $year = $context['year'] ?? date('Y');
         $matrix = $context['matrix'] ?? [];
 
@@ -244,7 +244,7 @@ class MockAiProvider implements AiProvider
         }
 
         $norm = strtolower($userQuery);
-        $scope = $context['scope'] ?? 'Pemerintah Provinsi Papua Barat';
+        $scope = $context['scope'] ?? 'Perangkat Daerah';
         $userName = $context['user_name'] ?? 'Bapak/Ibu';
         $year = $context['year'] ?? date('Y');
         $triwulan = $context['triwulan'] ?? 'TW II';
@@ -356,7 +356,7 @@ class MockAiProvider implements AiProvider
         // 8. Sapaan / Greeting
         if (preg_match('/\b(halo|hai|selamat pagi|selamat siang|selamat sore|selamat malam|assalamu|siapa anda)\b/i', $norm)) {
             return "Selamat datang {$userName}.\n\n"
-                ."Saya adalah AI Asisten SAKIP e-KASUARI Pemerintah Provinsi Papua Barat.\n"
+                ."Saya adalah AI Asisten SAKIP e-KASUARI Perangkat Daerah.\n"
                 ."Lingkup Akses: {$scope}\n"
                 ."Periode: Tahun {$year} - {$triwulan}\n\n"
                 ."Layanan Informasi Eksekutif yang Dapat Diakses:\n"

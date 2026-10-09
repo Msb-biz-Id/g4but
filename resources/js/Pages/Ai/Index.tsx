@@ -283,7 +283,7 @@ export default function AiIndex({
         const tabTitle = AI_TABS.find((t) => t.id === activeTab)?.label || 'Laporan Analisis Eksekutif AI';
         const targetOrgName = selectedOrgId
             ? organizations.find((o) => String(o.id) === String(selectedOrgId))?.name || 'Perangkat Daerah'
-            : 'Pemerintah Provinsi Papua Barat (Seluruh OPD)';
+            : 'Perangkat Daerah (Seluruh Unit Kerja)';
 
         const payload: Record<string, string> = {
             _token: csrfToken,
@@ -330,7 +330,7 @@ export default function AiIndex({
                             <h1 className="text-2xl font-bold tracking-tight text-foreground">Pusat Analisis & Asisten AI</h1>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Sistem pendukung keputusan analitik berbasis data kinerja dan akuntabilitas Pemerintah Provinsi Papua Barat.
+                            Sistem pendukung keputusan analitik berbasis data kinerja dan akuntabilitas Perangkat Daerah (OPD Induk, Sekretariat, dan Bidang).
                         </p>
                     </div>
 
@@ -442,7 +442,7 @@ export default function AiIndex({
                                         <div className="space-y-1.5 max-w-sm">
                                             <h3 className="text-base font-semibold text-foreground">Sedang Mengolah Analisis Data Kinerja</h3>
                                             <p className="text-xs text-muted-foreground leading-relaxed">
-                                                Sistem sedang mengagregasi data capaian fisik, serapan anggaran, indikator IKU Pemda, dan dokumen perencanaan SAKIP dari database resmi...
+                                                Sistem sedang mengagregasi data capaian fisik, serapan anggaran, indikator IKU OPD, dan dokumen perencanaan SAKIP dari database resmi...
                                             </p>
                                         </div>
                                     </div>
@@ -452,14 +452,14 @@ export default function AiIndex({
                                         {/* Banner Ringkasan Dokumen */}
                                         <div className="border-b border-border pb-4">
                                             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground mb-1">
-                                                <span>Pemerintah Provinsi Papua Barat</span>
+                                                <span>Perangkat Daerah</span>
                                                 <span>Sistem e-KASUARI SAKIP</span>
                                             </div>
                                             <h3 className="text-lg font-bold text-foreground">
                                                 {currentTabInfo.label}
                                             </h3>
                                             <p className="text-xs text-muted-foreground mt-0.5">
-                                                Lingkup Analisis: {selectedOrgId ? organizations.find((o) => String(o.id) === String(selectedOrgId))?.name : 'Seluruh Perangkat Daerah (Pemerintah Provinsi)'}
+                                                Lingkup Analisis: {selectedOrgId ? organizations.find((o) => String(o.id) === String(selectedOrgId))?.name : 'Seluruh Unit Kerja (OPD Induk, Sekretariat, dan Bidang)'}
                                             </p>
                                         </div>
 
@@ -544,7 +544,7 @@ export default function AiIndex({
                                                     <Shield className="w-3.5 h-3.5 text-primary" />
                                                     Data Resmi
                                                 </div>
-                                                <p className="text-[11px] text-muted-foreground">Terhubung dengan database fisik, anggaran, & IKU Pemda.</p>
+                                                <p className="text-[11px] text-muted-foreground">Terhubung dengan database fisik, anggaran, & IKU OPD.</p>
                                             </div>
                                             <div className="border border-border/80 rounded-lg p-3 bg-muted/20">
                                                 <div className="font-semibold text-xs text-foreground flex items-center gap-1.5 mb-1">
@@ -663,7 +663,7 @@ export default function AiIndex({
                                             onChange={(e) => setSelectedOrgId(e.target.value)}
                                             className="w-full text-xs"
                                         >
-                                            <option value="">Semua Perangkat Daerah (Pemerintah Provinsi)</option>
+                                            <option value="">Semua Unit Kerja (OPD Induk, Sekretariat, dan Bidang)</option>
                                             {organizations.map((org) => (
                                                 <option key={org.id} value={String(org.id)}>
                                                     {org.name} ({org.code})

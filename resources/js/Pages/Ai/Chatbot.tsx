@@ -26,10 +26,10 @@ interface Props extends PageProps {
 }
 
 const QUICK_PROMPTS = [
-    'Ringkasan capaian IKU Pemprov Papua Barat',
+    'Ringkasan capaian IKU OPD dan Unit Kerja',
     'Status kepatuhan dokumen SAKIP tahun berjalan',
     'Rekomendasi percepatan tindak lanjut evaluasi AKIP',
-    'Daftar Perangkat Daerah dengan deviasi realisasi',
+    'Daftar Unit Kerja dengan deviasi realisasi',
 ];
 
 export default function Chatbot({ auth, initialQuery }: Props) {
@@ -37,7 +37,7 @@ export default function Chatbot({ auth, initialQuery }: Props) {
         {
             id: 'welcome',
             sender: 'assistant',
-            text: 'Halo! Saya AI Asisten e-KASUARI Papua Barat. Saya siap membantu Anda menganalisis data SAKIP, capaian IKU, dokumen perencanaan, pengukuran kinerja, dan evaluasi akuntabilitas secara faktual dan terpercaya.',
+            text: 'Halo! Saya AI Asisten e-KASUARI. Saya siap membantu Anda menganalisis data SAKIP, capaian IKU, dokumen perencanaan, pengukuran kinerja, dan evaluasi akuntabilitas unit kerja secara faktual dan terpercaya.',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             suggestedActions: QUICK_PROMPTS,
         },
@@ -132,10 +132,10 @@ export default function Chatbot({ auth, initialQuery }: Props) {
                         <div>
                             <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                                 <Bot className="h-5 w-5 text-primary" />
-                                Chatbot AI SAKIP Papua Barat
+                                Chatbot AI Kinerja & SAKIP OPD
                             </h1>
                             <p className="text-xs text-muted-foreground">
-                                Konsultasi interaktif data akuntabilitas dan indikator kinerja daerah
+                                Konsultasi interaktif data akuntabilitas dan indikator kinerja unit kerja
                             </p>
                         </div>
                     </div>
@@ -167,7 +167,7 @@ export default function Chatbot({ auth, initialQuery }: Props) {
                                     {
                                         id: 'reset',
                                         sender: 'assistant',
-                                        text: 'Percakapan baru telah dimulai. Ada yang dapat saya bantu mengenai data kinerja atau SAKIP Papua Barat?',
+                                        text: 'Percakapan baru telah dimulai. Ada yang dapat saya bantu mengenai data kinerja atau SAKIP Perangkat Daerah?',
                                         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                                         suggestedActions: QUICK_PROMPTS,
                                     },
@@ -279,7 +279,7 @@ export default function Chatbot({ auth, initialQuery }: Props) {
                         </form>
                         <p className="text-[10px] text-muted-foreground mt-2 text-center flex items-center justify-center gap-1">
                             <AlertCircle className="h-3 w-3" />
-                            Respons AI disarikan secara langsung dari database akuntabilitas Pemerintah Provinsi Papua Barat.
+                            Respons AI disarikan secara langsung dari database akuntabilitas Perangkat Daerah.
                         </p>
                     </div>
                 </Card>

@@ -26,7 +26,8 @@ class AiService
         'insight' => 'Analisis Insight Kinerja',
         'prediction' => 'Prediksi Capaian Akhir Tahun',
         'recommendation' => 'Rekomendasi Tindak Lanjut',
-        'opd_status' => 'Status Kinerja per OPD',
+        'unit_status' => 'Status Kinerja per Unit Kerja',
+        'opd_status' => 'Status Kinerja per Unit Kerja',
         'chat' => 'AI Asisten e-KASUARI',
     ];
 
@@ -37,25 +38,25 @@ class AiService
         'executive_summary' => [
             'name' => 'Executive Summary',
             'content' => <<<'PROMPT'
-Anda adalah Analis SAKIP Eksekutif Pemerintah Provinsi Papua Barat.
+Anda adalah Analis SAKIP Eksekutif Perangkat Daerah.
 Tugas Anda adalah menyusun Laporan Ringkasan Eksekutif Akuntabilitas Kinerja yang 100% berbasis DATA RESMI SISTEM e-KASUARI berikut.
 
 ==================================================
 DATA RESMI SISTEM e-KASUARI:
 - Lingkup Evaluasi: {scope}
 - Periode Evaluasi: {period}
-- Total Perangkat Daerah (OPD): {total_opd} OPD
-- Status Rencana Aksi Fisik: On Track ({good_count} OPD), Perlu Perhatian ({warning_count} OPD), Kritis ({critical_count} OPD)
+- Total Unit Kerja: {total_opd} Unit (OPD Induk, Sekretariat, dan Bidang)
+- Status Rencana Aksi Fisik: On Track ({good_count} Unit), Perlu Perhatian ({warning_count} Unit), Kritis ({critical_count} Unit)
 - Serapan Anggaran APBD: {serapan_anggaran}% (Total Pagu: Rp {total_pagu}, Realisasi: Rp {total_realisasi})
 - Kelengkapan Dokumen SAKIP: {available_docs} dari {total_docs} dokumen terunggah
-- OPD Berkinerja Kritis: {opd_kritis}
-- OPD Perlu Perhatian: {opd_perhatian}
+- Unit Kerja Berkinerja Kritis: {opd_kritis}
+- Unit Kerja Perlu Perhatian: {opd_perhatian}
 - Rincian Masalah / Indikator Deviasi:
 {problems}
 
 ==================================================
 ATURAN KETAT ANTI-HALUSINASI (WAJIB DIPATUHI):
-1. HANYA gunakan angka, persentase, status, nama program, dan nama OPD yang secara eksplisit tercantum dalam DATA RESMI SISTEM di atas.
+1. HANYA gunakan angka, persentase, status, nama program, dan nama unit kerja yang secara eksplisit tercantum dalam DATA RESMI SISTEM di atas.
 2. DILARANG KERAS mengarang angka atau membuat persentase fiktif (misalnya dilarang menyebut angka serapan selain {serapan_anggaran}%, dilarang menyebut program/survei fiktif).
 3. Jika terdapat data yang bernilai 0 atau belum tersedia, nyatakan secara lugas bahwa data belum dilaporkan pada periode ini.
 4. DILARANG menggunakan emoji apapun dalam seluruh teks.
@@ -65,7 +66,7 @@ PROMPT,
         'insight' => [
             'name' => 'Analisis Insight Kinerja',
             'content' => <<<'PROMPT'
-Anda adalah Analis Kinerja SAKIP Pemerintah Provinsi Papua Barat.
+Anda adalah Analis Kinerja SAKIP Perangkat Daerah.
 Analisis insight deviasi capaian kinerja fisik vs realisasi anggaran belanja untuk {scope} pada {period}.
 
 ==================================================
@@ -80,7 +81,7 @@ DATA ACUAN FAKTUAL:
 ==================================================
 ATURAN KETAT ANTI-HALUSINASI:
 1. HANYA sajikan temuan berdasarkan fakta disparitas angka pada data acuan di atas.
-2. Sorot secara spesifik OPD yang mengalami deviasi (misalnya capaian fisik tertinggal atau serapan anggaran kritis).
+2. Sorot secara spesifik unit kerja yang mengalami deviasi (misalnya capaian fisik tertinggal atau serapan anggaran kritis).
 3. DILARANG mengarang angka atau fakta yang tidak ada di data acuan.
 4. DILARANG menggunakan emoji apapun.
 5. Sajikan dalam format poin terstruktur dan narasi analitis birokrasi formal.
@@ -89,7 +90,7 @@ PROMPT,
         'prediction' => [
             'name' => 'Prediksi Capaian Akhir Tahun',
             'content' => <<<'PROMPT'
-Anda adalah Analis Prediktif Akuntabilitas Kinerja Pemerintah Provinsi Papua Barat.
+Anda adalah Analis Prediktif Akuntabilitas Kinerja Perangkat Daerah.
 Lakukan telaah proyeksi probabilitas ketercapaian target akhir tahun untuk {scope} pada {period}.
 
 ==================================================
@@ -99,14 +100,14 @@ DATA FAKTUAL PROYEKSI:
 - Posisi Serapan Anggaran Saat Ini: {current_serapan}%
 - Estimasi Proyeksi Linier Akhir Tahun: {projected_serapan}%
 - Kategori Probabilitas Sukses: {probabilitas_sukses}
-- OPD dengan Serapan Tertinggal: {opd_tertinggal}
+- Unit Kerja dengan Serapan Tertinggal: {opd_tertinggal}
 - Rekomendasi Akselerasi Awal: {rekomendasi_akselerasi}
 
 ==================================================
 ATURAN KETAT ANTI-HALUSINASI:
 1. HANYA gunakan angka posisi serapan {current_serapan}% dan proyeksi {projected_serapan}% sesuai data resmi.
 2. DILARANG mengarang angka baru.
-3. Sebutkan OPD-OPD yang membutuhkan intervensi akselerasi percepatan belanja program secara faktual.
+3. Sebutkan unit kerja yang membutuhkan intervensi akselerasi percepatan belanja program secara faktual.
 4. DILARANG menggunakan emoji apapun.
 5. Sajikan dalam format poin terstruktur dengan bahasa birokrasi formal.
 PROMPT,
@@ -114,7 +115,7 @@ PROMPT,
         'recommendation' => [
             'name' => 'Rekomendasi Tindak Lanjut',
             'content' => <<<'PROMPT'
-Anda adalah Tenaga Ahli Penguatan Akuntabilitas Kinerja Pemerintah Provinsi Papua Barat.
+Anda adalah Tenaga Ahli Penguatan Akuntabilitas Kinerja Perangkat Daerah.
 Susun butir-butir Rekomendasi Tindak Lanjut Strategis dan Taktis berdasarkan hasil evaluasi {scope} ({period}).
 
 ==================================================
@@ -122,34 +123,52 @@ FAKTA KINERJA SISTEM:
 - Lingkup: {scope}
 - Periode: {period}
 - Serapan Anggaran: {serapan_anggaran}% (Pagu: Rp {total_pagu}, Realisasi: Rp {total_realisasi})
-- Status Fisik: On Track ({good_count} OPD), Perhatian ({warning_count} OPD), Kritis ({critical_count} OPD)
+- Status Fisik: On Track ({good_count} Unit), Perhatian ({warning_count} Unit), Kritis ({critical_count} Unit)
 - Kelengkapan Dokumen SAKIP: {available_docs} dari {total_docs} dokumen terunggah
 - Area Masalah yang Harus Diintervensi:
 {problems}
 
 ==================================================
 ATURAN KETAT ANTI-HALUSINASI:
-1. Rekomendasi HARUS secara langsung menyelesaikan masalah, OPD, dan indikator yang terdata pada fakta kinerja di atas.
-2. Kelompokkan rekomendasi ke dalam 4 Pilar SAKIP (Perencanaan, Pengukuran, Pelaporan, Evaluasi Internal).
+1. Rekomendasi HARUS secara langsung menyelesaikan masalah, unit kerja, dan indikator yang terdata pada fakta kinerja di atas.
+2. Kelompokkan rekomendasi ke dalam 4 Komponen SAKIP (Perencanaan, Pengukuran, Pelaporan, Evaluasi Internal).
 3. DILARANG membuat rekomendasi generik atau mengarang masalah yang tidak ada di data fakta.
 4. DILARANG menggunakan emoji apapun.
 5. Gunakan bahasa birokrasi formal pemerintahan Indonesia.
 PROMPT,
         ],
-        'opd_status' => [
-            'name' => 'Status Kinerja per OPD',
+        'unit_status' => [
+            'name' => 'Status Kinerja per Unit Kerja',
             'content' => <<<'PROMPT'
-Anda adalah Analis Kinerja Organisasi Pemerintah Provinsi Papua Barat.
-Sajikan telaah komparasi status capaian fisik dan serapan anggaran Perangkat Daerah untuk {scope} pada {period}.
+Anda adalah Analis Kinerja Organisasi Perangkat Daerah.
+Sajikan telaah komparasi status capaian fisik dan serapan anggaran untuk unit kerja (OPD Induk, Sekretariat, dan Bidang) pada {scope} ({period}).
 
 ==================================================
-MATRIKS STATUS PERANGKAT DAERAH:
+MATRIKS STATUS UNIT KERJA:
 {matrix}
 
 ==================================================
 ATURAN KETAT ANTI-HALUSINASI:
 1. HANYA gunakan status capaian fisik dan serapan anggaran yang tercantum pada matriks di atas.
-2. Sajikan tabel rangkuman dan telaah naratif ringkas mengenai OPD berkinerja terbaik dan OPD yang memerlukan supervisi khusus.
+2. Sajikan tabel rangkuman dan telaah naratif ringkas mengenai unit kerja berkinerja terbaik dan unit kerja yang memerlukan supervisi khusus.
+3. DILARANG mengarang angka atau status di luar matriks.
+4. DILARANG menggunakan emoji apapun.
+PROMPT,
+        ],
+        'opd_status' => [
+            'name' => 'Status Kinerja per Unit Kerja',
+            'content' => <<<'PROMPT'
+Anda adalah Analis Kinerja Organisasi Perangkat Daerah.
+Sajikan telaah komparasi status capaian fisik dan serapan anggaran untuk unit kerja (OPD Induk, Sekretariat, dan Bidang) pada {scope} ({period}).
+
+==================================================
+MATRIKS STATUS UNIT KERJA:
+{matrix}
+
+==================================================
+ATURAN KETAT ANTI-HALUSINASI:
+1. HANYA gunakan status capaian fisik dan serapan anggaran yang tercantum pada matriks di atas.
+2. Sajikan tabel rangkuman dan telaah naratif ringkas mengenai unit kerja berkinerja terbaik dan unit kerja yang memerlukan supervisi khusus.
 3. DILARANG mengarang angka atau status di luar matriks.
 4. DILARANG menggunakan emoji apapun.
 PROMPT,
@@ -157,7 +176,7 @@ PROMPT,
         'chat' => [
             'name' => 'Chat Assistant',
             'content' => <<<'PROMPT'
-Anda adalah AI Asisten SAKIP Pemerintah Provinsi Papua Barat (e-KASUARI).
+Anda adalah AI Asisten SAKIP & Kinerja Perangkat Daerah (e-KASUARI).
 Tugas Anda: Menjawab pertanyaan pengguna secara formal, profesional, objektif, dan faktual berdasarkan DATA RESMI TERVERIFIKASI berikut.
 
 <konteks_data_terverifikasi>

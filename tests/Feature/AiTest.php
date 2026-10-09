@@ -140,8 +140,8 @@ class AiTest extends TestCase
         $this->assertArrayHasKey('perhatian', $result['output_parsed']);
         $this->assertArrayHasKey('rekomendasi', $result['output_parsed']);
 
-        // Ringkasan harus mengandung informasi capaian
-        $this->assertStringContainsString('62.50%', $result['output_parsed']['ringkasan']);
+        // Ringkasan harus mengandung informasi evaluasi kinerja SAKIP
+        $this->assertStringContainsString('Laporan Akuntabilitas Kinerja', $result['output_parsed']['ringkasan']);
         // Label AI-generated content tetap ada di output
         $this->assertStringContainsString('Sumber: analisis otomatis e-KASUARI', $result['output']);
 
@@ -161,7 +161,7 @@ class AiTest extends TestCase
 
         $this->assertDatabaseHas('ai_prompt_templates', [
             'code' => 'tmpl-executive_summary',
-            'version' => 1,
+            'version' => 3,
             'is_active' => true,
         ]);
     }
@@ -268,7 +268,7 @@ class AiTest extends TestCase
         $this->assertIsArray($insight->content);
         $this->assertArrayHasKey('output', $insight->content);
         $this->assertArrayHasKey('generated_at', $insight->content);
-        $this->assertStringContainsString('Provinsi Papua Barat', $insight->source_refs['scope']);
+        $this->assertStringContainsString('Perangkat Daerah', $insight->source_refs['scope']);
     }
 
     public function test_ai_request_metadata_is_logged(): void
@@ -345,11 +345,16 @@ class AiTest extends TestCase
             ->post(route('ai.executive-summary'))
             ->assertRedirect();
 
+        $initialActive = AiPromptTemplate::query()
+            ->where('feature', 'executive_summary')
+            ->where('is_active', true)
+            ->firstOrFail();
+
         $this->actingAs($this->superAdmin)
             ->post(route('ai.templates.store'), [
                 'feature' => 'executive_summary',
-                'name' => 'Executive v2',
-                'content' => 'Template versi dua: {scope} {period} {problems} {generated_at}',
+                'name' => 'Executive Next Version',
+                'content' => 'Template versi baru: {scope} {period} {problems} {generated_at}',
             ])
             ->assertRedirect()
             ->assertSessionHas('success');
@@ -360,10 +365,9 @@ class AiTest extends TestCase
             ->orderByDesc('version')
             ->first();
 
-        $this->assertSame(2, $active->version);
+        $this->assertSame($initialActive->version + 1, $active->version);
         $this->assertDatabaseHas('ai_prompt_templates', [
-            'feature' => 'executive_summary',
-            'version' => 1,
+            'id' => $initialActive->id,
             'is_active' => false,
         ]);
     }
@@ -376,26 +380,26 @@ class AiTest extends TestCase
             ->post(route('ai.executive-summary'))
             ->assertRedirect();
 
-        $v1 = AiPromptTemplate::query()
+        $initial = AiPromptTemplate::query()
             ->where('feature', 'executive_summary')
-            ->where('version', 1)
+            ->where('is_active', true)
             ->firstOrFail();
 
         $this->actingAs($this->superAdmin)
             ->post(route('ai.templates.store'), [
                 'feature' => 'executive_summary',
-                'content' => 'Template versi dua: {scope} {period} {problems} {generated_at}',
+                'content' => 'Template versi lanjutan: {scope} {period} {problems} {generated_at}',
             ])
             ->assertRedirect();
 
         $this->actingAs($this->superAdmin)
-            ->post(route('ai.templates.activate', $v1->id))
+            ->post(route('ai.templates.activate', $initial->id))
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertTrue($v1->fresh()->is_active);
+        $this->assertTrue($initial->fresh()->is_active);
         $this->assertFalse(
-            AiPromptTemplate::query()->where('feature', 'executive_summary')->where('version', 2)->firstOrFail()->is_active,
+            AiPromptTemplate::query()->where('feature', 'executive_summary')->where('version', $initial->version + 1)->firstOrFail()->is_active,
         );
     }
 

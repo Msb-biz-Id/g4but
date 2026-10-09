@@ -81,34 +81,35 @@ class AiContextBuilder
         [$activeYear, $activeTw] = $this->resolvePeriod($periodId, $year, $triwulan);
 
         $user = Auth::user() ?? request()?->user();
-        $isAllProvinsi = $user && ($user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Pimpinan'));
+        $isOpdWide = $user && ($user->isSuperAdmin() || $user->isOpdAdmin() || $user->hasRole('Kepala OPD'));
         $accessibleIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         if ($orgId && in_array($orgId, $accessibleIds)) {
             $scopedOrgIds = [$orgId];
             $scopedOrg = Organization::find($orgId);
-            $scopeLabel = $scopedOrg?->name ?? 'Perangkat Daerah Terpilih';
+            $scopeLabel = $scopedOrg?->name ?? 'Unit Kerja Terpilih';
         } else {
-            $scopedOrgIds = $isAllProvinsi ? Organization::where('type', 'opd')->pluck('id')->all() : $accessibleIds;
-            $scopeLabel = $isAllProvinsi
-                ? 'Pemerintah Provinsi Papua Barat (Seluruh Perangkat Daerah)'
-                : ($user?->organization?->name ?? 'Perangkat Daerah Terotorisasi');
+            $scopedOrgIds = $isOpdWide ? Organization::whereIn('type', ['opd', 'sekretariat', 'bidang'])->pluck('id')->all() : $accessibleIds;
+            $scopeLabel = $isOpdWide
+                ? 'Perangkat Daerah (OPD Induk, Sekretariat, dan Bidang)'
+                : ($user?->unitOrganization()?->name ?? $user?->organization?->name ?? 'Unit Kerja Terotorisasi');
         }
 
-        // 1. Master Organisasi / OPD
-        $allOpds = Organization::where('type', 'opd')
+        // 1. Master Organisasi / OPD, Sekretariat, Bidang
+        $allOpds = Organization::whereIn('type', ['opd', 'sekretariat', 'bidang'])
             ->where('is_active', true)
-            ->when(! $isAllProvinsi, fn ($q) => $q->whereIn('id', $scopedOrgIds))
+            ->when(! $isOpdWide, fn ($q) => $q->whereIn('id', $scopedOrgIds))
+            ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
             ->orderBy('name')
-            ->get(['id', 'code', 'name', 'short_name']);
+            ->get(['id', 'code', 'name', 'short_name', 'type']);
 
         $totalOpd = $allOpds->count();
         $opdNames = $allOpds->pluck('name')->all();
 
-        // 2. IKU OPD (Indikator Kinerja Utama)
+        // 2. IKU OPD & Unit (Indikator Kinerja Utama)
         $indicators = Indicator::query()
             ->iku()
-            ->when(! $isAllProvinsi, fn ($q) => $q->whereIn('owner_organization_id', $scopedOrgIds))
+            ->when(! $isOpdWide, fn ($q) => $q->whereIn('owner_organization_id', $scopedOrgIds))
             ->get();
 
         $ikuCount = $indicators->count();
@@ -153,7 +154,7 @@ class AiContextBuilder
 
         // 5. Dokumen Perencanaan SAKIP
         $docsQuery = PlanningDocument::query()
-            ->when(! $isAllProvinsi, fn ($q) => $q->whereIn('organization_id', $scopedOrgIds));
+            ->when(! $isOpdWide, fn ($q) => $q->whereIn('organization_id', $scopedOrgIds));
 
         $totalDocs = $docsQuery->count();
         $availableDocs = (clone $docsQuery)->whereNotNull('file_path')->count();
@@ -161,14 +162,14 @@ class AiContextBuilder
 
         // 6. Evaluasi SAKIP & PKO PermenPANRB 22/2024
         $pkoEvaluations = PkoEvaluation::where('year', $activeYear)
-            ->when(! $isAllProvinsi, fn ($q) => $q->whereIn('organization_id', $scopedOrgIds))
+            ->when(! $isOpdWide, fn ($q) => $q->whereIn('organization_id', $scopedOrgIds))
             ->get();
 
         $avgPko = $pkoEvaluations->isNotEmpty() ? round($pkoEvaluations->avg('final_score'), 2) : 0.0;
 
         // 7. Early Warning System (Alerts)
         $alertQuery = Alert::query()
-            ->when(! $isAllProvinsi, fn ($q) => $q->whereIn('organization_id', $scopedOrgIds))
+            ->when(! $isOpdWide, fn ($q) => $q->whereIn('organization_id', $scopedOrgIds))
             ->whereIn('status', ['open', 'in_progress']);
         $openAlerts = $alertQuery->count();
 
@@ -176,7 +177,7 @@ class AiContextBuilder
         $problematicIndicators = [];
         $indicators = Indicator::with(['targets', 'realizations', 'ownerOrganization'])
             ->where('status', 'active')
-            ->when(! $isAllProvinsi, fn ($q) => $q->whereIn('owner_organization_id', $scopedOrgIds))
+            ->when(! $isOpdWide, fn ($q) => $q->whereIn('owner_organization_id', $scopedOrgIds))
             ->get();
 
         $allAchievements = [];
@@ -444,11 +445,11 @@ class AiContextBuilder
     }
 
     /**
-     * Konteks untuk Fitur 5: Status Kinerja per OPD.
+     * Konteks untuk Fitur 5: Status Kinerja per Unit (OPD Induk / Sekretariat / Bidang).
      *
      * @return array<string, mixed>
      */
-    public function opdStatusContext(?int $orgId = null, ?int $periodId = null): array
+    public function unitStatusContext(?int $orgId = null, ?int $periodId = null): array
     {
         $fact = $this->getWebsiteFactualData($orgId, null, null, $periodId);
 
@@ -456,8 +457,8 @@ class AiContextBuilder
         $budgetMap = collect($fact['budget_opd_rows'])->keyBy('organization_id');
 
         $tableLines = [];
-        $tableLines[] = '| No | Perangkat Daerah | Capaian Fisik | Serapan Anggaran | Status Evaluasi |';
-        $tableLines[] = '|:---|:-----------------|:--------------|:-----------------|:----------------|';
+        $tableLines[] = '| No | Unit Kerja | Tipe | Capaian Fisik | Serapan Anggaran | Status Evaluasi |';
+        $tableLines[] = '|:---|:-----------|:-----|:--------------|:-----------------|:----------------|';
 
         $idx = 1;
         foreach ($fact['opd_rows'] as $opd) {
@@ -474,7 +475,14 @@ class AiContextBuilder
                 $evalStatus = 'Perlu Perhatian';
             }
 
-            $tableLines[] = sprintf('| %d | %s | %s | %s | %s |', $idx++, $opd['nama'], $fisikStr, $budgetStr, $evalStatus);
+            $typeLabel = match ($opd['type'] ?? '') {
+                'opd' => 'OPD Induk',
+                'sekretariat' => 'Sekretariat',
+                'bidang' => 'Bidang',
+                default => 'Unit Kerja',
+            };
+
+            $tableLines[] = sprintf('| %d | %s | %s | %s | %s | %s |', $idx++, $opd['nama'], $typeLabel, $fisikStr, $budgetStr, $evalStatus);
         }
 
         return [
@@ -486,6 +494,14 @@ class AiContextBuilder
             'total_opd' => $fact['total_opd'],
             'generated_at' => $fact['generated_at'],
         ];
+    }
+
+    /**
+     * Alias backward-compatibility untuk opdStatusContext.
+     */
+    public function opdStatusContext(?int $orgId = null, ?int $periodId = null): array
+    {
+        return $this->unitStatusContext($orgId, $periodId);
     }
 
     /**
@@ -508,9 +524,9 @@ class AiContextBuilder
 
         $norm = strtolower($message);
 
-        // Deteksi target OPD spesifik dari teks
+        // Deteksi target unit kerja spesifik dari teks
         $targetOrgId = null;
-        $allOrgs = Organization::where('type', 'opd')->get(['id', 'name', 'code', 'short_name']);
+        $allOrgs = Organization::whereIn('type', ['opd', 'sekretariat', 'bidang'])->get(['id', 'name', 'code', 'short_name']);
         foreach ($allOrgs as $org) {
             $nameNorm = strtolower($org->name);
             $codeNorm = strtolower($org->code);
@@ -526,8 +542,8 @@ class AiContextBuilder
         $facts = [];
         $facts[] = '[LINGKUP HAK AKSES]: '.$fact['scope'];
         $facts[] = '[PERIODE EVALUASI]: Tahun '.$fact['year'].' - '.$fact['triwulan'];
-        $facts[] = '[DAFTAR PERANGKAT DAERAH]: Terdaftar '.$fact['total_opd'].' Perangkat Daerah (OPD) aktif, antara lain: '.implode(', ', array_slice($fact['opd_list'], 0, 8)).(count($fact['opd_list']) > 8 ? ', dan lainnya.' : '.');
-        $facts[] = '[INDIKATOR KINERJA UTAMA (IKU PEMDA)]: Tercatat '.$fact['iku_summary']['total_indikator'].' Indikator Kinerja Utama Pemda pada Menu 4.2.';
+        $facts[] = '[DAFTAR UNIT KERJA]: Terdaftar '.$fact['total_opd'].' unit kerja (OPD Induk, Sekretariat, dan Bidang) aktif, antara lain: '.implode(', ', array_slice($fact['opd_list'], 0, 8)).(count($fact['opd_list']) > 8 ? ', dan lainnya.' : '.');
+        $facts[] = '[INDIKATOR KINERJA UTAMA (IKU OPD & UNIT)]: Tercatat '.$fact['iku_summary']['total_indikator'].' Indikator Kinerja Utama OPD dan Unit Kerja.';
         $facts[] = '[RENCANA AKSI FISIK]: Total '.$fact['renaks_summary']['total_kegiatan'].' kegiatan rencana aksi terdata. Status: '.$fact['renaks_summary']['on_track'].' On Track, '.$fact['renaks_summary']['perlu_perhatian'].' Perlu Perhatian, '.$fact['renaks_summary']['kritis'].' Kritis, dan '.$fact['renaks_summary']['tidak_dinilai'].' Tidak Dinilai.';
         $facts[] = '[REALISASI ANGGARAN]: Serapan APBD saat ini tercatat '.$fact['budget_summary']['serapan_persen'].'% dengan total pagu Rp '.number_format($fact['budget_summary']['total_pagu'], 0, ',', '.').' dan total realisasi Rp '.number_format($fact['budget_summary']['total_realisasi'], 0, ',', '.').'.';
         $facts[] = '[DOKUMEN SAKIP]: Sebanyak '.$fact['available_docs'].' dari '.$fact['total_docs'].' dokumen telah memiliki berkas fisik PDF terunggah pada modul Perencanaan Kinerja.';

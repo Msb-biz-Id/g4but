@@ -25,11 +25,11 @@ class PredictionController extends Controller
 
         $user = request()->user();
         $organizationIds = $this->authorization->accessibleOrganizationIds($user);
-        $isProvincialAdmin = $this->authorization->isProvincialAdmin($user);
+        $isOpdWide = $user && ($user->isSuperAdmin() || $user->isOpdAdmin() || $user->hasRole('Kepala OPD'));
 
         $indicators = Indicator::query()
             ->where('status', 'active')
-            ->when(! $isProvincialAdmin, function ($q) use ($organizationIds) {
+            ->when(! $isOpdWide, function ($q) use ($organizationIds) {
                 $q->where(function ($sub) use ($organizationIds) {
                     $sub->whereIn('owner_organization_id', $organizationIds)
                         ->orWhereNull('owner_organization_id');
@@ -41,8 +41,11 @@ class PredictionController extends Controller
         return Inertia::render('Predictions/Index', [
             'indicators' => $indicators,
             'organizations' => Organization::query()
-                ->whereIn('id', $organizationIds)
-                ->get(['id', 'code', 'name']),
+                ->whereIn('type', ['opd', 'sekretariat', 'bidang'])
+                ->when(! $isOpdWide, fn ($q) => $q->whereIn('id', $organizationIds))
+                ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
+                ->orderBy('name')
+                ->get(['id', 'code', 'name', 'type']),
             'predictions' => $this->predictor->dashboard(),
         ]);
     }

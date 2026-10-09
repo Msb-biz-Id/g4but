@@ -40,14 +40,16 @@ class AiController extends Controller
         $orgId = AiQuotaService::resolveOrganizationId($user);
         $kuota = $orgId ? $this->quotaService->infoKuota($orgId) : null;
 
-        // P3-C: Untuk admin lintas-OPD, kirim daftar OPD yang dapat dipilih
-        $isLintasOpd = $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi');
+        // Untuk pimpinan & admin tingkat OPD, kirim daftar unit kerja yang dapat dipilih
+        $isLintasOpd = $user->isSuperAdmin() || $user->isOpdAdmin() || $user->hasRole('Kepala OPD');
         $organizations = $isLintasOpd
             ? Organization::query()
+                ->whereIn('type', ['opd', 'sekretariat', 'bidang'])
                 ->where('is_active', true)
+                ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
                 ->orderBy('name')
-                ->get(['id', 'name', 'short_name', 'code'])
-            : $user->organizations()->get(['organizations.id', 'name', 'short_name', 'code']);
+                ->get(['id', 'name', 'short_name', 'code', 'type'])
+            : $user->organizations()->get(['organizations.id', 'name', 'short_name', 'code', 'type']);
 
         return Inertia::render('Ai/Index', [
             'periods' => MeasurementPeriod::query()
@@ -273,7 +275,7 @@ class AiController extends Controller
         return back()->with('ai_result', $result)->with('success', 'Prediksi capaian akhir tahun berhasil dibuat.');
     }
 
-    public function opdStatus(Request $request): RedirectResponse
+    public function unitStatus(Request $request): RedirectResponse
     {
         $this->authorize('use-ai');
 
@@ -286,11 +288,11 @@ class AiController extends Controller
         $orgId = AiQuotaService::resolveOrganizationId($user, $validated['organization_id'] ?? null);
         $periodId = $validated['period_id'] ?? null;
 
-        $context = $this->contextBuilder->opdStatusContext($orgId, $periodId);
+        $context = $this->contextBuilder->unitStatusContext($orgId, $periodId);
 
         try {
             $result = $this->ai->generate(
-                'opd_status',
+                'unit_status',
                 '',
                 $context,
                 sources: ['scope' => $context['scope'], 'period' => $context['period']],
@@ -298,10 +300,15 @@ class AiController extends Controller
                 periode: $context['period'] ?? null,
             );
         } catch (\Throwable $e) {
-            return back()->with('error', 'Pemanggilan analisis status OPD gagal: '.$e->getMessage());
+            return back()->with('error', 'Pemanggilan analisis status unit kerja gagal: '.$e->getMessage());
         }
 
-        return back()->with('ai_result', $result)->with('success', 'Status kinerja per OPD berhasil dievaluasi.');
+        return back()->with('ai_result', $result)->with('success', 'Status kinerja per unit kerja berhasil dievaluasi.');
+    }
+
+    public function opdStatus(Request $request): RedirectResponse
+    {
+        return $this->unitStatus($request);
     }
 
     public function chat(Request $request): RedirectResponse|JsonResponse
@@ -318,8 +325,8 @@ class AiController extends Controller
         $user = $request->user();
         $orgId = AiQuotaService::resolveOrganizationId($user);
 
-        // Cek kuota harian OPD (Super Admin dan Admin Provinsi memiliki akses bebas kuota/unlimited)
-        $isUnlimitedUser = $user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi');
+        // Cek kuota harian OPD (Super Admin dan Admin OPD memiliki akses bebas kuota/unlimited)
+        $isUnlimitedUser = $user->isSuperAdmin() || $user->isOpdAdmin();
         if ($orgId !== null && ! $isUnlimitedUser) {
             $kuotaCheck = $this->quotaService->check($orgId);
             if (! $kuotaCheck['ok']) {
