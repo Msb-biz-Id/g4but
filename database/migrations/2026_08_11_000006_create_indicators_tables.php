@@ -8,6 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('indicator_targets');
+        Schema::dropIfExists('indicator_versions');
+        Schema::dropIfExists('indicators');
+        Schema::enableForeignKeyConstraints();
+
         Schema::create('indicators', function (Blueprint $table) {
             $table->id();
             $table->string('code', 50)->unique();

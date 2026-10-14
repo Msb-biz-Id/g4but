@@ -20,6 +20,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('crosscutting_relations');
+        Schema::dropIfExists('cascading_relations');
+        Schema::dropIfExists('planning_trees');
+        Schema::dropIfExists('planning_documents');
+        Schema::dropIfExists('performance_periods');
+        Schema::enableForeignKeyConstraints();
+
         // ─── performance_periods ─────────────────────────────────────────────────
         Schema::create('performance_periods', function (Blueprint $table) {
             $table->id();
