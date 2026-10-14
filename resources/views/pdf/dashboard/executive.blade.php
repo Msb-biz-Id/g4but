@@ -88,14 +88,12 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
       </div>
     </td>
     <td>
-      <div class="kpi-label">Capaian IKU OPD</div>
-      <div class="kpi-value {{ $kpi['capaian_iku_pemda']['pct'] >= 100 ? 'g' : ($kpi['capaian_iku_pemda']['pct'] >= 80 ? 'w' : ($kpi['capaian_iku_pemda']['pct'] >= 50 ? 'o' : 'r')) }}">
-        {{ number_format($kpi['capaian_iku_pemda']['pct'], 2) }}%
+      <div class="kpi-label">Rata-rata Nilai PKO Unit Kerja</div>
+      <div class="kpi-value" style="color:#0891b2">
+        {{ number_format($kpi['rata_nilai_pko_opd']['nilai'] ?? $kpi['rata_rata_pko_pemda']['nilai'] ?? 0, 2) }}
       </div>
       <div class="kpi-sub">
-        <span class="badge {{ $kpi['capaian_iku_pemda']['status'] === 'Tercapai' ? 'b-green' : ($kpi['capaian_iku_pemda']['status'] === 'Perlu Perhatian' ? 'b-yellow' : ($kpi['capaian_iku_pemda']['status'] === 'Terlambat' ? 'b-orange' : 'b-red')) }}">
-          {{ $kpi['capaian_iku_pemda']['status'] }}
-        </span>
+        Predikat: <strong>{{ $kpi['rata_nilai_pko_opd']['predikat'] ?? $kpi['rata_rata_pko_pemda']['predikat'] ?? 'BELUM DINILAI' }}</strong>
       </div>
     </td>
     <td>
@@ -157,18 +155,11 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
   </thead>
   <tbody>
     <tr>
-      <td><strong>Capaian Sasaran / Kinerja OPD</strong></td>
+      <td><strong>Capaian Kinerja Unit Kerja / Bidang</strong></td>
       <td class="tc">{{ $opd_status['total'] ?? 0 }}</td>
       <td class="tc g">{{ $opd_status['tercapai'] ?? 0 }}</td>
       <td class="tc w">{{ $opd_status['perlu_perhatian'] ?? 0 }}</td>
       <td class="tc r">{{ $opd_status['kritis'] ?? 0 }}</td>
-    </tr>
-    <tr>
-      <td><strong>Indikator Kinerja Utama (IKU) OPD</strong></td>
-      <td class="tc">{{ $iku_status['total'] ?? 0 }}</td>
-      <td class="tc g">{{ $iku_status['tercapai'] ?? 0 }}</td>
-      <td class="tc w">{{ $iku_status['perlu_perhatian'] ?? 0 }}</td>
-      <td class="tc r">{{ $iku_status['kritis'] ?? 0 }}</td>
     </tr>
   </tbody>
 </table>

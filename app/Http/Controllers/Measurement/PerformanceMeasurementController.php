@@ -1413,15 +1413,14 @@ class PerformanceMeasurementController extends Controller
                 })->all();
         }
 
-        // For summary stats, evaluate child objectives, or goal if no children
+        // For summary stats, evaluate both goal indicators and child objectives
         $statsItems = [];
         foreach ($goals as $goal) {
+            $statsItems[] = $goal;
             if ($goal->children && count($goal->children) > 0) {
                 foreach ($goal->children as $child) {
                     $statsItems[] = $child;
                 }
-            } else {
-                $statsItems[] = $goal;
             }
         }
         if (empty($statsItems)) {

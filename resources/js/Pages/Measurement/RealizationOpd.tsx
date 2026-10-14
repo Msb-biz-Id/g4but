@@ -177,94 +177,89 @@ interface Props {
 
 function OpdRealizationTrendChart({ years, items, goals }: { years: number[]; items: OpdItem[]; goals?: OpdItem[] }) {
     const trendData = useMemo(() => {
-        const evalEntities: OpdItem[] = [];
+        const allIndicatorsWithPattern: { ind: IndicatorItem; pattern: string }[] = [];
 
         if (goals && goals.length > 0) {
             goals.forEach((g) => {
-                if (g.children && g.children.length > 0) {
-                    evalEntities.push(...g.children);
-                } else {
-                    evalEntities.push(g);
-                }
+                // 1. Goal Indicators
+                const goalInds = (g.goal_indicators_list && g.goal_indicators_list.length > 0)
+                    ? g.goal_indicators_list
+                    : [{
+                        id: 1,
+                        indicator: g.goal_indicator || '-',
+                        unit: g.goal_indicator_unit || '%',
+                        measurement_pattern: g.goal_measurement_pattern || 'Positif',
+                        targets: g.goal_targets || g.targets || {},
+                        realizations: g.goal_realizations || g.realizations || {},
+                        calculations: g.calculations || {},
+                    }];
+                goalInds.forEach((gi) => {
+                    allIndicatorsWithPattern.push({
+                        ind: gi,
+                        pattern: gi.measurement_pattern || g.goal_measurement_pattern || 'Positif',
+                    });
+                });
+
+                // 2. Child Objectives Indicators
+                (g.children || []).forEach((c) => {
+                    const childInds = (c.objective_indicators_list && c.objective_indicators_list.length > 0)
+                        ? c.objective_indicators_list
+                        : (c.goal_indicators_list && c.goal_indicators_list.length > 0)
+                            ? c.goal_indicators_list
+                            : [{
+                                id: 1,
+                                indicator: c.objective_indicator || '-',
+                                unit: c.unit || '%',
+                                measurement_pattern: c.measurement_pattern || 'Positif',
+                                targets: c.targets || {},
+                                realizations: c.realizations || {},
+                                calculations: c.calculations || {},
+                            }];
+                    childInds.forEach((ci) => {
+                        allIndicatorsWithPattern.push({
+                            ind: ci,
+                            pattern: ci.measurement_pattern || c.measurement_pattern || 'Positif',
+                        });
+                    });
+                });
             });
-        } else {
-            const objectives = items.filter((it) => it.level !== 'goal');
-            if (objectives.length > 0) {
-                evalEntities.push(...objectives);
-            } else {
-                evalEntities.push(...items);
-            }
+        } else if (items && items.length > 0) {
+            items.forEach((it) => {
+                const isGoal = it.level === 'goal';
+                const indList = isGoal
+                    ? (it.goal_indicators_list && it.goal_indicators_list.length > 0 ? it.goal_indicators_list : (it.objective_indicators_list || []))
+                    : (it.objective_indicators_list && it.objective_indicators_list.length > 0 ? it.objective_indicators_list : (it.goal_indicators_list || []));
+                const listToUse = indList.length > 0
+                    ? indList
+                    : [{
+                        id: 1,
+                        indicator: isGoal ? (it.goal_indicator || '-') : (it.objective_indicator || '-'),
+                        unit: isGoal ? (it.goal_indicator_unit || '%') : (it.unit || '%'),
+                        measurement_pattern: isGoal ? (it.goal_measurement_pattern || 'Positif') : (it.measurement_pattern || 'Positif'),
+                        targets: it.targets || {},
+                        realizations: it.realizations || {},
+                        calculations: it.calculations || {},
+                    }];
+                listToUse.forEach((ind) => {
+                    allIndicatorsWithPattern.push({
+                        ind,
+                        pattern: ind.measurement_pattern || it.measurement_pattern || 'Positif',
+                    });
+                });
+            });
         }
 
         return years.map((yr) => {
-            const entityAchs: number[] = [];
-            evalEntities.forEach((it) => {
-                const isGoal = it.level === 'goal';
-                let indList: IndicatorItem[] = [];
-                if (isGoal) {
-                    if (it.goal_indicators_list && it.goal_indicators_list.length > 0) {
-                        indList = it.goal_indicators_list;
-                    } else if (it.objective_indicators_list && it.objective_indicators_list.length > 0) {
-                        indList = it.objective_indicators_list;
-                    }
-                } else {
-                    if (it.objective_indicators_list && it.objective_indicators_list.length > 0) {
-                        indList = it.objective_indicators_list;
-                    } else if (it.goal_indicators_list && it.goal_indicators_list.length > 0) {
-                        indList = it.goal_indicators_list;
-                    }
-                }
-
-                if (indList.length === 0) {
-                    indList = [
-                        {
-                            id: 1,
-                            indicator: isGoal ? (it.goal_indicator || '-') : (it.objective_indicator || '-'),
-                            unit: isGoal ? (it.goal_indicator_unit || '%') : (it.unit || '%'),
-                            measurement_pattern: isGoal ? (it.goal_measurement_pattern || 'Positif') : (it.measurement_pattern || 'Positif'),
-                            targets: isGoal ? (it.goal_targets || it.targets || {}) : (it.targets || {}),
-                            realizations: isGoal ? (it.goal_realizations || it.realizations || {}) : (it.realizations || {}),
-                            calculations: it.calculations || {},
-                        },
-                    ];
-                }
-
-                const validIndAchs: number[] = [];
-                indList.forEach((ind) => {
-                    let a = ind.calculations?.[yr]?.achievement;
-                    if (a === null || a === undefined) {
-                        const tRaw = ind.targets?.[yr];
-                        const rRaw = ind.realizations?.[yr];
-                        if (tRaw !== undefined && tRaw !== null && tRaw !== '' &&
-                            rRaw !== undefined && rRaw !== null && rRaw !== '') {
-                            const t = Number(tRaw);
-                            const r = Number(rRaw);
-                            if (!isNaN(t) && !isNaN(r)) {
-                                const pol = ind.measurement_pattern || (isGoal ? (it.goal_measurement_pattern || 'Positif') : (it.measurement_pattern || 'Positif'));
-                                if (t === 0) {
-                                    a = r === 0 ? 100 : 0;
-                                } else if (pol === 'Negatif') {
-                                    a = Math.max(0, parseFloat((((2 * t - r) / t) * 100).toFixed(2)));
-                                } else {
-                                    a = Math.max(0, parseFloat(((r / t) * 100).toFixed(2)));
-                                }
-                            }
-                        }
-                    }
-
-                    if (a !== null && a !== undefined && !isNaN(a)) {
-                        validIndAchs.push(a);
-                    }
-                });
-
-                if (validIndAchs.length > 0) {
-                    const indAvg = validIndAchs.reduce((acc, v) => acc + v, 0) / validIndAchs.length;
-                    entityAchs.push(indAvg);
+            const validIndAchs: number[] = [];
+            allIndicatorsWithPattern.forEach(({ ind, pattern }) => {
+                const ach = computeAchievementFallback(ind, yr, pattern);
+                if (ach !== null && ach !== undefined && !isNaN(ach)) {
+                    validIndAchs.push(ach);
                 }
             });
 
-            const avg = entityAchs.length
-                ? parseFloat((entityAchs.reduce((acc, v) => acc + v, 0) / entityAchs.length).toFixed(1))
+            const avg = validIndAchs.length
+                ? parseFloat((validIndAchs.reduce((acc, v) => acc + v, 0) / validIndAchs.length).toFixed(1))
                 : null;
 
             return {
@@ -673,7 +668,7 @@ export default function RealizationOpd({
         }));
     }, [hierarchyGoals]);
 
-    // Statistics calculated across child objectives (and multi-indicators)
+    // Statistics calculated across goal indicators AND child objectives indicators
     const stats = useMemo(() => {
         let tercapai = 0;
         let perhatian = 0;
@@ -686,30 +681,11 @@ export default function RealizationOpd({
 
         const processIndicator = (ind: any, fallbackCalc?: any, fallbackPol?: string) => {
             totalIndikatorCount++;
+            const pattern = ind.measurement_pattern || fallbackPol || 'Positif';
+            const ach = computeAchievementFallback(ind, evalYear, pattern);
+            const statusInfo = getStatusInfo(ach);
             const calc = ind.calculations?.[evalYear] || fallbackCalc?.[evalYear];
-            let ach = calc?.achievement;
-            let status = calc?.status;
-
-            if (ach === null || ach === undefined) {
-                const tRaw = ind.targets?.[evalYear];
-                const rRaw = ind.realizations?.[evalYear];
-                if (tRaw !== undefined && tRaw !== null && tRaw !== '' &&
-                    rRaw !== undefined && rRaw !== null && rRaw !== '') {
-                    const t = Number(tRaw);
-                    const r = Number(rRaw);
-                    if (!isNaN(t) && !isNaN(r)) {
-                        const pol = ind.measurement_pattern || fallbackPol || 'Positif';
-                        if (t === 0) {
-                            ach = r === 0 ? 100 : 0;
-                        } else if (pol === 'Negatif') {
-                            ach = Math.max(0, parseFloat((((2 * t - r) / t) * 100).toFixed(2)));
-                        } else {
-                            ach = Math.max(0, parseFloat(((r / t) * 100).toFixed(2)));
-                        }
-                        status = ach >= 100 ? 'Tercapai' : ach >= 50 ? 'Perlu Perhatian' : 'Kritis';
-                    }
-                }
-            }
+            const status = calc?.status || statusInfo.status;
 
             if (ach !== null && ach !== undefined && !isNaN(ach)) {
                 totalAchievements.push(ach);
@@ -717,31 +693,44 @@ export default function RealizationOpd({
             if (status === 'Tercapai') tercapai++;
             else if (status === 'Perlu Perhatian') perhatian++;
             else if (status === 'Kritis') kritis++;
-            else if (status === 'Tidak Dinilai' || (!calc && (ach === null || ach === undefined))) tidakDinilai++;
+            else tidakDinilai++;
         };
 
         hierarchyGoals.forEach((goal) => {
+            // 1. Process Goal Indicators
+            const goalInds = (goal.goal_indicators_list && goal.goal_indicators_list.length > 0)
+                ? goal.goal_indicators_list
+                : [{
+                    id: 1,
+                    indicator: goal.goal_indicator || '-',
+                    unit: goal.goal_indicator_unit || '%',
+                    measurement_pattern: goal.goal_measurement_pattern || 'Positif',
+                    targets: goal.goal_targets || goal.targets || {},
+                    realizations: goal.goal_realizations || goal.realizations || {},
+                    calculations: goal.calculations || {},
+                }];
+            goalInds.forEach((ind) => processIndicator(ind, goal.calculations, goal.goal_measurement_pattern || goal.measurement_pattern));
+
+            // 2. Process Child Objectives Indicators
             const children = goal.children || [];
             totalObjectivesCount += children.length;
 
-            if (children.length > 0) {
-                children.forEach((child) => {
-                    const indList = (child.objective_indicators_list && child.objective_indicators_list.length > 0)
-                        ? child.objective_indicators_list
-                        : (child.goal_indicators_list && child.goal_indicators_list.length > 0)
-                            ? child.goal_indicators_list
-                            : [{ indicator: child.objective_indicator || '-', unit: child.unit || '%', targets: child.targets || {}, realizations: child.realizations || {}, calculations: child.calculations, measurement_pattern: child.measurement_pattern }];
-                    indList.forEach((ind) => processIndicator(ind, child.calculations, child.measurement_pattern));
-                });
-            } else {
-                // Goal without children: evaluate goal's own indicators
-                const goalInds = (goal.goal_indicators_list && goal.goal_indicators_list.length > 0)
-                    ? goal.goal_indicators_list
-                    : (goal.objective_indicators_list && goal.objective_indicators_list.length > 0)
-                        ? goal.objective_indicators_list
-                        : [{ indicator: goal.goal_indicator || '-', unit: goal.goal_indicator_unit || '%', targets: goal.goal_targets || goal.targets || {}, realizations: goal.goal_realizations || goal.realizations || {}, calculations: goal.calculations, measurement_pattern: goal.goal_measurement_pattern || goal.measurement_pattern }];
-                goalInds.forEach((ind) => processIndicator(ind, goal.calculations, goal.goal_measurement_pattern || goal.measurement_pattern));
-            }
+            children.forEach((child) => {
+                const childInds = (child.objective_indicators_list && child.objective_indicators_list.length > 0)
+                    ? child.objective_indicators_list
+                    : (child.goal_indicators_list && child.goal_indicators_list.length > 0)
+                        ? child.goal_indicators_list
+                        : [{
+                            id: 1,
+                            indicator: child.objective_indicator || '-',
+                            unit: child.unit || '%',
+                            measurement_pattern: child.measurement_pattern || 'Positif',
+                            targets: child.targets || {},
+                            realizations: child.realizations || {},
+                            calculations: child.calculations || {},
+                        }];
+                childInds.forEach((ind) => processIndicator(ind, child.calculations, child.measurement_pattern));
+            });
         });
 
         // Fallback if no goals exist in hierarchyGoals, look at flat items
@@ -782,19 +771,35 @@ export default function RealizationOpd({
             const goalNo = idx + 1;
             const q = searchQuery.toLowerCase().trim();
 
-            const goalIndList = (goal.goal_indicators_list && goal.goal_indicators_list.length > 0)
+            const rawGoalIndList = (goal.goal_indicators_list && goal.goal_indicators_list.length > 0)
                 ? goal.goal_indicators_list
-                : [{ indicator: goal.goal_indicator, unit: goal.goal_indicator_unit }];
+                : [{
+                    id: 1,
+                    indicator: goal.goal_indicator || '-',
+                    unit: goal.goal_indicator_unit || '%',
+                    measurement_pattern: goal.goal_measurement_pattern || 'Positif',
+                    targets: goal.goal_targets || goal.targets || {},
+                    realizations: goal.goal_realizations || goal.realizations || {},
+                    calculations: goal.calculations || {},
+                }];
 
             const goalMatchesSearch = !q || (
                 (goal.goal && goal.goal.toLowerCase().includes(q)) ||
-                goalIndList.some((gi) => (gi.indicator && gi.indicator.toLowerCase().includes(q)) || (gi.unit && gi.unit.toLowerCase().includes(q)))
+                rawGoalIndList.some((gi) => (gi.indicator && gi.indicator.toLowerCase().includes(q)) || (gi.unit && gi.unit.toLowerCase().includes(q)))
             );
 
             const filteredChildren = (goal.children || []).filter((child) => {
                 const indList = (child.objective_indicators_list && child.objective_indicators_list.length > 0)
                     ? child.objective_indicators_list
-                    : [{ indicator: child.objective_indicator, unit: child.unit, calculations: child.calculations }];
+                    : [{
+                        id: 1,
+                        indicator: child.objective_indicator || '-',
+                        unit: child.unit || '%',
+                        measurement_pattern: child.measurement_pattern || 'Positif',
+                        targets: child.targets || {},
+                        realizations: child.realizations || {},
+                        calculations: child.calculations || {},
+                    }];
 
                 if (q) {
                     const objMatches = child.objective && child.objective.toLowerCase().includes(q);
@@ -806,28 +811,26 @@ export default function RealizationOpd({
 
                 if (selectedStatus !== 'Semua') {
                     const hasStatus = indList.some((ind) => {
-                        const st = ind.calculations?.[evalYear]?.status || 'Tidak Dinilai';
+                        const ach = computeAchievementFallback(ind, evalYear, ind.measurement_pattern || child.measurement_pattern);
+                        const st = ind.calculations?.[evalYear]?.status || getStatusInfo(ach).status;
                         return st === selectedStatus;
                     });
-                    const childSt = child.calculations?.[evalYear]?.status || 'Tidak Dinilai';
-                    if (!hasStatus && childSt !== selectedStatus) return false;
+                    if (!hasStatus) return false;
                 }
 
                 return true;
             });
 
+            // Check if goal's own indicators match selected status
+            const goalHasMatchingStatus = rawGoalIndList.some((ind) => {
+                const ach = computeAchievementFallback(ind, evalYear, ind.measurement_pattern || goal.goal_measurement_pattern);
+                const st = ind.calculations?.[evalYear]?.status || getStatusInfo(ach).status;
+                return st === selectedStatus;
+            });
+
             let keepGoal = goalMatchesSearch || filteredChildren.length > 0;
             if (selectedStatus !== 'Semua') {
-                if (goal.children && goal.children.length > 0) {
-                    keepGoal = filteredChildren.length > 0;
-                } else {
-                    const goalIndList = (goal.goal_indicators_list && goal.goal_indicators_list.length > 0)
-                        ? goal.goal_indicators_list
-                        : [{ indicator: goal.goal_indicator, unit: goal.goal_indicator_unit, calculations: goal.calculations }];
-                    const goalHasStatus = goalIndList.some((ind) => (ind.calculations?.[evalYear]?.status || 'Tidak Dinilai') === selectedStatus)
-                        || ((goal.calculations?.[evalYear]?.status || 'Tidak Dinilai') === selectedStatus);
-                    keepGoal = goalHasStatus && (!q || goalMatchesSearch);
-                }
+                keepGoal = (goalHasMatchingStatus || filteredChildren.length > 0) && (!q || goalMatchesSearch || filteredChildren.length > 0);
             }
 
             return {
@@ -1980,39 +1983,54 @@ export default function RealizationOpd({
                                             </td>
                                         </tr>
                                     ) : (
-                                        paginatedGoals.map(({ goal, goalNo, children }) => {
-                                            const goalInds = (goal.goal_indicators_list && goal.goal_indicators_list.length > 0)
-                                                ? goal.goal_indicators_list
-                                                : [{
-                                                    id: 1,
-                                                    indicator: goal.goal_indicator || '-',
-                                                    unit: goal.goal_indicator_unit || '%',
-                                                    measurement_pattern: goal.goal_measurement_pattern || 'Positif',
-                                                    targets: goal.goal_targets || goal.targets || {},
-                                                    realizations: goal.goal_realizations || goal.realizations || {},
-                                                    calculations: goal.calculations || {},
-                                                }];
+                                    paginatedGoals.map(({ goal, goalNo, children }) => {
+                                        const rawGoalInds = (goal.goal_indicators_list && goal.goal_indicators_list.length > 0)
+                                            ? goal.goal_indicators_list
+                                            : [{
+                                                id: 1,
+                                                indicator: goal.goal_indicator || '-',
+                                                unit: goal.goal_indicator_unit || '%',
+                                                measurement_pattern: goal.goal_measurement_pattern || 'Positif',
+                                                targets: goal.goal_targets || goal.targets || {},
+                                                realizations: goal.goal_realizations || goal.realizations || {},
+                                                calculations: goal.calculations || {},
+                                            }];
 
-                                            const childrenWithInds = children.map((c) => {
-                                                const inds = (c.objective_indicators_list && c.objective_indicators_list.length > 0)
-                                                    ? c.objective_indicators_list
-                                                    : [{
-                                                        id: 1,
-                                                        indicator: c.objective_indicator || '-',
-                                                        unit: c.unit || '%',
-                                                        measurement_pattern: c.measurement_pattern || 'Positif',
-                                                        targets: c.targets || {},
-                                                        realizations: c.realizations || {},
-                                                        calculations: c.calculations || {},
-                                                    }];
-                                                return { child: c, inds };
+                                        const goalInds = selectedStatus === 'Semua'
+                                            ? rawGoalInds
+                                            : rawGoalInds.filter((gInd) => {
+                                                const ach = computeAchievementFallback(gInd, evalYear, gInd.measurement_pattern || goal.goal_measurement_pattern);
+                                                const status = gInd.calculations?.[evalYear]?.status || getStatusInfo(ach).status;
+                                                return status === selectedStatus;
                                             });
 
-                                            const totalChildIndRows = childrenWithInds.reduce((sum, ci) => sum + ci.inds.length, 0);
-                                            const totalGoalRows = goalInds.length + (childrenWithInds.length === 0 ? 1 : totalChildIndRows);
+                                        const childrenWithInds = children.map((c) => {
+                                            const rawInds = (c.objective_indicators_list && c.objective_indicators_list.length > 0)
+                                                ? c.objective_indicators_list
+                                                : [{
+                                                    id: 1,
+                                                    indicator: c.objective_indicator || '-',
+                                                    unit: c.unit || '%',
+                                                    measurement_pattern: c.measurement_pattern || 'Positif',
+                                                    targets: c.targets || {},
+                                                    realizations: c.realizations || {},
+                                                    calculations: c.calculations || {},
+                                                }];
+                                            const inds = selectedStatus === 'Semua'
+                                                ? rawInds
+                                                : rawInds.filter((cInd) => {
+                                                    const ach = computeAchievementFallback(cInd, evalYear, cInd.measurement_pattern || c.measurement_pattern);
+                                                    const status = cInd.calculations?.[evalYear]?.status || getStatusInfo(ach).status;
+                                                    return status === selectedStatus;
+                                                });
+                                            return { child: c, inds };
+                                        }).filter((ci) => ci.inds.length > 0);
 
-                                            return (
-                                                <React.Fragment key={`goal-block-${goal.id}`}>
+                                        const totalChildIndRows = childrenWithInds.reduce((sum, ci) => sum + ci.inds.length, 0);
+                                        const totalGoalRows = (goalInds.length > 0 ? goalInds.length : 0) + (childrenWithInds.length === 0 ? 1 : totalChildIndRows);
+
+                                        return (
+                                            <React.Fragment key={`goal-block-${goal.id}`}>
                                                     {/* ── GOAL INDICATOR ROWS ── */}
                                                     {goalInds.map((gInd, gIdx) => (
                                                         <tr
@@ -2231,8 +2249,10 @@ export default function RealizationOpd({
                                                                 colSpan={canManage ? 4 + years.length * 4 + 1 : 4 + years.length * 4}
                                                                 className="px-6 py-2.5 text-xs text-muted-foreground italic border-b bg-white dark:bg-slate-900"
                                                             >
-                                                                Belum ada Sasaran di bawah Tujuan ini.{' '}
-                                                                {canManage && (
+                                                                {selectedStatus !== 'Semua'
+                                                                    ? `Tidak ada Sasaran dengan status "${selectedStatus}" di bawah Tujuan ini.`
+                                                                    : 'Belum ada Sasaran di bawah Tujuan ini.'}{' '}
+                                                                {selectedStatus === 'Semua' && canManage && (
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => openQuickAddModal(goal, goalNo)}
@@ -2254,6 +2274,30 @@ export default function RealizationOpd({
                                                                     {/* When iIdx === 0: render empty Tujuan Indicator & Sasaran block */}
                                                                     {iIdx === 0 && (
                                                                         <>
+                                                                            {/* If no goalInds were rendered, render NO & TUJUAN on first child row */}
+                                                                            {goalInds.length === 0 && cIdx === 0 && (
+                                                                                <>
+                                                                                    <td
+                                                                                        rowSpan={totalChildIndRows}
+                                                                                        className="md:sticky md:left-0 z-10 w-[60px] min-w-[60px] max-w-[60px] px-2 py-2.5 border-b border-r border-border text-center align-top font-mono font-bold text-sky-900 dark:text-sky-200 bg-sky-50/95 dark:bg-sky-950/90 md:shadow-[1px_0_0_0_rgba(0,0,0,0.1)]"
+                                                                                    >
+                                                                                        ({goalNo})
+                                                                                    </td>
+                                                                                    <td
+                                                                                        rowSpan={totalChildIndRows}
+                                                                                        className="md:sticky md:left-[60px] z-10 w-[220px] min-w-[220px] max-w-[220px] px-3 py-2 border-b border-r border-border align-top text-foreground leading-relaxed bg-sky-50/95 dark:bg-sky-950/90 md:shadow-[3px_0_6px_-2px_rgba(0,0,0,0.15)]"
+                                                                                    >
+                                                                                        <div className="flex items-center gap-1.5 mb-1">
+                                                                                            <Badge variant="outline" className="bg-sky-100 text-sky-900 dark:bg-sky-900 dark:text-sky-100 border-sky-300 text-[10px] font-bold px-1.5 py-0">
+                                                                                                TUJUAN RENSTRA
+                                                                                            </Badge>
+                                                                                        </div>
+                                                                                        <div className="font-semibold text-xs text-slate-900 dark:text-white leading-snug">
+                                                                                            {goal.goal || '-'}
+                                                                                        </div>
+                                                                                    </td>
+                                                                                </>
+                                                                            )}
                                                                             <td
                                                                                 rowSpan={inds.length}
                                                                                 className="px-3 py-2 border-b border-r border-border text-center align-top text-slate-400 min-w-[180px] bg-white dark:bg-slate-900"

@@ -172,7 +172,7 @@ function IkuAnalyticsTrendChart({ trend }: { trend: Array<{ tahun: number; targe
         yAxis: { type: 'value', min: 0, max: 120, splitLine: { lineStyle: { type: 'dashed' } }, axisLabel: { formatter: '{value}%' } },
         series: [
             {
-                name: 'Rata-rata Capaian IKU OPD (%)',
+                name: 'Rata-rata Capaian Kinerja Unit Kerja (%)',
                 type: 'line',
                 data: capaian,
                 lineStyle: { color: '#2563eb', width: 3 },
@@ -1753,12 +1753,11 @@ type Tab =
     | 'heatmap';
 
 const TABS: { id: Tab; label: string; subLabel: string; icon: React.ElementType; rowBadge?: string }[] = [
-    { id: 'sakip_docs',        label: 'Kelengkapan SAKIP',     subLabel: '12 Dokumen OPD',             icon: FileCheck2,    rowBadge: 'Baris 1' },
-    { id: 'iku',               label: 'Capaian IKU OPD',      subLabel: 'Indikator Utama & Karakter', icon: Sparkles,      rowBadge: 'Baris 2' },
-    { id: 'opd',               label: 'Capaian Kinerja OPD',   subLabel: 'Ranking & Drilldown Pohon',  icon: BarChart3,     rowBadge: 'Baris 3' },
-    { id: 'sakip_pemda',       label: 'Nilai SAKIP OPD',       subLabel: '4 Komponen Akuntabilitas',   icon: Building2,     rowBadge: 'Baris 3' },
+    { id: 'sakip_docs',        label: 'Kelengkapan SAKIP',     subLabel: '12 Dokumen SAKIP',           icon: FileCheck2,    rowBadge: 'Baris 1' },
+    { id: 'opd',               label: 'Capaian Kinerja Unit',  subLabel: 'Ranking & Pohon Kinerja',    icon: BarChart3,     rowBadge: 'Baris 2' },
+    { id: 'sakip_pemda',       label: 'Nilai SAKIP Dinas',     subLabel: '4 Komponen Akuntabilitas',   icon: Building2,     rowBadge: 'Baris 3' },
     { id: 'sakip_eval',        label: 'Nilai SAKIP Detail',    subLabel: '4 Komponen & Detail LHE',    icon: Medal,         rowBadge: 'Baris 3' },
-    { id: 'pko',               label: 'Capaian PKO',           subLabel: 'PKO OPD & Rata-rata',        icon: Trophy,        rowBadge: 'Baris 4' },
+    { id: 'pko',               label: 'Capaian PKO',           subLabel: 'PKO Dinas & Unit Kerja',     icon: Trophy,        rowBadge: 'Baris 4' },
     { id: 'action_plans',      label: 'Rencana Aksi TW',          subLabel: 'Realisasi Fisik Triwulanan', icon: Target,        rowBadge: 'Baris 5' },
     { id: 'monitoring_budget', label: 'Rencana Aksi Anggaran TW', subLabel: 'Serapan Keuangan Triwulan',  icon: Coins,         rowBadge: 'Baris 5' },
     { id: 'risk_map',          label: 'Peta Risiko / EWS',        subLabel: 'Peringatan Dini Terpadu',    icon: ShieldAlert,   rowBadge: 'Baris 6' },
@@ -2533,23 +2532,6 @@ export default function AnalyticsIndex({
                             )}
 
                             
-                            {activeTab === 'iku' && (
-                                <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800 shadow-2xs">
-                                    <button
-                                        onClick={() => setIkuMatrixView('eval_year')}
-                                        className={`px-3 py-1 text-xs font-semibold rounded-md transition ${ikuMatrixView === 'eval_year' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}
-                                    >
-                                        Matriks IKU ({evalYear})
-                                    </button>
-                                    <button
-                                        onClick={() => setIkuMatrixView('trend_5yr')}
-                                        className={`px-3 py-1 text-xs font-semibold rounded-md transition ${ikuMatrixView === 'trend_5yr' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}
-                                    >
-                                        Tren 5 Tahun
-                                    </button>
-                                </div>
-                            )}
-
                             {activeTab === 'opd' && (
                                 <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800 shadow-2xs">
                                     <button
@@ -2886,10 +2868,8 @@ export default function AnalyticsIndex({
                         </div>
                     )}
 
-                    {/* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
-                        TAB 3: CAPAIAN IKU OPD (Baris 2 Panduan)
-                    = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  */}
-                    {activeTab === 'iku' && (
+                    {/* TAB 3: CAPAIAN IKU OPD (DISEMBUNYIKAN TOTAL) */}
+                    {false && activeTab === 'iku' && (
                         <div className="p-4 space-y-4">
                             {/* 6 KARTU UTAMA STATISTIK */}
                             <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
@@ -5611,7 +5591,7 @@ export default function AnalyticsIndex({
                             {/* 5 EWS INDIKATOR MULTI-KRITERIA */}
                             <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
                                 <div className="rounded-lg border border-rose-200 bg-rose-50/50 p-3 text-center shadow-2xs">
-                                    <p className="text-[10px] font-semibold text-rose-700 uppercase">IKU OPD Kritis</p>
+                                    <p className="text-[10px] font-semibold text-rose-700 uppercase">Indikator Kritis</p>
                                     <p className="text-xl font-black text-rose-900 mt-0.5">{risk_map_matrix?.summary.critical_iku_count ?? 0}</p>
                                     <span className="text-[10px] text-rose-600">Perlu Penanganan Cepat</span>
                                 </div>
