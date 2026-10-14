@@ -20,6 +20,9 @@ class UserSeeder extends Seeder
     {
         $rootOpd = Organization::where('code', 'OPD-INDUK')->firstOrFail();
         $sekretariat = Organization::where('code', 'SEKRETARIAT')->firstOrFail();
+        $subbagProg = Organization::where('code', 'SUBBAG-PROG')->first() ?? $sekretariat;
+        $subbagKeu = Organization::where('code', 'SUBBAG-KEU')->first() ?? $sekretariat;
+        $subbagUmum = Organization::where('code', 'SUBBAG-UMUM')->first() ?? $sekretariat;
 
         // 4 Bidang Teknis
         $bidangCK = Organization::where('code', 'BIDANG-CK')->firstOrFail();
@@ -71,7 +74,7 @@ class UserSeeder extends Seeder
                 'role' => RoleEnum::AdminOpd->value,
             ],
 
-            // ══ 2. SEKRETARIAT DINAS ═════════════════════════════════════════
+            // ══ 2. SEKRETARIAT DINAS & 3 SUBBAGIAN ═══════════════════════════
             [
                 'email' => 'kepala.sekretariat@esakip.local',
                 'name' => 'Sekretaris Dinas PUPR Mimika',
@@ -84,6 +87,27 @@ class UserSeeder extends Seeder
                 'name' => 'Admin Sekretariat Dinas PUPR',
                 'nip' => '198804042008041004',
                 'organization_id' => $sekretariat->id,
+                'role' => RoleEnum::AdminSekretariat->value,
+            ],
+            [
+                'email' => 'kasubbag.program@esakip.local',
+                'name' => 'Kasubbag Program dan Evaluasi',
+                'nip' => '198603122009031006',
+                'organization_id' => $subbagProg->id,
+                'role' => RoleEnum::AdminSekretariat->value,
+            ],
+            [
+                'email' => 'kasubbag.keuangan@esakip.local',
+                'name' => 'Kasubbag Keuangan dan Aset',
+                'nip' => '198704152010042007',
+                'organization_id' => $subbagKeu->id,
+                'role' => RoleEnum::AdminSekretariat->value,
+            ],
+            [
+                'email' => 'kasubbag.umum@esakip.local',
+                'name' => 'Kasubbag Umum dan Kepegawaian',
+                'nip' => '198805202011051008',
+                'organization_id' => $subbagUmum->id,
                 'role' => RoleEnum::AdminSekretariat->value,
             ],
 

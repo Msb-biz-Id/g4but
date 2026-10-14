@@ -713,34 +713,21 @@ class DashboardController extends Controller
             ];
         }
 
-        // 3. Kinerja IKU OPD
-        $ikuBelumTercapai = ($ikuStatusCount['perlu_perhatian'] ?? 0)
-                            + ($ikuStatusCount['terlambat'] ?? 0)
-                            + ($ikuStatusCount['kritis'] ?? 0);
-        if ($ikuBelumTercapai > 0) {
-            $list[] = [
-                'uraian' => "{$ikuBelumTercapai} indikator IKU OPD belum mencapai target",
-                'kategori' => 'Kinerja',
-                'jumlah' => $ikuBelumTercapai,
-                'status' => ($ikuStatusCount['kritis'] ?? 0) > 0 ? 'Kritis' : 'Perlu Perhatian',
-            ];
-        }
-
-        // 4. Kinerja OPD Kritis (< 50%)
+        // 3. Kinerja Unit Kerja Kritis (< 50%)
         $kritisCount = array_sum(array_column($opdRanking, 'kritis'));
         if ($kritisCount > 0) {
             $list[] = [
-                'uraian' => "{$kritisCount} indikator kinerja OPD berstatus kritis (< 50%)",
+                'uraian' => "{$kritisCount} indikator kinerja unit kerja berstatus kritis (< 50%)",
                 'kategori' => 'Kinerja',
                 'jumlah' => $kritisCount,
                 'status' => 'Kritis',
             ];
         }
 
-        // 5. SAKIP Predikat Rendah
+        // 4. SAKIP Predikat Rendah
         if ($sakipDistribusi['predikat_CC_bawah'] > 0) {
             $list[] = [
-                'uraian' => "{$sakipDistribusi['predikat_CC_bawah']} OPD memiliki nilai SAKIP CC atau lebih rendah",
+                'uraian' => "{$sakipDistribusi['predikat_CC_bawah']} Unit Kerja memiliki nilai SAKIP CC atau lebih rendah",
                 'kategori' => 'SAKIP',
                 'jumlah' => $sakipDistribusi['predikat_CC_bawah'],
                 'status' => 'Kritis',

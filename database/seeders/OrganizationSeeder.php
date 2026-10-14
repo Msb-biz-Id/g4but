@@ -54,6 +54,27 @@ class OrganizationSeeder extends Seeder
             ]
         );
 
+        // 2.1 Subbagian di bawah Sekretariat (type = 'sekretariat')
+        $subbagDefinitions = [
+            ['code' => 'SUBBAG-PROG', 'name' => 'Subbagian Program dan Evaluasi', 'short_name' => 'Program & Evaluasi'],
+            ['code' => 'SUBBAG-KEU', 'name' => 'Subbagian Keuangan dan Pengelolaan Aset', 'short_name' => 'Keuangan & Aset'],
+            ['code' => 'SUBBAG-UMUM', 'name' => 'Subbagian Umum dan Kepegawaian', 'short_name' => 'Umum & Kepegawaian'],
+        ];
+
+        foreach ($subbagDefinitions as $subDef) {
+            Organization::updateOrCreate(
+                ['code' => $subDef['code']],
+                [
+                    'name' => $subDef['name'],
+                    'short_name' => $subDef['short_name'],
+                    'type' => 'sekretariat',
+                    'parent_id' => $sekretariat->id,
+                    'address' => 'Gedung Kantor Dinas PUPR Lantai 1, Timika',
+                    'is_active' => true,
+                ]
+            );
+        }
+
         // 3. 4 Bidang Teknis Utama Dinas PUPR Mimika
         $bidangDefinitions = [
             [

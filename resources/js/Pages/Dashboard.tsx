@@ -1113,7 +1113,7 @@ export default function Dashboard({
                     <div>
                         <p className="font-bold text-emerald-950">Membutuhkan Data Real Mentah atau Download PDF?</p>
                         <p className="text-[11px] text-emerald-800">
-                            Akses <strong>Dashboard Analitik</strong> untuk melihat data tabular 5 submodul (Tren, Deviasi, Komparasi OPD, Analisis IKU & Heatmap), lengkap dengan tombol <strong>Salin ke Excel (Ctrl+V)</strong> dan <strong>Download PDF</strong>.
+                            Akses <strong>Dashboard Analitik</strong> untuk melihat data tabular submodul (Tren, Deviasi, Komparasi Unit Kerja & Heatmap), lengkap dengan tombol <strong>Salin ke Excel (Ctrl+V)</strong> dan <strong>Download PDF</strong>.
                         </p>
                     </div>
                 </div>
@@ -1128,10 +1128,10 @@ export default function Dashboard({
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  GRID KPI - 9 KARTU, DIBAGI 2 BARIS (5 ATAS / 4 BAWAH)
+             *  GRID KPI - 7 KARTU UTAMA DINAS & UNIT KERJA
              * ─────────────────────────────────────────────────────────────────
              */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 mb-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 mb-3">
 
                 {/* 1. Kelengkapan SAKIP OPD (Klik Detail Matriks 13 Dokumen) */}
                 <div
@@ -1228,20 +1228,7 @@ export default function Dashboard({
                     </div>
                 </Link>
 
-                {/* 5. Rata-rata Capaian Kinerja OPD */}
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 flex flex-col justify-between gap-1.5">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                        <span className="text-lg sm:text-xl">📊</span>
-                        <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Rata-rata Capaian OPD</p>
-                    </div>
-                    <div>
-                        <p className="text-xl sm:text-2xl font-extrabold text-gray-800">{kpi.rata_capaian_opd.pct.toFixed(2)}%</p>
-                        <div className="mt-1 flex items-center justify-between">
-                            <StatusBadge status={kpi.rata_capaian_opd.status} />
-                            <span className="text-xs sm:text-[10px] text-gray-400 font-medium">Seluruh OPD</span>
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* 6. Nilai SAKIP OPD (Modul Evaluasi - PermenPANRB 88/2021) */}
                 <Link
@@ -1337,21 +1324,13 @@ export default function Dashboard({
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  ROW 2 - DONUT CHARTS (IKU OPD & Capaian Kinerja OPD)
+             *  ROW 2 - STATUS KINERJA BIDANG/SEKSI & TREN PKO DINAS PUPR
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-3">
                 <Card title={`Status Kinerja Bidang & Seksi (${opd_status.total} Unit)`} action="Lihat Detail" actionHref={`${route('analytics.index')}?tab=opd`}>
                     <DonutChart data={opd_status} label="Unit" />
                 </Card>
-            </div>
-
-            {/*
-             * ─────────────────────────────────────────────────────────────────
-             *  ROW 3 - TREND CHARTS (Tren IKU & Tren PKO OPD)
-             * ─────────────────────────────────────────────────────────────────
-             */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-3">
                 <Card title="Tren Nilai PKO Dinas PUPR" action="Lihat Detail" actionHref={`${route('analytics.index')}?tab=pko`}>
                     <PkoTrendChart data={pko_trend} />
                 </Card>

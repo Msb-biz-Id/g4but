@@ -310,20 +310,7 @@ export default function Authenticated({
                     active: route().current('organizations*'),
                     show: canViewOrganizations,
                 },
-                {
-                    href: route('indicators.index'),
-                    label: 'Indikator Kinerja',
-                    icon: Target,
-                    active: route().current('indicators*'),
-                    show: false, // 🔒 HIDE sesuai permintaan
-                },
-                {
-                    href: route('units.index'),
-                    label: 'Satuan',
-                    icon: Ruler,
-                    active: route().current('units*'),
-                    show: false, // 🔒 HIDE sesuai permintaan
-                },
+
                 {
                     href: route('periods.index'),
                     label: 'Periode',
@@ -473,13 +460,7 @@ export default function Authenticated({
                     active: route().current('ai.templates*'),
                     show: canManageAiTemplates && !MVP_PHASE_1, // 🔒 HIDE Phase 2 - internal developer tool
                 },
-                {
-                    href: route('predictions.index'),
-                    label: 'AI Prediction',
-                    icon: TrendingUp,
-                    active: route().current('predictions*'),
-                    show: false, // 🔒 HIDE sesuai permintaan
-                },
+
             ],
         },
 
@@ -606,20 +587,7 @@ export default function Authenticated({
                     active: route().current('roles*'),
                     show: canViewRoles, // ✅ TAMPIL - manajemen role
                 },
-                {
-                    href: route('integrations.index'),
-                    label: 'Integrasi',
-                    icon: Plug,
-                    active: route().current('integrations*'),
-                    show: false, // 🔒 HIDE sesuai permintaan
-                },
-                {
-                    href: route('readiness.index'),
-                    label: 'Go-Live Readiness',
-                    icon: Rocket,
-                    active: route().current('readiness*'),
-                    show: false, // 🔒 HIDE sesuai permintaan
-                },
+
             ],
         },
 

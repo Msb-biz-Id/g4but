@@ -54,8 +54,14 @@ class UnitDataIsolationTest extends TestCase
         $adminAccessible = $this->authService->accessibleOrganizationIds($adminSekr);
         $kepalaAccessible = $this->authService->accessibleOrganizationIds($kepalaSekr);
 
-        $this->assertEquals([$sekretariat->id], $adminAccessible);
-        $this->assertEquals([$sekretariat->id], $kepalaAccessible);
+        $this->assertContains($sekretariat->id, $adminAccessible);
+        $this->assertContains($sekretariat->id, $kepalaAccessible);
+
+        $bidang = Organization::whereIn('code', ['BIDANG-CK', 'BIDANG-1'])->first();
+        if ($bidang) {
+            $this->assertNotContains($bidang->id, $adminAccessible);
+            $this->assertNotContains($bidang->id, $kepalaAccessible);
+        }
     }
 
     public function test_bidang_users_isolated_to_their_respective_bidang(): void
