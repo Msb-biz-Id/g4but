@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     // ── Registrasi mandiri DINONAKTIFKAN (FR-SEC-REG) ─────────────────────────
-    // e-KASUARI adalah sistem internal pemerintah. User hanya boleh dibuat oleh
+    // e-SAKIP adalah sistem internal pemerintah. User hanya boleh dibuat oleh
     // Super Admin melalui menu Manajemen User → Tambah User.
     // Jika registrasi publik diperlukan di masa depan, uncomment baris di bawah
     // dan tambahkan mekanisme undangan/verifikasi yang sesuai.

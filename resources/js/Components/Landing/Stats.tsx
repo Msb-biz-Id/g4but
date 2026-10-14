@@ -1,19 +1,24 @@
 import { useCountUp } from '@/hooks/useCountUp';
 import { Target, Building2, CheckCircle2, FileText, ArrowUpRight, Sparkles } from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { PageProps } from '@/types';
 import Reveal from './Reveal';
 import { LandingStats } from './types';
 
 const formatId = (n: number) => n.toLocaleString('id-ID');
 
-const pilotOpds = [
-    { code: 'BAPPEDA', name: 'Bappeda Papua Barat', role: 'Perencanaan Pembangunan & IKU' },
-    { code: 'INSPEKTORAT', name: 'Inspektorat Papua Barat', role: 'Pengawasan, Review & LHE SAKIP' },
-    { code: 'KOPERASI', name: 'Dinas Koperasi & UKM', role: 'Pemberdayaan Ekonomi Kerakyatan' },
-    { code: 'PUPR', name: 'Dinas PUPR Papua Barat', role: 'Infrastruktur & Tata Ruang' },
+const BIDANG_TEKNIS_PUPR = [
+    { code: 'BM', name: 'Bina Marga', role: 'Jalan & Jembatan' },
+    { code: 'CK', name: 'Cipta Karya', role: 'Gedung & SPAM Air' },
+    { code: 'SDA', name: 'Sumber Daya Air', role: 'Drainase & Banjir' },
+    { code: 'TR', name: 'Tata Ruang', role: 'RTRW & Zonasi' },
+    { code: 'BK', name: 'Bina Konstruksi', role: 'Mutu & K3 Proyek' },
 ];
 
 export default function Stats({ stats }: { stats: LandingStats }) {
+    const { appConfig } = usePage<PageProps>().props;
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+
     const indicators = useCountUp(stats.indicators);
     const organizations = useCountUp(stats.organizations);
     const realizations = useCountUp(stats.realizations);
@@ -33,8 +38,8 @@ export default function Stats({ stats }: { stats: LandingStats }) {
         {
             ref: organizations.ref,
             value: organizations.value,
-            label: 'OPD Provinsi Papua Barat',
-            note: 'Dinas, Badan & Biro Pemprov',
+            label: 'Perangkat Daerah Terdaftar',
+            note: 'Dinas, Badan & Unit Kerja',
             icon: Building2,
             iconColor: 'text-primary bg-primary/10 dark:bg-primary/20 dark:text-primary',
             badge: 'Terintegrasi',
@@ -46,7 +51,7 @@ export default function Stats({ stats }: { stats: LandingStats }) {
             label: 'Realisasi Tervalidasi',
             note: 'Capaian fisik & data dukung',
             icon: CheckCircle2,
-            iconColor: 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400',
+            iconColor: 'text-[#002B49] bg-amber-100 dark:bg-amber-950/60 dark:text-[#FFB800]',
             badge: 'Tervalidasi',
             href: null,
         },
@@ -116,40 +121,41 @@ export default function Stats({ stats }: { stats: LandingStats }) {
                     })}
                 </div>
 
-                {/* Pilot Project 4 OPD Showcase */}
+                {/* 5 Matra Bidang PUPR Mimika Showcase */}
                 <Reveal delay={2} className="mt-8">
-                    <div className="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-5 shadow-2xs dark:border-border dark:bg-card">
+                    <div className="rounded-2xl border border-amber-500/30 bg-slate-50/90 dark:bg-card p-5 shadow-sm">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <div className="flex items-start sm:items-center gap-3">
-                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFB800]/15 text-amber-700 dark:text-[#FFB800]">
                                     <Sparkles className="h-5 w-5 stroke-[2]" />
                                 </span>
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-bold text-gray-900 dark:text-foreground">
-                                            Fokus Implementasi Awal • 4 OPD Pilot Project
+                                            5 Matra Teknis Terpadu • Dinas PUPR Mimika
                                         </span>
-                                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-800 border border-amber-200/80 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-900/60">
-                                            Target Uji Coba
+                                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-800 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-900">
+                                            Bumi Amungme &amp; Kamoro
                                         </span>
                                     </div>
                                     <p className="mt-0.5 text-xs text-gray-500 dark:text-muted-foreground">
-                                        Tahap percontohan integrasi cascading, pelaporan realisasi, dan evaluasi SAKIP Pemerintah Provinsi Papua Barat
+                                        Penyelarasan target IKU, pengawasan bukti fisik lapangan, dan serapan anggaran dinas
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                                {pilotOpds.map((opd) => (
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                                {BIDANG_TEKNIS_PUPR.map((bidang) => (
                                     <div
-                                        key={opd.code}
-                                        className="rounded-xl border border-slate-200/80 bg-white p-2.5 text-left shadow-2xs dark:border-border dark:bg-muted/30"
+                                        key={bidang.code}
+                                        className="rounded-xl border border-slate-200/80 bg-white p-2.5 text-left shadow-2xs dark:border-border dark:bg-muted/30 hover:border-[#FFB800]/50 transition-colors"
                                     >
-                                        <div className="text-[11px] font-bold text-gray-900 dark:text-foreground truncate">
-                                            {opd.name}
+                                        <div className="text-[11px] font-bold text-gray-900 dark:text-foreground truncate flex items-center gap-1.5">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[#FFB800]" />
+                                            <span>{bidang.name}</span>
                                         </div>
                                         <div className="mt-0.5 text-[10px] text-gray-500 dark:text-muted-foreground truncate">
-                                            {opd.role}
+                                            {bidang.role}
                                         </div>
                                     </div>
                                 ))}

@@ -28,10 +28,10 @@ class TargetController extends Controller
         $this->authorize('view-targets');
 
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
-        if ($request->filled('organization_id') && ! $isProvincialAdmin && ! in_array($request->integer('organization_id'), $accessibleOrgIds, true)) {
+        if ($request->filled('organization_id') && ! $isOpdAdmin && ! in_array($request->integer('organization_id'), $accessibleOrgIds, true)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
         }
 
@@ -45,7 +45,7 @@ class TargetController extends Controller
                 'organization:id,code,name',
                 'planningPeriod:id,code,name,year',
             ])
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))
             ->when($request->filled('period_id'), fn ($q) => $q->where('planning_period_id', $request->integer('period_id')))
             ->when($request->filled('organization_id'), fn ($q) => $q->where('organization_id', $request->integer('organization_id')))
             ->latest('id')
@@ -71,7 +71,7 @@ class TargetController extends Controller
         $periodId = $request->integer('period_id');
 
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($request->user());
-        $isProvincialAdmin = $this->authorization->isProvincialAdmin($request->user());
+        $isOpdAdmin = $this->authorization->isOpdAdmin($request->user());
 
         $organizations = Organization::query()
             ->whereIn('id', $accessibleOrgIds)
@@ -82,7 +82,7 @@ class TargetController extends Controller
 
         $indicators = Indicator::query()
             ->where('status', 'active')
-            ->when(! $isProvincialAdmin, function ($q) use ($accessibleOrgIds) {
+            ->when(! $isOpdAdmin, function ($q) use ($accessibleOrgIds) {
                 $q->where(function ($sub) use ($accessibleOrgIds) {
                     $sub->whereIn('owner_organization_id', $accessibleOrgIds)
                         ->orWhereNull('owner_organization_id');
@@ -131,12 +131,12 @@ class TargetController extends Controller
         $this->authorize('manage-targets');
 
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
 
         $this->authorization->canAccessOrganization($user, $target->organization_id)
             ?: abort(403, 'Di luar lingkup organisasi Anda.');
 
-        if ($target->status === 'locked' && ! $isProvincialAdmin) {
+        if ($target->status === 'locked' && ! $isOpdAdmin) {
             abort(403, 'Target yang sudah dikunci tidak dapat diubah.');
         }
 
@@ -145,8 +145,8 @@ class TargetController extends Controller
             'status' => ['required', 'string', 'max:20', Rule::in(['draft', 'approved', 'locked'])],
         ]);
 
-        if ($validated['status'] === 'locked' && ! $isProvincialAdmin) {
-            abort(403, 'Hanya Administrator Provinsi yang dapat mengunci target indikator.');
+        if ($validated['status'] === 'locked' && ! $isOpdAdmin) {
+            abort(403, 'Hanya Admin OPD yang dapat mengunci target indikator.');
         }
 
         DB::transaction(function () use ($validated, $target, $request) {

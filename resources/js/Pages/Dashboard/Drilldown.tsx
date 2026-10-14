@@ -66,7 +66,7 @@ function TrafficLight({ color }: { color: keyof typeof TL_STYLE }) {
 export default function DashboardDrilldown({ organization, period, periods, details, summary, auth }: Props) {
     return (
         <AuthenticatedLayout header="Detail OPD">
-            <Head title={`Detail — ${organization.name}`} />
+            <Head title={`Detail - ${organization.name}`} />
 
             <div className="space-y-4">
                 {/* Breadcrumb */}
@@ -111,7 +111,7 @@ export default function DashboardDrilldown({ organization, period, periods, deta
                         { label: '🟢 Tercapai', value: summary.green, cls: 'text-emerald-700' },
                         { label: '🟡 Perlu Perhatian', value: summary.yellow, cls: 'text-amber-700' },
                         { label: '🔴 Kritis', value: summary.red, cls: 'text-rose-700' },
-                        { label: 'Rata-rata Capaian', value: summary.avg_pct !== null ? `${summary.avg_pct.toFixed(1)}%` : '—', cls: '' },
+                        { label: 'Rata-rata Capaian', value: summary.avg_pct !== null ? `${summary.avg_pct.toFixed(1)}%` : '-', cls: '' },
                     ].map((card) => (
                         <Card key={card.label}>
                             <CardContent className="pt-4 text-center">
@@ -159,13 +159,13 @@ export default function DashboardDrilldown({ organization, period, periods, deta
                                             <div className="font-medium text-sm">{row.indicator_name}</div>
                                         </TableCell>
                                         <TableCell className="text-right text-sm">
-                                            {row.target_value !== null ? `${row.target_value} ${row.unit}` : '—'}
+                                            {row.target_value !== null ? `${row.target_value} ${row.unit}` : '-'}
                                         </TableCell>
                                         <TableCell className="text-right text-sm">
-                                            {row.actual_value !== null ? `${row.actual_value} ${row.unit}` : '—'}
+                                            {row.actual_value !== null ? `${row.actual_value} ${row.unit}` : '-'}
                                         </TableCell>
                                         <TableCell className="text-right font-semibold">
-                                            {row.achievement_pct !== null ? `${row.achievement_pct.toFixed(1)}%` : '—'}
+                                            {row.achievement_pct !== null ? `${row.achievement_pct.toFixed(1)}%` : '-'}
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <TrafficLight color={row.traffic_light} />
@@ -173,7 +173,7 @@ export default function DashboardDrilldown({ organization, period, periods, deta
                                         <TableCell className="text-center text-sm">
                                             {row.evidence_count > 0
                                                 ? <Badge variant="outline" className="text-xs">{row.evidence_count} file</Badge>
-                                                : <span className="text-muted-foreground text-xs">—</span>
+                                                : <span className="text-muted-foreground text-xs">-</span>
                                             }
                                         </TableCell>
                                         <TableCell>

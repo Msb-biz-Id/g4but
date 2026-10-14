@@ -13,6 +13,7 @@ import {
     Printer, Shield, Sparkles, TrendingUp, Zap,
 } from 'lucide-react';
 import { cn, formatDateTime } from '@/lib/utils';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -87,7 +88,7 @@ function convertObjectToNarrative(obj: any, level: number = 0): string {
             out += (level === 0 ? `### ${title}\n` : `${title}:\n`);
             for (const item of v) {
                 if (typeof item === 'object' && item !== null) {
-                    const line = Object.values(item).filter(x => typeof x === 'string' || typeof x === 'number').join(' — ');
+                    const line = Object.values(item).filter(x => typeof x === 'string' || typeof x === 'number').join(' - ');
                     if (line) out += `- ${line}\n`;
                 } else {
                     out += `- ${item}\n`;
@@ -241,7 +242,7 @@ export default function AiIndex({
             if (displayParsed.rekomendasi?.length > 0) {
                 txt += 'Rekomendasi Tindak Lanjut:\n' + displayParsed.rekomendasi.map((r) => `- ${r.tindakan}`).join('\n') + '\n\n';
             }
-            txt += 'Sumber: analisis otomatis e-KASUARI';
+            txt += 'Sumber: analisis otomatis e-SAKIP';
             return txt.trim();
         }
         return formatNarrativeText(currentResult.output || '');
@@ -321,38 +322,34 @@ export default function AiIndex({
 
             <div className="space-y-6 pb-12">
                 {/* Header Formal Eksekutif */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border pb-5">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center p-2 rounded-lg bg-primary/10 text-primary">
-                                <Bot className="w-6 h-6" />
-                            </span>
-                            <h1 className="text-2xl font-bold tracking-tight text-foreground">Pusat Analisis & Asisten AI</h1>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Sistem pendukung keputusan analitik berbasis data kinerja dan akuntabilitas Perangkat Daerah (OPD Induk, Sekretariat, dan Bidang).
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        {kuotaHarian && (
-                            <div className="text-right border border-border rounded-lg px-3 py-1.5 bg-card">
-                                <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Kuota Analisis Hari Ini</div>
-                                <div className="text-sm font-bold text-foreground">
-                                    {kuotaHarian.unlimited ? 'Akses Tanpa Batas' : `${kuotaHarian.terpakai} / ${kuotaHarian.kuota_maksimal} kali`}
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'AI Asisten & Analitik' },
+                        { label: 'Pusat Analisis' },
+                    ]}
+                    title="Pusat Analisis & Asisten AI"
+                    description="Sistem pendukung keputusan analitik berbasis data kinerja dan akuntabilitas Perangkat Daerah."
+                    actions={
+                        <div className="flex items-center gap-3">
+                            {kuotaHarian && (
+                                <div className="text-right border border-border rounded-lg px-3 py-1.5 bg-card">
+                                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Kuota Analisis Hari Ini</div>
+                                    <div className="text-xs sm:text-sm font-bold text-foreground">
+                                        {kuotaHarian.unlimited ? 'Akses Tanpa Batas' : `${kuotaHarian.terpakai} / ${kuotaHarian.kuota_maksimal} kali`}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                        {canManage && (
-                            <Link href={route('ai.templates')}>
-                                <Button variant="outline" size="sm" className="gap-1.5">
-                                    <Zap className="w-4 h-4" />
-                                    Kelola Template
+                            )}
+                            {canManage && (
+                                <Button asChild variant="outline" size="sm" className="gap-1.5">
+                                    <Link href={route('ai.templates')}>
+                                        <Zap className="w-4 h-4 text-primary" />
+                                        Kelola Template
+                                    </Link>
                                 </Button>
-                            </Link>
-                        )}
-                    </div>
-                </div>
+                            )}
+                        </div>
+                    }
+                />
 
                 {/* TATA LETAK 2 KOLOM (Kiri: Hasil Analisis & Export | Kanan: Tab & Form Eksekusi) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -453,7 +450,7 @@ export default function AiIndex({
                                         <div className="border-b border-border pb-4">
                                             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground mb-1">
                                                 <span>Perangkat Daerah</span>
-                                                <span>Sistem e-KASUARI SAKIP</span>
+                                                <span>Sistem e-SAKIP SAKIP</span>
                                             </div>
                                             <h3 className="text-lg font-bold text-foreground">
                                                 {currentTabInfo.label}
@@ -522,7 +519,7 @@ export default function AiIndex({
 
                                         {/* Footer Legalitas & Verifikasi Dokumen */}
                                         <div className="pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[11px] text-muted-foreground">
-                                            <span>Dokumen resmi hasil audit analitik data SAKIP e-KASUARI.</span>
+                                            <span>Dokumen resmi hasil audit analitik data SAKIP e-SAKIP.</span>
                                             <span>Sifat Dokumen: Rahasia &amp; Terbatas (Aparatur Terverifikasi)</span>
                                         </div>
                                     </div>
@@ -741,7 +738,7 @@ export default function AiIndex({
                                                     {AI_TABS.find((t) => t.id === log.feature)?.label ?? log.feature}
                                                 </div>
                                                 <div className="text-[10px] text-muted-foreground">
-                                                    {log.created_at ? formatDateTime(log.created_at) : '—'} • {log.user?.name ?? 'Sistem'}
+                                                    {log.created_at ? formatDateTime(log.created_at) : '-'} • {log.user?.name ?? 'Sistem'}
                                                 </div>
                                             </div>
                                             <Badge

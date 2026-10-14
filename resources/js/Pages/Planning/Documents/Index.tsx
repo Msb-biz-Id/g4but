@@ -45,8 +45,8 @@ interface Props extends PageProps {
     periods: Period[];
     types: { value: string; label: string }[];
     filters: { type?: string; organization_id?: string; year?: string; periode_type?: string; per_page?: number };
-    canManage?: boolean; // true = Super Admin — bisa ubah periode_type
-    isProvincialAdmin?: boolean;
+    canManage?: boolean; // true = Super Admin - bisa ubah periode_type
+    isOpdAdmin?: boolean;
 }
 
 // G-17: label badge periode
@@ -55,7 +55,7 @@ const PERIODE_BADGE: Record<string, { label: string; className: string }> = {
     'tahunan':   { label: 'Tahunan', className: 'bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300' },
 };
 
-export default function PlanningDocumentsIndex({ documents, organizations, periods, types, filters, auth, canManage = false, isProvincialAdmin = false }: Props) {
+export default function PlanningDocumentsIndex({ documents, organizations, periods, types, filters, auth, canManage = false, isOpdAdmin = false }: Props) {
     const [open, setOpen]           = useState(false);
     const [editing, setEditing]     = useState<Document | null>(null);
     const [deleting, setDeleting]   = useState<Document | null>(null);
@@ -63,10 +63,10 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
 
     const form = useForm({
         code: '',
-        type: 'rpjmd',
+        type: 'renstra',
         periode_type: 'tahunan' as '5_tahunan' | 'tahunan', // G-17
         title: '',
-        organization_id: !isProvincialAdmin && organizations.length > 0 ? organizations[0].id.toString() : '',
+        organization_id: !isOpdAdmin && organizations.length > 0 ? organizations[0].id.toString() : '',
         planning_period_id: '',
         year: new Date().getFullYear(),
         start_date: '',
@@ -76,7 +76,7 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
 
     const openCreate = () => {
         form.reset();
-        if (!isProvincialAdmin && organizations.length > 0) {
+        if (!isOpdAdmin && organizations.length > 0) {
             form.setData('organization_id', organizations[0].id.toString());
         }
         setEditing(null);
@@ -139,14 +139,14 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
 
     return (
         <AuthenticatedLayout header="Dokumen Perencanaan">
-            <Head title="Dokumen Perencanaan — RPJMD / Renstra / Renja" />
+            <Head title="Dokumen Perencanaan - Renstra / Renja / PK" />
 
             <div className="space-y-4">
                 {/* Header */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-xl font-semibold">Dokumen Perencanaan</h1>
-                        <p className="text-sm text-muted-foreground">RPJMD · Renstra · Renja</p>
+                        <p className="text-sm text-muted-foreground">Renstra · Renja · Perjanjian Kinerja</p>
                     </div>
                     <Button onClick={openCreate} className="w-full sm:w-auto justify-center">
                         <Plus className="mr-2 h-4 w-4" /> Tambah Dokumen
@@ -192,7 +192,7 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
                                     className="w-full"
                                 >
                                     <option value="">Semua OPD</option>
-                                    {organizations.map((o) => <option key={o.id} value={o.id}>{o.code} — {o.name}</option>)}
+                                    {organizations.map((o) => <option key={o.id} value={o.id}>{o.code} - {o.name}</option>)}
                                 </SelectNative>
                             </div>
                             <div className="lg:col-span-3">
@@ -271,7 +271,7 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
                                                 </span>
                                             </TableCell>
                                             <TableCell className="max-w-xs truncate">{doc.title}</TableCell>
-                                            <TableCell className="text-sm">{doc.organization?.name ?? '—'}</TableCell>
+                                            <TableCell className="text-sm">{doc.organization?.name ?? '-'}</TableCell>
                                             <TableCell>{doc.year}</TableCell>
                                             <TableCell>
                                                 <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
@@ -280,7 +280,7 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
                                                 <div className="flex justify-end gap-1">
                                                     {doc.status === 'draft' && (
                                                         <>
-                                                            {isProvincialAdmin && (
+                                                            {isOpdAdmin && (
                                                                 <Button size="sm" variant="ghost" onClick={() => setApproving(doc)} title="Setujui Dokumen">
                                                                     <CheckCircle2 className="h-4 w-4 text-green-600" />
                                                                 </Button>
@@ -326,7 +326,7 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <Label>Kode</Label>
-                                <Input placeholder="RPJMD-2025" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} />
+                                <Input placeholder="RENSTRA-2025" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} />
                                 {form.errors.code && <p className="text-xs text-destructive">{form.errors.code}</p>}
                             </div>
                             <div className="space-y-1.5">
@@ -337,7 +337,7 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
                             </div>
                         </div>
 
-                        {/* G-17: Periode Dokumen — hanya Super Admin */}
+                        {/* G-17: Periode Dokumen - hanya Super Admin */}
                         {canManage && (
                             <div className="space-y-1.5">
                                 <Label>Periode Dokumen</Label>
@@ -346,7 +346,7 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
                                     onChange={(e) => form.setData('periode_type', e.target.value as '5_tahunan' | 'tahunan')}
                                 >
                                     <option value="tahunan">Tahunan (default)</option>
-                                    <option value="5_tahunan">5 Tahunan (RPJMD, Renstra)</option>
+                                    <option value="5_tahunan">5 Tahunan (Renstra)</option>
                                 </SelectNative>
                                 <p className="text-xs text-muted-foreground">
                                     Sistem akan mengisi otomatis. Ubah hanya jika diperlukan.
@@ -364,10 +364,10 @@ export default function PlanningDocumentsIndex({ documents, organizations, perio
                                 <SelectNative
                                     value={form.data.organization_id}
                                     onChange={(e) => form.setData('organization_id', e.target.value)}
-                                    disabled={!isProvincialAdmin && organizations.length <= 1}
+                                    disabled={!isOpdAdmin && organizations.length <= 1}
                                 >
-                                    {isProvincialAdmin && <option value="">— Provinsi —</option>}
-                                    {organizations.map((o) => <option key={o.id} value={o.id}>{o.code} — {o.name}</option>)}
+                                    {isOpdAdmin && <option value="">- Semua Unit -</option>}
+                                    {organizations.map((o) => <option key={o.id} value={o.id}>{o.code} - {o.name}</option>)}
                                 </SelectNative>
                             </div>
                             <div className="space-y-1.5">

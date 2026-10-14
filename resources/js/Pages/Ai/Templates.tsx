@@ -8,9 +8,11 @@ import { Label } from '@/Components/ui/label';
 import { SelectNative } from '@/Components/ui/select-native';
 import { Textarea } from '@/Components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import {Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { formatDateTime } from '@/lib/utils';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import { ArrowLeft, Sparkles, Plus } from 'lucide-react';
 
 interface TemplateItem {
  id: number;
@@ -56,19 +58,30 @@ export default function AiTemplates({ auth, templates, features }: Props) {
 
  const groups = groupByFeature();
 
- return (
- <AuthenticatedLayout
- header="Template Prompt AI"
- >
- <Head title="Template AI" />
- <div className="py-12">
- <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
- <div className="mb-4 flex items-center justify-between">
- <Badge variant="info">FR-AI-007 / AIG-006 — Prompt template ber-versi</Badge>
- <Button variant="outline" size="sm" asChild>
- <Link href={route('ai.index')}>Kembali ke AI</Link>
- </Button>
- </div>
+    return (
+        <AuthenticatedLayout>
+            <Head title="Template AI" />
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Template Prompt AI"
+                    description="Kelola dan buat versi prompt template terstandarisasi untuk analisis rekomendasi SAKIP otomatis."
+                    breadcrumbs={[
+                        { label: 'Kecerdasan Buatan' },
+                        { label: 'Asisten AI', href: route('ai.index') },
+                        { label: 'Template Prompt' },
+                    ]}
+                    actions={
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={route('ai.index')} className="gap-1.5">
+                                <ArrowLeft className="h-4 w-4" />
+                                Kembali ke AI
+                            </Link>
+                        </Button>
+                    }
+                />
+
+                <div className="mx-auto max-w-4xl space-y-6">
 
  <Card className="mb-6">
  <CardHeader>

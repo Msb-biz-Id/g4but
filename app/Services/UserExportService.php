@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AppConfig;
 use App\Models\User;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
@@ -215,8 +216,10 @@ class UserExportService
         $sheet->getRowDimension(1)->setRowHeight(32);
 
         // Subtitle row
+        $appName = AppConfig::where('key', 'app_name')->value('value') ?: config('app.name', 'e-SAKIP');
+        $instansiName = AppConfig::where('key', 'instansi_name')->value('value') ?: 'Pemerintah Daerah';
         $sheet->mergeCells('A2:J2');
-        $sheet->setCellValue('A2', 'E-Kasuari — Sistem Akuntabilitas Kinerja Instansi Pemerintah | Diekspor: '.now()->translatedFormat('d F Y H:i'));
+        $sheet->setCellValue('A2', "{$appName} — Sistem Akuntabilitas Kinerja {$instansiName} | Diekspor: ".now()->translatedFormat('d F Y H:i'));
         $sheet->getStyle('A2')->getFont()->setSize(9)->setItalic(true)->setColor(new Color('FF64748B'));
         $sheet->getRowDimension(2)->setRowHeight(18);
 

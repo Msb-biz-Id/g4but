@@ -7,7 +7,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { PageProps } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEvent, useState, useMemo } from 'react';
 import {
     CheckSquare2,
@@ -49,10 +49,10 @@ const MODULE_INFO: Record<string, { title: string; desc: string }> = {
     },
     master_data: {
         title: 'Data Master (Organisasi, Periode & Satuan)',
-        desc: 'Pengelolaan daftar Perangkat Daerah (OPD), periode RPJMD 5 tahunan, dan kamus indikator.',
+        desc: 'Pengelolaan daftar Perangkat Daerah (OPD), periode perencanaan 5 tahunan (Renstra), dan kamus indikator.',
     },
     planning: {
-        title: 'Perencanaan Kinerja (RPJMD, Renstra & Renja)',
+        title: 'Perencanaan Kinerja (Renstra & Renja)',
         desc: 'Penyusunan tujuan strategis daerah, sasaran, perjanjian kinerja (PK), dan rencana aksi tahunan.',
     },
     measurement: {
@@ -93,7 +93,7 @@ const MODULE_INFO: Record<string, { title: string; desc: string }> = {
     },
     configuration: {
         title: 'Pengaturan & Konfigurasi Sistem',
-        desc: 'Konfigurasi teknis, batas kuota, dan preferensi aplikasi e-KASUARI.',
+        desc: 'Konfigurasi teknis, batas kuota, dan preferensi aplikasi e-SAKIP.',
     },
 };
 
@@ -133,7 +133,7 @@ const PERMISSION_INFO: Record<string, { title: string; desc: string; actionLabel
     'organization:update': { title: 'Ubah Data Perangkat Daerah', desc: 'Memperbarui nama instansi, kode, atau pimpinan', actionLabel: 'Ubah', actionColor: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' },
     'organization_unit:view': { title: 'Lihat Unit Kerja / Bidang', desc: 'Melihat sub-bagian unit kerja di bawah OPD', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
     'organization_unit:manage': { title: 'Kelola Unit Kerja / Bidang', desc: 'Menambah dan menyusun struktur unit bidang', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
-    'planning_period:view': { title: 'Lihat Periode Perencanaan', desc: 'Melihat rentang tahun RPJMD / Renstra', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
+    'planning_period:view': { title: 'Lihat Periode Perencanaan', desc: 'Melihat rentang tahun Renstra', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
     'planning_period:manage': { title: 'Kelola Periode Perencanaan', desc: 'Mengatur rentang tahun perencanaan 5 tahunan', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
     'measurement_period:view': { title: 'Lihat Periode Pengukuran', desc: 'Melihat jadwal triwulan input realisasi aktif', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
     'measurement_period:manage': { title: 'Kelola Periode Pengukuran', desc: 'Membuka atau menutup jadwal pelaporan triwulan', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
@@ -150,8 +150,8 @@ const PERMISSION_INFO: Record<string, { title: string; desc: string; actionLabel
     'migration:run': { title: 'Jalankan Migrasi Data Sistem', desc: 'Memproses sinkronisasi data antar periode sistem', actionLabel: 'Migrasi', actionColor: 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300' },
 
     // Perencanaan
-    'goal:view': { title: 'Lihat Tujuan Strategis (RPJMD)', desc: 'Melihat tujuan makro pembangunan jangka menengah', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
-    'goal:manage': { title: 'Kelola Tujuan Strategis (RPJMD)', desc: 'Menambah dan menyunting tujuan strategis daerah', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
+    'goal:view': { title: 'Lihat Tujuan Strategis', desc: 'Melihat tujuan makro pembangunan jangka menengah', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
+    'goal:manage': { title: 'Kelola Tujuan Strategis', desc: 'Menambah dan menyunting tujuan strategis daerah', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
     'objective:view': { title: 'Lihat Sasaran Strategis', desc: 'Melihat sasaran pembangunan perangkat daerah', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
     'objective:manage': { title: 'Kelola Sasaran Strategis', desc: 'Menambah dan menyunting sasaran strategis daerah', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
     'target:view': { title: 'Lihat Target Kinerja Tahunan', desc: 'Melihat target capaian tahunan indikator', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
@@ -165,7 +165,7 @@ const PERMISSION_INFO: Record<string, { title: string; desc: string; actionLabel
     'action_plan:manage': { title: 'Kelola Rencana Aksi (Renaksi)', desc: 'Menyusun jadwal kegiatan, sub-aksi, dan target', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
     'risk:view': { title: 'Lihat Profil Risiko Kinerja', desc: 'Melihat matriks daftar identifikasi risiko kinerja', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
     'risk:manage': { title: 'Kelola Profil Risiko Kinerja', desc: 'Menyusun analisis risiko dan rencana mitigasi', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
-    'planning:submit': { title: 'Ajukan Dokumen Perencanaan', desc: 'Mengirimkan dokumen perencanaan ke Bappeda', actionLabel: 'Ajukan', actionColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300' },
+    'planning:submit': { title: 'Ajukan Dokumen Perencanaan', desc: 'Mengirimkan dokumen perencanaan untuk diverifikasi', actionLabel: 'Ajukan', actionColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300' },
     'planning:review': { title: 'Verifikasi Dokumen Perencanaan', desc: 'Memeriksa kelengkapan dan keselarasan dokumen', actionLabel: 'Verifikasi', actionColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' },
     'planning:approve': { title: 'Sahkan / Setujui Dokumen Perencanaan', desc: 'Mengesahkan dan menyetujui dokumen perencanaan', actionLabel: 'Sahkan', actionColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' },
     'iku:view': { title: 'Lihat Indikator Kinerja Utama (IKU)', desc: 'Melihat daftar IKU daerah dan IKU OPD', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
@@ -203,7 +203,7 @@ const PERMISSION_INFO: Record<string, { title: string; desc: string; actionLabel
     // Evaluasi
     'evaluation:view': { title: 'Lihat Evaluasi SAKIP & LHE', desc: 'Melihat nilai evaluasi, predikat nilai, dan lembar LHE', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
     'evaluation:score': { title: 'Beri Penilaian Evaluasi Kinerja', desc: 'Mengisi skor pada 4 komponen akuntabilitas kinerja', actionLabel: 'Nilai', actionColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' },
-    'evaluation:submit': { title: 'Ajukan Lembar Hasil Evaluasi', desc: 'Mengirimkan berkas LHE ke Inspektorat / Pimpinan', actionLabel: 'Ajukan', actionColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300' },
+    'evaluation:submit': { title: 'Ajukan Lembar Hasil Evaluasi', desc: 'Mengirimkan berkas LHE ke Tim Evaluasi Internal / Kepala OPD', actionLabel: 'Ajukan', actionColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300' },
     'evaluation:manage': { title: 'Kelola Evaluasi Akuntabilitas', desc: 'Mengatur parameter penilaian dan catatan evaluasi', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
     'recommendation:view': { title: 'Lihat Rekomendasi SAKIP', desc: 'Melihat daftar rekomendasi perbaikan dari evaluator', actionLabel: 'Lihat', actionColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
     'recommendation:manage': { title: 'Kelola Rekomendasi SAKIP', desc: 'Menyusun rekomendasi tindak lanjut hasil evaluasi', actionLabel: 'Kelola', actionColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
@@ -278,6 +278,9 @@ function getPermissionMeta(perm: PermissionItem) {
 }
 
 export default function RolesEdit({ role, permissions }: Props) {
+    const { appConfig } = usePage<Props>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+
     const { data, setData, errors, put, processing } = useForm({
         name: role.name,
         description: role.description ?? '',
@@ -378,7 +381,7 @@ export default function RolesEdit({ role, permissions }: Props) {
                             </span>
                         </h2>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Tentukan matriks izin dan kewenangan operasional yang diperbolehkan untuk peran ini di seluruh modul e-KASUARI.
+                            Tentukan matriks izin dan kewenangan operasional yang diperbolehkan untuk peran ini di seluruh modul e-SAKIP.
                         </p>
                     </div>
 
@@ -409,7 +412,7 @@ export default function RolesEdit({ role, permissions }: Props) {
                                 </Label>
                                 <Input
                                     id="name"
-                                    placeholder="cth: Admin Perencanaan, Verifikator Bappeda"
+                                    placeholder="cth: Admin Perencanaan OPD, Kepala Bidang"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
                                     disabled={isSuperAdmin}
@@ -500,7 +503,7 @@ export default function RolesEdit({ role, permissions }: Props) {
                                 <div>
                                     <span className="font-bold">Peran Super Administrator Dilindungi:</span>
                                     <p className="mt-0.5 text-indigo-800/90 dark:text-indigo-300">
-                                        Peran ini memiliki seluruh hak akses sistem secara permanen dan tidak dapat diubah demi menjaga integritas dan kelangsungan operasional sistem e-KASUARI.
+                                        Peran ini memiliki seluruh hak akses sistem secara permanen dan tidak dapat diubah demi menjaga integritas dan kelangsungan operasional sistem {appName}.
                                     </p>
                                 </div>
                             </div>

@@ -19,6 +19,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
+import ActionMenuDropdown from '@/Components/Dashboard/ActionMenuDropdown';
 import { Plus, Edit, Trash2, Upload, Check, Lock, Send, FileText, MoreVertical, Filter, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ConfirmDialog from '@/Components/ConfirmDialog';
@@ -216,21 +219,20 @@ export default function Agreements({ agreements, organizations, periods, indicat
  <AuthenticatedLayout header="Perjanjian Kinerja">
             <Head title="Perjanjian Kinerja" />
 
-            <div className="space-y-4">
-                {/* Header Bar */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                            Perjanjian Kinerja
-                        </h1>
-                        <p className="text-xs text-muted-foreground sm:text-sm">
-                            Dokumen penetapan dan komitmen perjanjian kinerja perangkat daerah.
-                        </p>
-                    </div>
-                    <Button onClick={openCreateModal} className="w-full sm:w-auto justify-center">
-                        <Plus className="mr-2 h-4 w-4" /> Tambah Perjanjian
-                    </Button>
-                </div>
+            <div className="space-y-6">
+                <PageHeader
+                    title="Perjanjian Kinerja (PK)"
+                    description="Dokumen penetapan dan komitmen perjanjian kinerja tahunan instansi pemerintah dan kepala perangkat daerah."
+                    breadcrumbs={[
+                        { label: 'Perencanaan' },
+                        { label: 'Perjanjian Kinerja' },
+                    ]}
+                    actions={(
+                        <Button onClick={openCreateModal} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm w-full sm:w-auto justify-center">
+                            <Plus className="mr-2 h-4 w-4" /> Tambah Perjanjian
+                        </Button>
+                    )}
+                />
 
                 {/* Filter Card */}
                 <Card>
@@ -322,7 +324,7 @@ export default function Agreements({ agreements, organizations, periods, indicat
  <TableCell>{agreement.organization?.short_name || agreement.organization?.name || '-'}</TableCell>
  <TableCell>{agreement.document_number || '-'}</TableCell>
  <TableCell>{agreement.indicators_count}</TableCell>
- <TableCell>{getStatusBadge(agreement.status)}</TableCell>
+ <TableCell><StatusBadge status={agreement.status} /></TableCell>
  <TableCell>
  {agreement.file_path ? (
  <a href={`/planning/agreements/${agreement.id}/download`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline inline-flex items-center">
@@ -406,7 +408,7 @@ export default function Agreements({ agreements, organizations, periods, indicat
  </DropdownMenuContent>
  </DropdownMenu>
  ) : (
- <span className="text-muted-foreground text-xs">—</span>
+ <span className="text-muted-foreground text-xs">-</span>
  )}
  </TableCell>
  </TableRow>

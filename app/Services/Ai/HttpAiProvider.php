@@ -94,7 +94,7 @@ class HttpAiProvider implements AiProvider
             ->withHeaders([
                 'Authorization' => 'Bearer '.$apiKey,
                 'HTTP-Referer' => config('app.url', 'http://localhost'), // OpenRouter header
-                'X-Title' => config('app.name', 'e-KASUARI'),       // OpenRouter header
+                'X-Title' => config('app.name', 'e-SAKIP'),       // OpenRouter header
                 'Content-Type' => 'application/json',
             ])
             ->post($baseUrl.'/chat/completions', $payload);

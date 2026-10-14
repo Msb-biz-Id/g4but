@@ -27,8 +27,8 @@ class EarlyWarningAnalyticsService
             ->orderBy('name')
             ->get();
 
-        // 1. IKU Pemda Kritis
-        $ikuData = $ikuData ?? $this->opdAnalytics->getIkuPemdaMatrix($year);
+        // 1. IKU Kritis
+        $ikuData = $ikuData ?? $this->opdAnalytics->getIkuMatrix($year);
         $criticalIku = array_filter($ikuData['rows'], fn ($r) => $r['status'] === 'Kritis' || ($r['capaian'] !== null && $r['capaian'] < 60));
         $criticalIkuCount = count($criticalIku);
 
@@ -118,7 +118,7 @@ class EarlyWarningAnalyticsService
                     'detail' => "Nilai evaluasi akuntabilitas rendah ({$sakipVal} - {$sakipItem['predikat']})",
                     'severity' => $sakipVal < 60.0 ? 'critical' : 'warning',
                 ];
-                $actionRecommendations[] = 'Biro Organisasi & Inspektorat perlu memberikan pendampingan intensif penguatan 4 pilar akuntabilitas.';
+                $actionRecommendations[] = 'Tim evaluasi internal dan pimpinan OPD perlu memberikan pendampingan intensif penguatan 4 pilar akuntabilitas.';
             }
 
             if (empty($actionRecommendations)) {

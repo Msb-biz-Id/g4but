@@ -16,8 +16,8 @@ use App\Services\TrendPredictor;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Membangun konteks data objektif dan faktual untuk modul AI e-KASUARI (AIG-007, AIG-008).
- * Menghubungkan seluruh data website: IKU Pemda, Kinerja OPD, Rencana Aksi,
+ * Membangun konteks data objektif dan faktual untuk modul AI e-SAKIP (AIG-007, AIG-008).
+ * Menghubungkan seluruh data website: IKU OPD, Kinerja OPD, Rencana Aksi,
  * Anggaran, Dokumen SAKIP, Evaluasi PKO, dan Prediksi Kinerja tanpa emoji.
  */
 class AiContextBuilder

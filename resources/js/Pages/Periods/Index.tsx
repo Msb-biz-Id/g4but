@@ -17,6 +17,8 @@ import {
 } from '@/Components/ui/table';
 import { TableEmptyRow } from '@/Components/EmptyState';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
 import {
     Dialog,
     DialogContent,
@@ -87,7 +89,7 @@ interface Props extends PageProps {
 }
 
 const periodTypeLabels: Record<string, string> = {
-    rpjmd: 'RPJMD / Jangka Menengah',
+    rpjmd: 'Renstra / 5 Tahunan', renstra: 'Renstra / 5 Tahunan',
     annual: 'Tahunan',
     semester: 'Semesteran',
     quarterly: 'Triwulan',
@@ -104,12 +106,12 @@ const statusLabels: Record<string, { text: string; variant: 'secondary' | 'succe
 
 export default function PeriodsIndex({ auth, planningPeriods }: Props) {
     const roles = auth.user?.roles ?? [];
-    const isProvincialAdmin = roles.some((r: any) => {
+    const isOpdAdmin = roles.some((r: any) => {
         const name = typeof r === 'string' ? r : r?.name;
-        return name === 'Super Admin' || name === 'Admin Provinsi';
+        return name === 'Super Admin' || name === 'Admin OPD';
     });
-    const canManage = isProvincialAdmin || (auth.user?.permissions ?? []).includes('planning_period:manage');
-    const canManageMeasurement = isProvincialAdmin || (auth.user?.permissions ?? []).includes('measurement_period:manage');
+    const canManage = isOpdAdmin || (auth.user?.permissions ?? []).includes('planning_period:manage');
+    const canManageMeasurement = isOpdAdmin || (auth.user?.permissions ?? []).includes('measurement_period:manage');
 
     const currentYear = new Date().getFullYear();
 
@@ -207,14 +209,14 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
         }
 
         setPlanningForm((prev) => {
-            const isRPJMD = prev.type === 'rpjmd';
+            const isMultiYear = prev.type === 'renstra' || prev.type === 'rpjmd';
             return {
                 ...prev,
                 year: String(y),
                 start_date: `${y}-01-01`,
-                end_date: isRPJMD ? `${y + 4}-12-31` : `${y}-12-31`,
-                code: isRPJMD ? `RPJMD-${y}-${y + 4}` : `PP-${y}`,
-                name: isRPJMD ? `RPJMD Provinsi Papua Barat ${y}-${y + 4}` : `Tahun Anggaran ${y}`,
+                end_date: isMultiYear ? `${y + 4}-12-31` : `${y}-12-31`,
+                code: isMultiYear ? `RENSTRA-${y}-${y + 4}` : `PP-${y}`,
+                name: isMultiYear ? `Renstra Perangkat Daerah ${y}-${y + 4}` : `Tahun Anggaran ${y}`,
             };
         });
     };
@@ -222,10 +224,10 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
     const handleTypeChange = (newType: string) => {
         setPlanningForm((prev) => {
             const y = parseInt(prev.year, 10) || currentYear;
-            const isRPJMD = newType === 'rpjmd';
-            const end_date = isRPJMD ? `${y + 4}-12-31` : `${y}-12-31`;
-            const code = isRPJMD ? `RPJMD-${y}-${y + 4}` : `PP-${y}`;
-            const name = isRPJMD ? `RPJMD Provinsi Papua Barat ${y}-${y + 4}` : `Tahun Anggaran ${y}`;
+            const isMultiYear = newType === 'renstra' || newType === 'rpjmd';
+            const end_date = isMultiYear ? `${y + 4}-12-31` : `${y}-12-31`;
+            const code = isMultiYear ? `RENSTRA-${y}-${y + 4}` : `PP-${y}`;
+            const name = isMultiYear ? `Renstra Perangkat Daerah ${y}-${y + 4}` : `Tahun Anggaran ${y}`;
 
             return {
                 ...prev,
@@ -243,27 +245,27 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
             const yearMatch = newStartDate.match(/^(\d{4})/);
             if (yearMatch) {
                 const y = parseInt(yearMatch[1], 10);
-                const isRPJMD = prev.type === 'rpjmd';
+                const isMultiYear = prev.type === 'renstra' || prev.type === 'rpjmd';
                 return {
                     ...prev,
                     start_date: newStartDate,
                     year: String(y),
-                    end_date: isRPJMD ? `${y + 4}-12-31` : `${y}-12-31`,
-                    code: isRPJMD ? `RPJMD-${y}-${y + 4}` : `PP-${y}`,
-                    name: isRPJMD ? `RPJMD Provinsi Papua Barat ${y}-${y + 4}` : `Tahun Anggaran ${y}`,
+                    end_date: isMultiYear ? `${y + 4}-12-31` : `${y}-12-31`,
+                    code: isMultiYear ? `RENSTRA-${y}-${y + 4}` : `PP-${y}`,
+                    name: isMultiYear ? `Renstra Perangkat Daerah ${y}-${y + 4}` : `Tahun Anggaran ${y}`,
                 };
             }
             return { ...prev, start_date: newStartDate };
         });
     };
 
-    const applyYearPreset = (y: number, isRpjmd = false) => {
-        if (isRpjmd) {
+    const applyYearPreset = (y: number, isMultiYear = false) => {
+        if (isMultiYear) {
             setPlanningForm({
-                code: `RPJMD-${y}-${y + 4}`,
-                name: `RPJMD Provinsi Papua Barat ${y}-${y + 4}`,
+                code: `RENSTRA-${y}-${y + 4}`,
+                name: `Renstra Perangkat Daerah ${y}-${y + 4}`,
                 year: String(y),
-                type: 'rpjmd',
+                type: 'renstra',
                 start_date: `${y}-01-01`,
                 end_date: `${y + 4}-12-31`,
                 status: 'draft',
@@ -336,14 +338,14 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
 
         setEditingPlanningPeriod((prev) => {
             if (!prev) return null;
-            const isRPJMD = prev.type === 'rpjmd';
+            const isMultiYear = prev.type === 'renstra' || prev.type === 'rpjmd';
             return {
                 ...prev,
                 year: newYearStr,
                 start_date: `${y}-01-01`,
-                end_date: isRPJMD ? `${y + 4}-12-31` : `${y}-12-31`,
-                code: isRPJMD ? `RPJMD-${y}-${y + 4}` : `PP-${y}`,
-                name: isRPJMD ? `RPJMD Provinsi Papua Barat ${y}-${y + 4}` : `Tahun Anggaran ${y}`,
+                end_date: isMultiYear ? `${y + 4}-12-31` : `${y}-12-31`,
+                code: isMultiYear ? `RENSTRA-${y}-${y + 4}` : `PP-${y}`,
+                name: isMultiYear ? `Renstra Perangkat Daerah ${y}-${y + 4}` : `Tahun Anggaran ${y}`,
             };
         });
     };
@@ -352,14 +354,14 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
         setEditingPlanningPeriod((prev) => {
             if (!prev) return null;
             const y = parseInt(prev.year, 10) || currentYear;
-            const isRPJMD = newType === 'rpjmd';
+            const isMultiYear = newType === 'renstra' || newType === 'rpjmd';
             return {
                 ...prev,
                 type: newType,
                 start_date: `${y}-01-01`,
-                end_date: isRPJMD ? `${y + 4}-12-31` : `${y}-12-31`,
-                code: isRPJMD ? `RPJMD-${y}-${y + 4}` : `PP-${y}`,
-                name: isRPJMD ? `RPJMD Provinsi Papua Barat ${y}-${y + 4}` : `Tahun Anggaran ${y}`,
+                end_date: isMultiYear ? `${y + 4}-12-31` : `${y}-12-31`,
+                code: isMultiYear ? `RENSTRA-${y}-${y + 4}` : `PP-${y}`,
+                name: isMultiYear ? `Renstra Perangkat Daerah ${y}-${y + 4}` : `Tahun Anggaran ${y}`,
             };
         });
     };
@@ -672,32 +674,30 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
         <AuthenticatedLayout header="Periode Perencanaan">
             <Head title="Periode Perencanaan" />
 
-            <div className="space-y-4">
-                {/* ── Header Title Bar ────────────────────────────────────────────── */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                            Periode Perencanaan & Pengukuran
-                        </h1>
-                        <p className="text-xs text-muted-foreground sm:text-sm">
-                            Kelola tahun anggaran, rentang perencanaan RPJMD, serta sub periode pengukuran kinerja (triwulan / semester / bulanan).
-                        </p>
-                    </div>
-                    {canManage && (
-                        <Button onClick={openCreatePlanningModal} className="w-full sm:w-auto justify-center gap-1.5 shadow-sm">
+            <div className="space-y-6">
+                {/* ── Standard Page Header ────────────────────────────────────────── */}
+                <PageHeader
+                    title="Periode Perencanaan & Pengukuran"
+                    description="Kelola tahun anggaran, rentang perencanaan Renstra, serta sub periode pengukuran kinerja (triwulan / semester / bulanan)."
+                    breadcrumbs={[
+                        { label: 'Master Data' },
+                        { label: 'Periode Perencanaan' },
+                    ]}
+                    action={canManage ? (
+                        <Button onClick={openCreatePlanningModal} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-1.5">
                             <Plus className="h-4 w-4" />
                             Tambah Periode
                         </Button>
-                    )}
-                </div>
+                    ) : undefined}
+                />
 
                 {/* ── Info Box ────────────────────────────────────────────────────── */}
                 <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200 flex items-start gap-3">
                     <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                     <div className="space-y-1">
-                        <p className="font-semibold text-sm">Informasi Rentang Evaluasi Realisasi (RPJMD / IKU / Renstra OPD)</p>
+                        <p className="font-semibold text-sm">Informasi Rentang Evaluasi Realisasi (IKU / Renstra OPD)</p>
                         <p className="leading-relaxed">
-                            Modul Realisasi Kinerja (RPJMD, IKU Pemda, dan OPD) menghitung rentang tahun evaluasi multi-tahun secara dinamis berdasarkan <b>Periode Perencanaan tipe RPJMD</b> yang berstatus <b>Aktif</b>. Klik tombol <b>+ Tambah Sub</b> pada baris tabel untuk menambahkan sub periode pengukuran kinerja (Triwulan / Semester).
+                            Modul Realisasi Kinerja (IKU dan Renstra OPD) menghitung rentang tahun evaluasi multi-tahun secara dinamis berdasarkan <b>Periode Perencanaan tipe RPJMD</b> yang berstatus <b>Aktif</b>. Klik tombol <b>+ Tambah Sub</b> pada baris tabel untuk menambahkan sub periode pengukuran kinerja (Triwulan / Semester).
                         </p>
                     </div>
                 </div>
@@ -742,7 +742,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                                 >
                                     <option value="">Semua Tipe Periode</option>
                                     <option value="annual">Tahunan</option>
-                                    <option value="rpjmd">RPJMD / Jangka Menengah</option>
+                                    <option value="renstra">Renstra (5 Tahunan)</option>
                                 </SelectNative>
                             </div>
                             <div className="lg:col-span-3">
@@ -834,9 +834,9 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                                                                 <span className="font-medium text-gray-900 dark:text-gray-100">
                                                                     {period.name}
                                                                 </span>
-                                                                {period.type === 'rpjmd' && (
+                                                                {(period.type === 'renstra' || period.type === 'rpjmd') && (
                                                                     <Badge variant="outline" className="border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950/40 text-[10px] py-0 px-1.5">
-                                                                        Basis Evaluasi RPJMD
+                                                                        Basis Evaluasi Renstra
                                                                     </Badge>
                                                                 )}
                                                             </div>
@@ -889,7 +889,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                                                     <TableCell className="text-right">
                                                         {!canManage && !canManageMeasurement ? (
                                                             <span className="text-gray-300 dark:text-gray-600 text-xs select-none">
-                                                                —
+                                                                -
                                                             </span>
                                                         ) : (
                                                             <div className="flex items-center justify-end">
@@ -983,7 +983,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                                                                                 Sub Periode Pengukuran:
                                                                             </span>{' '}
                                                                             <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                                                                                {period.code} — {period.name}
+                                                                                {period.code} - {period.name}
                                                                             </span>
                                                                             <span className="text-xs text-muted-foreground ml-2">
                                                                                 ({subCount} sub terdaftar)
@@ -1110,7 +1110,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                                                                                         {formatDate(mp.start_date)} s.d. {formatDate(mp.end_date)}
                                                                                     </TableCell>
                                                                                     <TableCell className="text-slate-500 whitespace-nowrap">
-                                                                                        {mp.submission_deadline ? formatDate(mp.submission_deadline) : '—'}
+                                                                                        {mp.submission_deadline ? formatDate(mp.submission_deadline) : '-'}
                                                                                     </TableCell>
                                                                                     <TableCell className="text-center">
                                                                                         {statusLabels[mp.status] && (
@@ -1122,7 +1122,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                                                                                     <TableCell className="text-right">
                                                                                         {!canManageMeasurement ? (
                                                                                             <span className="text-gray-300 dark:text-gray-600 text-xs select-none">
-                                                                                                —
+                                                                                                -
                                                                                             </span>
                                                                                         ) : (
                                                                                             <div className="flex items-center justify-end">
@@ -1247,10 +1247,10 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                         </button>
                         <button
                             type="button"
-                            onClick={() => applyYearPreset(2025, true)}
+                            onClick={() => applyYearPreset(currentYear, true)}
                             className="rounded bg-blue-50 px-2.5 py-1 font-semibold text-blue-700 shadow-2xs border border-blue-200 hover:bg-blue-100 dark:bg-blue-950/50 dark:border-blue-800 dark:text-blue-300 transition-colors"
                         >
-                            +RPJMD 2025–2029
+                            +Renstra {currentYear}–{currentYear + 4}
                         </button>
                     </div>
 
@@ -1260,7 +1260,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                                 <InputLabel htmlFor="create-code" value="Kode Periode *" />
                                 <TextInput
                                     id="create-code"
-                                    placeholder="cth: PP-2026 atau RPJMD-2025-2029"
+                                    placeholder="cth: PP-2026 atau RENSTRA-2025-2029"
                                     value={planningForm.code}
                                     onChange={(e) => setPlanningForm({ ...planningForm, code: e.target.value })}
                                     className="mt-1 block w-full text-sm"
@@ -1286,7 +1286,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                             <InputLabel htmlFor="create-name" value="Nama Periode *" />
                             <TextInput
                                 id="create-name"
-                                placeholder="cth: Tahun Anggaran 2026 atau Periode RPJMD 2025-2029"
+                                placeholder="cth: Tahun Anggaran 2026 atau Periode Renstra 2025-2029"
                                 value={planningForm.name}
                                 onChange={(e) => setPlanningForm({ ...planningForm, name: e.target.value })}
                                 className="mt-1 block w-full text-sm"
@@ -1304,7 +1304,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                                     className="mt-1 block w-full text-sm"
                                 >
                                     <option value="annual">Tahunan</option>
-                                    <option value="rpjmd">RPJMD / Jangka Menengah (5 Tahunan)</option>
+                                    <option value="renstra">Renstra (5 Tahunan)</option>
                                 </SelectNative>
                                 <InputError message={planningErrors.type} className="mt-1 text-xs" />
                             </div>
@@ -1376,7 +1376,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                             Edit Periode Perencanaan
                         </DialogTitle>
                         <DialogDescription>
-                            Perbarui data periode perencanaan dan rentang tahun berlakunya. Modul Realisasi RPJMD, IKU, dan Renstra OPD akan mengikuti rentang ini jika bertipe RPJMD dan Aktif.
+                            Perbarui data periode perencanaan dan rentang tahun berlakunya. Modul Realisasi IKU dan Renstra OPD akan mengikuti rentang ini jika bertipe RPJMD dan Aktif.
                         </DialogDescription>
                     </DialogHeader>
                     {editingPlanningPeriod && (
@@ -1426,7 +1426,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                                         className="mt-1 block w-full text-sm"
                                     >
                                         <option value="annual">Tahunan</option>
-                                        <option value="rpjmd">RPJMD / Jangka Menengah (5 Tahunan)</option>
+                                        <option value="renstra">Renstra (5 Tahunan)</option>
                                     </SelectNative>
                                     <InputError message={editPlanningErrors.type} className="mt-1 text-xs" />
                                 </div>
@@ -1499,7 +1499,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                         <DialogDescription>
                             Menambahkan sub periode pengukuran untuk{' '}
                             <strong>
-                                {targetPlanningForSub?.code} — {targetPlanningForSub?.name}
+                                {targetPlanningForSub?.code} - {targetPlanningForSub?.name}
                             </strong>
                             .
                         </DialogDescription>

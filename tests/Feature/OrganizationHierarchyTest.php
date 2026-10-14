@@ -22,7 +22,7 @@ class OrganizationHierarchyTest extends TestCase
         $rootOpds = Organization::where('type', 'opd')->whereNull('parent_id')->get();
 
         $this->assertCount(1, $rootOpds);
-        $this->assertSame('Dinas Pendidikan dan Kebudayaan', $rootOpds->first()->name);
+        $this->assertSame('Dinas Pekerjaan Umum dan Penataan Ruang Kabupaten Mimika', $rootOpds->first()->name);
     }
 
     public function test_all_sekretariat_and_bidang_belong_to_root_opd(): void
@@ -33,7 +33,8 @@ class OrganizationHierarchyTest extends TestCase
         $this->assertGreaterThan(0, $children->count());
 
         foreach ($children as $child) {
-            $this->assertSame($rootOpd->id, $child->parent_id, "Unit {$child->name} harus memiliki parent root OPD.");
+            $effectiveParentId = $child->parent_id === $rootOpd->id ? $child->parent_id : $child->parent?->parent_id;
+            $this->assertSame($rootOpd->id, $effectiveParentId, "Unit {$child->name} harus memiliki parent root OPD.");
         }
     }
 

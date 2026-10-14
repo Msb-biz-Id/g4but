@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Planning;
 use App\Http\Controllers\Controller;
 use App\Models\ActionPlan;
 use App\Models\Agreement;
+use App\Models\AppConfig;
 use App\Models\CascadingRelation;
 use App\Models\CrosscuttingRelation;
 use App\Models\Indicator;
@@ -13,6 +14,7 @@ use App\Models\PerformancePeriod;
 use App\Models\PlanningDocument;
 use App\Models\PlanningTree;
 use App\Models\Risk;
+use App\Models\User;
 use App\Services\AuthorizationService;
 use App\Services\NotificationService;
 use App\Services\SakipDocumentService;
@@ -24,6 +26,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PlanningController extends Controller
 {
@@ -65,12 +68,12 @@ class PlanningController extends Controller
     public function documents(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $query = PlanningDocument::with(['organization', 'performancePeriod'])->latest();
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $query->whereIn('organization_id', $accessibleOrgIds);
         }
 
@@ -100,12 +103,11 @@ class PlanningController extends Controller
 
         $documents = $query->paginate($request->integer('per_page', 25))->withQueryString();
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $documentTypes = [
-            'rpjmd' => 'RPJMD',
             'renstra' => 'Renstra',
             'rkpd' => 'RKPD',
             'renja' => 'Renja',
@@ -128,7 +130,7 @@ class PlanningController extends Controller
             || $user->hasPermission('planning:approve')
             || $user->hasPermission('agreement:approve');
         $canLock = $user->hasRole('Super Admin')
-            || $user->hasRole('Admin Provinsi')
+            || $user->isOpdAdmin()
             || $user->hasPermission('planning:review')
             || $user->hasPermission('planning:approve')
             || $user->hasPermission('agreement:approve');
@@ -143,7 +145,7 @@ class PlanningController extends Controller
         $data = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
             'performance_period_id' => 'required|exists:performance_periods,id',
-            'type' => 'required|in:rpjmd,renstra,rkpd,renja,rkt,perjanjian_kinerja,pk,dpa,rencana_aksi,pohon_kinerja,cascading,proses_bisnis,manajemen_risiko,crosscutting,iku,pedoman_teknis',
+            'type' => 'required|in:renstra,rkpd,renja,rkt,perjanjian_kinerja,pk,dpa,rencana_aksi,pohon_kinerja,cascading,proses_bisnis,manajemen_risiko,crosscutting,iku,pedoman_teknis',
             'title' => 'required|string|max:300',
             'description' => 'nullable|string|max:1000',
             'document_number' => 'nullable|string|max:100',
@@ -162,7 +164,7 @@ class PlanningController extends Controller
         $docYear = trim((string) ($data['document_year'] ?? ''));
         unset($data['document_year']);
 
-        $isLimaTahunan = in_array($data['type'], ['rpjmd', 'renstra']) || ($data['periode_type'] ?? '') === '5_tahunan';
+        $isLimaTahunan = $data['type'] === 'renstra' || ($data['periode_type'] ?? '') === '5_tahunan';
 
         if ($docYear !== '') {
             if (preg_match('/^(\d{4})\s*-\s*(\d{4})$/', $docYear, $matches)) {
@@ -233,7 +235,7 @@ class PlanningController extends Controller
         $data = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
             'performance_period_id' => 'required|exists:performance_periods,id',
-            'type' => 'required|in:rpjmd,renstra,rkpd,renja,rkt,perjanjian_kinerja,pk,dpa,rencana_aksi,pohon_kinerja,cascading,proses_bisnis,manajemen_risiko,crosscutting,iku,pedoman_teknis',
+            'type' => 'required|in:renstra,rkpd,renja,rkt,perjanjian_kinerja,pk,dpa,rencana_aksi,pohon_kinerja,cascading,proses_bisnis,manajemen_risiko,crosscutting,iku,pedoman_teknis',
             'title' => 'required|string|max:300',
             'description' => 'nullable|string|max:1000',
             'document_number' => 'nullable|string|max:100',
@@ -254,7 +256,7 @@ class PlanningController extends Controller
         $docYear = trim((string) ($data['document_year'] ?? ''));
         unset($data['document_year']);
 
-        $isLimaTahunan = in_array($data['type'], ['rpjmd', 'renstra']) || ($data['periode_type'] ?? '') === '5_tahunan';
+        $isLimaTahunan = $data['type'] === 'renstra' || ($data['periode_type'] ?? '') === '5_tahunan';
 
         if ($docYear !== '') {
             if (preg_match('/^(\d{4})\s*-\s*(\d{4})$/', $docYear, $matches)) {
@@ -372,6 +374,7 @@ class PlanningController extends Controller
 
     public function approveDocument(PlanningDocument $document): RedirectResponse
     {
+        /** @var User|null $reviewer */
         $reviewer = Auth::user();
         $canApprove = $reviewer && (
             $reviewer->hasRole('Super Admin')
@@ -410,6 +413,7 @@ class PlanningController extends Controller
     public function rejectDocument(Request $request, PlanningDocument $document): RedirectResponse
     {
         $request->validate(['notes' => 'required|string|max:1000']);
+        /** @var User|null $reviewer */
         $reviewer = Auth::user();
         $canApprove = $reviewer && (
             $reviewer->hasRole('Super Admin')
@@ -445,6 +449,7 @@ class PlanningController extends Controller
 
     public function lockDocument(PlanningDocument $document): RedirectResponse
     {
+        /** @var User|null $user */
         $user = Auth::user();
         $canLock = $user && (
             $user->hasRole('Super Admin')
@@ -563,12 +568,12 @@ class PlanningController extends Controller
     public function agreements(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $query = Agreement::with(['organization', 'performancePeriod'])->withCount('indicators')->latest();
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $query->whereIn('organization_id', $accessibleOrgIds);
         }
 
@@ -584,12 +589,12 @@ class PlanningController extends Controller
 
         $agreements = $query->paginate($request->integer('per_page', 25))->withQueryString();
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $indicators = Indicator::where('status', 'active')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
             ->get(['id', 'code', 'name', 'owner_organization_id']);
         $filters = $request->only(['organization', 'period', 'status']);
         $canApprove = $user->hasRole('Super Admin')
@@ -688,6 +693,7 @@ class PlanningController extends Controller
 
     public function approveAgreement(Agreement $agreement): RedirectResponse
     {
+        /** @var User|null $reviewer */
         $reviewer = Auth::user();
         $canApprove = $reviewer && (
             $reviewer->hasRole('Super Admin')
@@ -725,6 +731,7 @@ class PlanningController extends Controller
     public function rejectAgreement(Request $request, Agreement $agreement): RedirectResponse
     {
         $request->validate(['notes' => 'required|string|max:1000']);
+        /** @var User|null $reviewer */
         $reviewer = Auth::user();
         $canApprove = $reviewer && (
             $reviewer->hasRole('Super Admin')
@@ -759,6 +766,7 @@ class PlanningController extends Controller
 
     public function lockAgreement(Agreement $agreement): RedirectResponse
     {
+        /** @var User|null $user */
         $user = Auth::user();
         $canLock = $user && (
             $user->hasRole('Super Admin')
@@ -844,12 +852,12 @@ class PlanningController extends Controller
     public function actionPlans(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $query = ActionPlan::with(['organization', 'indicator', 'performancePeriod'])->latest();
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $query->whereIn('organization_id', $accessibleOrgIds);
         }
 
@@ -871,12 +879,12 @@ class PlanningController extends Controller
 
         $plans = $query->paginate($request->integer('per_page', 25))->withQueryString();
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $indicators = Indicator::where('status', 'active')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
             ->get(['id', 'code', 'name']);
         $filters = $request->only(['organization', 'period', 'status']);
         $statuses = [
@@ -1008,16 +1016,16 @@ class PlanningController extends Controller
     public function trees(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $indicators = Indicator::where('status', 'active')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
             ->get(['id', 'code', 'name', 'measurement_unit_id']);
         $filters = $request->only(['organization', 'period', 'search']);
 
@@ -1040,7 +1048,7 @@ class PlanningController extends Controller
         ])->whereNull('parent_id');
 
         // Scoping hak akses: Admin OPD melihat pohon OPD-nya + pohon makro provinsi (Org ID 1)
-        if (! $isProvincialAdmin && ! empty($accessibleOrgIds)) {
+        if (! $isOpdAdmin && ! empty($accessibleOrgIds)) {
             $query->where(function ($q) use ($accessibleOrgIds) {
                 $q->whereIn('organization_id', $accessibleOrgIds)
                     ->orWhere('organization_id', 1);
@@ -1067,10 +1075,10 @@ class PlanningController extends Controller
             });
         }
 
-        $trees = $query->orderBy('sort_order')->orderByDesc('id')->get()->map(function (PlanningTree $item) use ($isProvincialAdmin, $accessibleOrgIds, $treeLevels) {
+        $trees = $query->orderBy('sort_order')->orderByDesc('id')->get()->map(function (PlanningTree $item) use ($isOpdAdmin, $accessibleOrgIds, $treeLevels) {
             $totalDescendants = $this->countDescendants($item);
             $maxDepth = $this->getMaxDepth($item);
-            $canManage = $isProvincialAdmin || in_array((int) $item->organization_id, $accessibleOrgIds, true);
+            $canManage = $isOpdAdmin || in_array((int) $item->organization_id, $accessibleOrgIds, true);
 
             return [
                 'id' => $item->id,
@@ -1098,20 +1106,20 @@ class PlanningController extends Controller
             'active_period' => $periods->first()?->year ?? date('Y'),
         ];
 
-        $canCreate = $isProvincialAdmin || ($user && $user->roles()->whereIn('name', ['Admin OPD', 'Kepala OPD'])->exists());
+        $canCreate = $isOpdAdmin || ($user && $user->roles()->whereIn('name', ['Admin OPD', 'Kepala OPD'])->exists());
 
         return Inertia::render('Planning/TreesIndex', compact(
-            'trees', 'stats', 'organizations', 'periods', 'indicators', 'treeLevels', 'filters', 'canCreate', 'isProvincialAdmin'
+            'trees', 'stats', 'organizations', 'periods', 'indicators', 'treeLevels', 'filters', 'canCreate', 'isOpdAdmin'
         ));
     }
 
     public function treeBuilder(Request $request, PlanningTree $tree): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
-        if (! $isProvincialAdmin && (int) $tree->organization_id !== 1 && ! in_array((int) $tree->organization_id, $accessibleOrgIds, true)) {
+        if (! $isOpdAdmin && (int) $tree->organization_id !== 1 && ! in_array((int) $tree->organization_id, $accessibleOrgIds, true)) {
             abort(403, 'Anda tidak memiliki akses ke pohon kinerja organisasi ini.');
         }
 
@@ -1123,12 +1131,12 @@ class PlanningController extends Controller
         ]);
 
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $indicators = Indicator::where('status', 'active')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
             ->get(['id', 'code', 'name', 'measurement_unit_id']);
         $filters = $request->only(['organization', 'period']);
 
@@ -1145,7 +1153,7 @@ class PlanningController extends Controller
         $allNodeIds = array_merge([$tree->id], $descendantIds);
         $allNodes = PlanningTree::whereIn('id', $allNodeIds)->orderBy('level')->get(['id', 'level', 'name']);
 
-        $canManage = $isProvincialAdmin || in_array((int) $tree->organization_id, $accessibleOrgIds, true);
+        $canManage = $isOpdAdmin || in_array((int) $tree->organization_id, $accessibleOrgIds, true);
 
         $activeRootTree = [
             'id' => $tree->id,
@@ -1174,17 +1182,17 @@ class PlanningController extends Controller
     public function treeMacroBuilder(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $this->authorization->isProvincialAdmin($user);
+        $isOpdAdmin = $user && $this->authorization->isOpdAdmin($user);
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $indicators = Indicator::query()
             ->where('status', 'active')
-            ->when(! $isProvincialAdmin, function ($q) use ($accessibleOrgIds) {
+            ->when(! $isOpdAdmin, function ($q) use ($accessibleOrgIds) {
                 $q->where(function ($sub) use ($accessibleOrgIds) {
                     $sub->whereIn('owner_organization_id', $accessibleOrgIds)
                         ->orWhereNull('owner_organization_id');
@@ -1204,7 +1212,7 @@ class PlanningController extends Controller
 
         $query = PlanningTree::with(['indicator', 'organization:id,code,name,short_name', 'allChildren'])
             ->whereNull('parent_id')
-            ->when(! $isProvincialAdmin, function ($q) use ($accessibleOrgIds) {
+            ->when(! $isOpdAdmin, function ($q) use ($accessibleOrgIds) {
                 $q->where(function ($sub) use ($accessibleOrgIds) {
                     $sub->whereIn('organization_id', $accessibleOrgIds)
                         ->orWhereNull('organization_id');
@@ -1220,7 +1228,7 @@ class PlanningController extends Controller
 
         $tree = $query->orderBy('sort_order')->get();
         $allNodes = PlanningTree::query()
-            ->when(! $isProvincialAdmin, function ($q) use ($accessibleOrgIds) {
+            ->when(! $isOpdAdmin, function ($q) use ($accessibleOrgIds) {
                 $q->where(function ($sub) use ($accessibleOrgIds) {
                     $sub->whereIn('organization_id', $accessibleOrgIds)
                         ->orWhereNull('organization_id');
@@ -1234,8 +1242,8 @@ class PlanningController extends Controller
             'activeRootTree' => [
                 'id' => 0,
                 'code' => 'MAKRO',
-                'name' => 'Visualisasi Makro Seluruh Perangkat Daerah (Provinsi)',
-                'organization' => ['name' => 'Pemerintah Provinsi Papua Barat'],
+                'name' => 'Visualisasi Makro Seluruh Perangkat Daerah',
+                'organization' => ['name' => AppConfig::where('key', 'instansi_name')->value('value') ?: 'Pemerintah Daerah'],
                 'total_nodes' => $allNodes->count(),
             ],
             'organizations' => $organizations,
@@ -1244,7 +1252,7 @@ class PlanningController extends Controller
             'allNodes' => $allNodes,
             'treeLevels' => $treeLevels,
             'filters' => $filters,
-            'canManage' => $isProvincialAdmin,
+            'canManage' => $isOpdAdmin,
             'isMacroView' => true,
         ]);
     }
@@ -1252,7 +1260,7 @@ class PlanningController extends Controller
     public function storeTree(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $data = $request->validate([
@@ -1268,15 +1276,15 @@ class PlanningController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        // Jika bukan provincial admin, verifikasi organization_id
-        if (! $isProvincialAdmin) {
+        // Jika bukan admin OPD, verifikasi organization_id
+        if (! $isOpdAdmin) {
             $this->authorization->canAccessOrganization($user, (int) $data['organization_id'])
                 ?: abort(403, 'Di luar lingkup organisasi Anda.');
         }
 
         if (! empty($data['parent_id'])) {
             $parent = PlanningTree::find($data['parent_id']);
-            if ($parent && ! $isProvincialAdmin && (int) $parent->organization_id !== 1 && ! in_array((int) $parent->organization_id, $accessibleOrgIds, true)) {
+            if ($parent && ! $isOpdAdmin && (int) $parent->organization_id !== 1 && ! in_array((int) $parent->organization_id, $accessibleOrgIds, true)) {
                 abort(403, 'Parent tree bukan milik organisasi Anda atau Provinsi.');
             }
             if ($parent && $this->wouldCreateCircular($data['parent_id'], null)) {
@@ -1297,10 +1305,10 @@ class PlanningController extends Controller
     public function updateTree(Request $request, PlanningTree $tree): RedirectResponse
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
-        if (! $isProvincialAdmin && ! in_array((int) $tree->organization_id, $accessibleOrgIds, true)) {
+        if (! $isOpdAdmin && ! in_array((int) $tree->organization_id, $accessibleOrgIds, true)) {
             abort(403, 'Anda tidak berhak memperbarui pohon kinerja instansi lain.');
         }
 
@@ -1316,7 +1324,7 @@ class PlanningController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $this->authorization->canAccessOrganization($user, (int) $data['organization_id'])
                 ?: abort(403, 'Di luar lingkup organisasi Anda.');
         }
@@ -1331,10 +1339,10 @@ class PlanningController extends Controller
     public function destroyTree(Request $request, PlanningTree $tree): RedirectResponse
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
-        if (! $isProvincialAdmin && ! in_array((int) $tree->organization_id, $accessibleOrgIds, true)) {
+        if (! $isOpdAdmin && ! in_array((int) $tree->organization_id, $accessibleOrgIds, true)) {
             abort(403, 'Anda tidak memiliki wewenang untuk menghapus pohon kinerja instansi lain.');
         }
 
@@ -1418,7 +1426,7 @@ class PlanningController extends Controller
     public function cascading(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $query = CascadingRelation::with([
@@ -1426,7 +1434,7 @@ class PlanningController extends Controller
             'toTree.organization',
             'performancePeriod',
         ])
-            ->when(! $isProvincialAdmin, function ($q) use ($accessibleOrgIds) {
+            ->when(! $isOpdAdmin, function ($q) use ($accessibleOrgIds) {
                 $q->where(function ($sub) use ($accessibleOrgIds) {
                     $sub->whereHas('fromTree', fn ($t) => $t->whereIn('organization_id', $accessibleOrgIds)->orWhere('organization_id', 1))
                         ->orWhereHas('toTree', fn ($t) => $t->whereIn('organization_id', $accessibleOrgIds)->orWhere('organization_id', 1));
@@ -1440,12 +1448,12 @@ class PlanningController extends Controller
 
         $relations = $query->paginate($request->integer('per_page', 25))->withQueryString();
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', array_unique(array_merge($accessibleOrgIds, [1]))))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', array_unique(array_merge($accessibleOrgIds, [1]))))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $trees = PlanningTree::with('organization')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('organization_id', array_unique(array_merge($accessibleOrgIds, [1]))))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('organization_id', array_unique(array_merge($accessibleOrgIds, [1]))))
             ->orderBy('level')->get(['id', 'name', 'level', 'organization_id']);
         $treeLevels = ['tujuan' => 'Tujuan', 'sasaran' => 'Sasaran', 'program' => 'Program', 'kegiatan' => 'Kegiatan'];
         $filters = $request->only(['period', 'per_page']);
@@ -1458,7 +1466,7 @@ class PlanningController extends Controller
     public function storeCascading(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $data = $request->validate([
@@ -1469,7 +1477,7 @@ class PlanningController extends Controller
             'description' => 'nullable|string|max:500',
         ]);
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $fromTree = PlanningTree::find($data['from_tree_id']);
             $toTree = PlanningTree::find($data['to_tree_id']);
             $canFrom = $fromTree && in_array((int) $fromTree->organization_id, $accessibleOrgIds, true);
@@ -1488,11 +1496,12 @@ class PlanningController extends Controller
 
     public function destroyCascading(CascadingRelation $cascading): RedirectResponse
     {
+        /** @var User|null $user */
         $user = Auth::user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $cascading->loadMissing(['fromTree', 'toTree']);
             $canFrom = $cascading->fromTree && in_array((int) $cascading->fromTree->organization_id, $accessibleOrgIds, true);
             $canTo = $cascading->toTree && in_array((int) $cascading->toTree->organization_id, $accessibleOrgIds, true);
@@ -1511,7 +1520,7 @@ class PlanningController extends Controller
     public function crosscutting(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $query = CrosscuttingRelation::with([
@@ -1519,7 +1528,7 @@ class PlanningController extends Controller
             'organization',
             'relatedOrganization',
         ])
-            ->when(! $isProvincialAdmin, fn ($q) => $q->where(fn ($sub) => $sub->whereIn('organization_id', $accessibleOrgIds)->orWhereIn('related_organization_id', $accessibleOrgIds)))
+            ->when(! $isOpdAdmin, fn ($q) => $q->where(fn ($sub) => $sub->whereIn('organization_id', $accessibleOrgIds)->orWhereIn('related_organization_id', $accessibleOrgIds)))
             ->latest();
 
         if ($request->period) {
@@ -1528,12 +1537,12 @@ class PlanningController extends Controller
 
         $relations = $query->paginate($request->integer('per_page', 25))->withQueryString();
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $indicators = Indicator::where('status', 'active')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
             ->get(['id', 'code', 'name', 'owner_organization_id']);
         $relationTypes = ['support' => 'Dukungan', 'dependency' => 'Ketergantungan', 'coordination' => 'Koordinasi'];
         $filters = $request->only(['period', 'per_page']);
@@ -1566,11 +1575,12 @@ class PlanningController extends Controller
 
     public function destroyCrosscutting(CrosscuttingRelation $crosscutting): RedirectResponse
     {
+        /** @var User|null $user */
         $user = Auth::user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
-        if (! $isProvincialAdmin && ! in_array((int) $crosscutting->organization_id, $accessibleOrgIds, true) && ! in_array((int) $crosscutting->related_organization_id, $accessibleOrgIds, true)) {
+        if (! $isOpdAdmin && ! in_array((int) $crosscutting->organization_id, $accessibleOrgIds, true) && ! in_array((int) $crosscutting->related_organization_id, $accessibleOrgIds, true)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
         }
 
@@ -1584,11 +1594,11 @@ class PlanningController extends Controller
     public function risks(Request $request): Response
     {
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $query = Risk::with(['organization', 'indicator'])
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))
             ->latest();
 
         if ($request->organization) {
@@ -1606,19 +1616,19 @@ class PlanningController extends Controller
 
         $risks = $query->paginate($request->integer('per_page', 25))->withQueryString();
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);
         $indicators = Indicator::where('status', 'active')
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('owner_organization_id', $accessibleOrgIds))
             ->get(['id', 'code', 'name']);
         $filters = $request->only(['organization', 'period', 'level', 'status', 'per_page']);
         $riskLevels = [
-            'critical' => Risk::where('risk_level', 'critical')->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))->count(),
-            'high' => Risk::where('risk_level', 'high')->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))->count(),
-            'medium' => Risk::where('risk_level', 'medium')->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))->count(),
-            'low' => Risk::where('risk_level', 'low')->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))->count(),
+            'critical' => Risk::where('risk_level', 'critical')->when(! $isOpdAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))->count(),
+            'high' => Risk::where('risk_level', 'high')->when(! $isOpdAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))->count(),
+            'medium' => Risk::where('risk_level', 'medium')->when(! $isOpdAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))->count(),
+            'low' => Risk::where('risk_level', 'low')->when(! $isOpdAdmin, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))->count(),
         ];
         $riskLevelOptions = ['low' => 'Rendah', 'medium' => 'Sedang', 'high' => 'Tinggi', 'critical' => 'Kritis'];
         $riskStatuses = ['open' => 'Open', 'monitored' => 'Monitored', 'mitigated' => 'Dimitigasi', 'closed' => 'Closed'];
@@ -1738,24 +1748,24 @@ class PlanningController extends Controller
     {
         $this->authorize('view-planning-docs');
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
         $format = $request->string('format', 'pdf')->lower();
         $orgId = $request->integer('organization_id');
-        $periodId = $request->integer('planning_period_id');
+        $periodId = $request->integer('performance_period_id') ?: $request->integer('planning_period_id') ?: $request->integer('period');
 
-        if (! $isProvincialAdmin && $orgId && ! in_array($orgId, $accessibleOrgIds, true)) {
+        if (! $isOpdAdmin && $orgId && ! in_array($orgId, $accessibleOrgIds, true)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
         }
-        if (! $isProvincialAdmin && ! $orgId) {
+        if (! $isOpdAdmin && ! $orgId && ! empty($accessibleOrgIds)) {
             $orgId = $accessibleOrgIds[0] ?? null;
         }
 
         $trees = PlanningTree::query()
             ->when($orgId, fn ($q) => $q->where('organization_id', $orgId))
-            ->when(! $isProvincialAdmin && ! $orgId, fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))
-            ->when($periodId, fn ($q) => $q->where('planning_period_id', $periodId))
+            ->when(! $isOpdAdmin && ! $orgId && ! empty($accessibleOrgIds), fn ($q) => $q->whereIn('organization_id', $accessibleOrgIds))
+            ->when($periodId, fn ($q) => $q->where('performance_period_id', $periodId))
             ->with(['organization:id,code,name', 'children', 'parent'])
             ->orderBy('level')
             ->orderBy('sort_order')
@@ -1772,14 +1782,15 @@ class PlanningController extends Controller
 
             return response()->stream(function () use ($trees) {
                 $out = fopen('php://output', 'w');
-                fputcsv($out, ['Level', 'Nama', 'Kode Tujuan', 'Organisasi', 'Status', 'Parent']);
+                fputs($out, "\xEF\xBB\xBF");
+                fputcsv($out, ['Level', 'Nama', 'Kode', 'Organisasi', 'Status', 'Parent']);
                 foreach ($trees as $tree) {
                     fputcsv($out, [
-                        $tree->level ?? 0,
+                        $tree->level ?? '-',
                         $tree->name ?? '',
-                        $tree->objective_code ?? '',
+                        $tree->code ?? '',
                         $tree->organization?->name ?? '',
-                        $tree->status ?? '',
+                        $tree->is_active ? 'Aktif' : 'Non-Aktif',
                         $tree->parent?->name ?? '',
                     ]);
                 }
@@ -1810,13 +1821,13 @@ class PlanningController extends Controller
     {
         $this->authorize('view-planning-docs');
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->isOpdAdmin();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $user ? $this->authorization->accessibleOrganizationIds($user) : [];
 
-        if (! $isProvincialAdmin && $request->organization && ! in_array((int) $request->organization, $accessibleOrgIds, true)) {
+        if (! $isOpdAdmin && $request->organization && ! in_array((int) $request->organization, $accessibleOrgIds, true)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
         }
-        if (! $isProvincialAdmin && ! $request->organization) {
+        if (! $isOpdAdmin && ! $request->organization) {
             $request->merge(['organization' => $accessibleOrgIds[0] ?? null]);
         }
 
@@ -1830,7 +1841,7 @@ class PlanningController extends Controller
         ];
 
         $organizations = Organization::query()
-            ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'short_name']);
         $periods = PerformancePeriod::orderByDesc('year')->get(['id', 'year']);

@@ -26,6 +26,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import TablePagination from '@/Components/TablePagination';
+import PageBreadcrumb from '@/Components/Dashboard/PageBreadcrumb';
 import {
     Building2,
     Calendar,
@@ -92,7 +93,7 @@ interface Props {
     treeLevels: Record<string, string>;
     filters: { organization?: string; period?: string; search?: string };
     canCreate: boolean;
-    isProvincialAdmin: boolean;
+    isOpdAdmin: boolean;
 }
 
 export default function TreesIndex({
@@ -104,7 +105,7 @@ export default function TreesIndex({
     treeLevels,
     filters,
     canCreate,
-    isProvincialAdmin,
+    isOpdAdmin,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [selectedOrg, setSelectedOrg] = useState(filters.organization ?? '');
@@ -269,6 +270,11 @@ export default function TreesIndex({
             <Head title="Pohon Kinerja & Penjenjangan" />
 
             <div className="space-y-6 pb-12">
+                <PageBreadcrumb items={[
+                    { label: 'Perencanaan' },
+                    { label: 'Pohon Kinerja' },
+                ]} />
+
                 {/* ── HEADER & ACTIONS ────────────────────────────────────────── */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -617,7 +623,7 @@ export default function TreesIndex({
                         {/* Organisasi Pengampu */}
                         <div className="space-y-1.5">
                             <Label className="text-xs font-semibold">Perangkat Daerah (OPD) *</Label>
-                            {isProvincialAdmin ? (
+                            {isOpdAdmin ? (
                                 <SelectNative
                                     value={createForm.data.organization_id}
                                     onChange={(e) => createForm.setData('organization_id', e.target.value)}
@@ -669,7 +675,7 @@ export default function TreesIndex({
                                     className="text-xs"
                                     required
                                 >
-                                    <option value="visi">Visi / Tujuan Pemda</option>
+                                    <option value="visi">Visi / Tujuan Daerah</option>
                                     <option value="outcome">Sasaran Strategis</option>
                                     <option value="csf">Strategic Outcome (CSF)</option>
                                 </SelectNative>
@@ -680,7 +686,7 @@ export default function TreesIndex({
                         <div className="space-y-1.5">
                             <Label className="text-xs font-semibold">Kode Pohon / Simpul *</Label>
                             <Input
-                                placeholder="Contoh: PK-BAPPEDA-01"
+                                placeholder="Contoh: PK-OPD-01"
                                 value={createForm.data.code}
                                 onChange={(e) => createForm.setData('code', e.target.value)}
                                 className="text-xs font-mono"
@@ -844,7 +850,7 @@ export default function TreesIndex({
                         </p>
                         <div className="rounded-lg bg-slate-100 p-3 dark:bg-slate-800">
                             <p className="font-bold text-slate-800 dark:text-foreground">
-                                {treeToDelete?.code} — {treeToDelete?.name}
+                                {treeToDelete?.code} - {treeToDelete?.name}
                             </p>
                             <p className="text-slate-500 mt-1">
                                 Instansi: {treeToDelete?.organization?.name ?? 'Provinsi'}

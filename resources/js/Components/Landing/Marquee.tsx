@@ -1,15 +1,22 @@
-const items = [
-    'e-KASUARI Pemerintah Provinsi Papua Barat',
-    'Papua Barat Bangkit, Mandiri & Sejahtera',
-    'Akuntabilitas SAKIP Terintegrasi & Berkeadilan',
-    'Pilot Project 4 OPD Percontohan Papua Barat',
-    'Bappeda • Inspektorat • Koperasi UKM • PUPR',
-    'Early Warning System (EWS) Kinerja Cepat',
-    'Cascading Sasaran RPJMD ke Renstra OPD',
-    'Transparansi & Keterbukaan Informasi Publik Daerah',
-];
+import { usePage } from '@inertiajs/react';
+import { PageProps } from '@/types';
 
 export default function Marquee() {
+    const { appConfig } = usePage<PageProps>().props;
+    const appName = appConfig?.appName || 'SIM Kinerja';
+    const orgName = appConfig?.organizationName || 'Organisasi Perangkat Daerah';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+
+    const items = [
+        `${appName} Sistem Akuntabilitas Kinerja Terintegrasi`,
+        `${orgName} yang Akuntabel & Berorientasi Hasil`,
+        'Akuntabilitas SAKIP Terintegrasi & Berkelanjutan',
+        `Penyelarasan Kinerja ${instansiName}`,
+        'Early Warning System (EWS) Kinerja Cepat',
+        'Cascading Sasaran Perencanaan ke Seluruh Unit Kerja',
+        'Transparansi & Keterbukaan Informasi Kinerja Publik',
+    ];
+
     const loop = [...items, ...items];
 
     return (

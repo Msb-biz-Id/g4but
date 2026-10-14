@@ -118,26 +118,28 @@ class PdfService
     }
 
     /**
-     * Ambil nama provinsi dinamis (default: 'Provinsi Papua Barat').
+     * Ambil nama instansi / pemerintah daerah dinamis.
      */
     public static function getProvinceName(): string
     {
         try {
-            return AppConfig::where('key', 'province_name')->value('value') ?: 'Provinsi Papua Barat';
+            return AppConfig::where('key', 'instansi_name')->value('value')
+                ?: AppConfig::where('key', 'province_name')->value('value')
+                ?: 'Pemerintah Daerah';
         } catch (\Throwable) {
-            return 'Provinsi Papua Barat';
+            return 'Pemerintah Daerah';
         }
     }
 
     /**
-     * Ambil nama aplikasi dinamis (default: 'e-KASUARI').
+     * Ambil nama aplikasi dinamis (default: 'e-SAKIP').
      */
     public static function getAppName(): string
     {
         try {
-            return AppConfig::where('key', 'app_name')->value('value') ?: 'e-KASUARI';
+            return AppConfig::where('key', 'app_name')->value('value') ?: 'e-SAKIP';
         } catch (\Throwable) {
-            return 'e-KASUARI';
+            return 'e-SAKIP';
         }
     }
 }

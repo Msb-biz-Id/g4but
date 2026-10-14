@@ -85,9 +85,10 @@ class NotificationService
         $query = User::query()
             ->where('is_active', true)
             ->whereHas('roles', fn ($q) => $q->whereIn('roles.name', [
-                'Validator OPD',
-                'Evaluator Provinsi',
-                'Inspektorat',
+                'Admin OPD',
+                'Kepala OPD',
+                'Kepala Sekretariat',
+                'Kepala Bidang',
             ]));
 
         if ($organizationId !== null) {
@@ -142,7 +143,7 @@ class NotificationService
         $reviewers = User::query()
             ->where('is_active', true)
             ->whereHas('roles', fn ($q) => $q->whereIn('roles.name', [
-                'Super Admin', 'Admin Provinsi', 'Evaluator Provinsi',
+                'Super Admin', 'Admin OPD', 'Kepala OPD',
             ]))
             ->get();
 
@@ -218,7 +219,7 @@ class NotificationService
         $reviewers = User::query()
             ->where('is_active', true)
             ->whereHas('roles', fn ($q) => $q->whereIn('roles.name', [
-                'Super Admin', 'Admin Provinsi', 'Evaluator Provinsi',
+                'Super Admin', 'Admin OPD', 'Kepala OPD',
             ]))
             ->get();
 
@@ -285,12 +286,16 @@ class NotificationService
             $recipients = $recipients->merge($orgUsers);
         }
 
-        // 2. High or critical alerts also notify provincial reviewers, evaluators & leadership
+        // 2. High or critical alerts also notify leadership and admin
         if (in_array(strtolower($alert->severity), ['critical', 'high'])) {
             $leaders = User::query()
                 ->where('is_active', true)
                 ->whereHas('roles', fn ($q) => $q->whereIn('roles.name', [
-                    'Super Admin', 'Admin Provinsi', 'Evaluator Provinsi', 'Pimpinan', 'Inspektorat', 'Bappeda',
+                    'Super Admin',
+                    'Admin OPD',
+                    'Kepala OPD',
+                    'Kepala Sekretariat',
+                    'Kepala Bidang',
                 ]))
                 ->get();
             $recipients = $recipients->merge($leaders);

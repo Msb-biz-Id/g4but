@@ -11,7 +11,8 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { SelectNative } from '@/Components/ui/select-native';
 import TablePagination from '@/Components/TablePagination';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Bell, CheckCheck, Megaphone } from 'lucide-react';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 function getDestinationUrl(notif: NotificationItem): string | null {
     if (!notif.resource_type) return null;
@@ -97,13 +98,35 @@ export default function NotificationsIndex({
  <AuthenticatedLayout
  header="Notifikasi"
  >
-            <Head title="Notifikasi" />
-            <div className="mx-auto max-w-5xl space-y-6">
-                {flash?.success && (
-                    <div className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
-                        {flash.success}
-                    </div>
-                )}
+ <Head title="Pusat Notifikasi" />
+ <div className="mx-auto max-w-5xl space-y-6">
+ <PageHeader
+ breadcrumbs={[
+ { label: 'Notifikasi' },
+ ]}
+ title="Pusat Notifikasi & Pengumuman"
+ description={`Daftar pemberitahuan resmi sistem, pengumuman, dan riwayat tenggat kerja.${unread_count > 0 ? ` Terdapat ${unread_count} notifikasi belum dibaca.` : ''}`}
+ badge={unread_count > 0 ? `${unread_count} Belum Dibaca` : undefined}
+ actions={
+ unread_count > 0 ? (
+ <Button
+ variant="outline"
+ size="sm"
+ onClick={() => router.post(route('notifications.read-all'))}
+ className="h-8 text-xs gap-1.5"
+ >
+ <CheckCheck className="h-4 w-4 text-primary" />
+ <span>Tandai Semua Dibaca</span>
+ </Button>
+ ) : undefined
+ }
+ />
+
+ {flash?.success && (
+ <div className="rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
+ {flash.success}
+ </div>
+ )}
 
                 {canSend && (
                     <Card className="p-4 sm:p-6">
@@ -184,7 +207,7 @@ export default function NotificationsIndex({
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
                                         {!notification.read_at && (
-                                            <span className="h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                                            <span className="h-2 w-2 shrink-0 rounded-full bg-primary animate-pulse" />
                                         )}
                                         <Badge variant="secondary" className="px-1.5">
                                             {eventLabels[notification.event] ?? notification.event}

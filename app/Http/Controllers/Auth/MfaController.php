@@ -41,7 +41,7 @@ class MfaController extends Controller
         }
 
         $qrCodeUrl = $this->google2fa->getQRCodeUrl(
-            config('app.name', 'e-KASUARI'),
+            config('app.name', 'e-SAKIP'),
             $user->email,
             $secret,
         );

@@ -65,7 +65,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
   @endif
   <div class="instansi">PEMERINTAH {{ strtoupper($provinceName ?? 'PROVINSI PAPUA BARAT') }}</div>
   <div class="doc-title">LAPORAN EKSEKUTIF CAPAIAN KINERJA &amp; SAKIP</div>
-  <div class="doc-sub">Tahun Evaluasi: {{ $filters['tahun_evaluasi'] }} &nbsp;|&nbsp; Triwulan: {{ $filters['triwulan'] }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-KASUARI' }} SAKIP</div>
+  <div class="doc-sub">Tahun Evaluasi: {{ $filters['tahun_evaluasi'] }} &nbsp;|&nbsp; Triwulan: {{ $filters['triwulan'] }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-SAKIP' }} SAKIP</div>
 </div>
 
 <div class="meta">
@@ -78,18 +78,17 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 
 <!-- 8 KPI UTAMA -->
 <table class="kpi-table">
-  <tr>
     <td>
-      <div class="kpi-label">Rata-rata Capaian RPJMD</div>
-      <div class="kpi-value g">{{ number_format($kpi['rata_capaian_rpjmd']['pct'], 2) }}%</div>
+      <div class="kpi-label">Rata-rata Capaian Kinerja OPD</div>
+      <div class="kpi-value g">{{ number_format($kpi['rata_capaian_opd']['pct'], 2) }}%</div>
       <div class="kpi-sub">
-        <span class="badge {{ $kpi['rata_capaian_rpjmd']['status'] === 'Tercapai' ? 'b-green' : ($kpi['rata_capaian_rpjmd']['status'] === 'Perlu Perhatian' ? 'b-yellow' : ($kpi['rata_capaian_rpjmd']['status'] === 'Terlambat' ? 'b-orange' : 'b-red')) }}">
-          {{ $kpi['rata_capaian_rpjmd']['status'] }}
+        <span class="badge {{ $kpi['rata_capaian_opd']['status'] === 'Tercapai' ? 'b-green' : ($kpi['rata_capaian_opd']['status'] === 'Perlu Perhatian' ? 'b-yellow' : ($kpi['rata_capaian_opd']['status'] === 'Terlambat' ? 'b-orange' : 'b-red')) }}">
+          {{ $kpi['rata_capaian_opd']['status'] }}
         </span>
       </div>
     </td>
     <td>
-      <div class="kpi-label">Capaian IKU Pemda</div>
+      <div class="kpi-label">Capaian IKU OPD</div>
       <div class="kpi-value {{ $kpi['capaian_iku_pemda']['pct'] >= 100 ? 'g' : ($kpi['capaian_iku_pemda']['pct'] >= 80 ? 'w' : ($kpi['capaian_iku_pemda']['pct'] >= 50 ? 'o' : 'r')) }}">
         {{ number_format($kpi['capaian_iku_pemda']['pct'], 2) }}%
       </div>
@@ -118,7 +117,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
   </tr>
   <tr>
     <td>
-      <div class="kpi-label">Nilai PKO Pemda</div>
+      <div class="kpi-label">Nilai PKO OPD</div>
       <div class="kpi-value" style="color:#0891b2">{{ number_format($kpi['nilai_pko_pemda']['nilai'], 2) }}</div>
       <div class="kpi-sub">Predikat: <strong>{{ $kpi['nilai_pko_pemda']['predikat'] }}</strong></div>
     </td>
@@ -128,7 +127,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
       <div class="kpi-sub"><span class="badge b-red">Kritis</span></div>
     </td>
     <td>
-      <div class="kpi-label">Kelengkapan SAKIP Pemda</div>
+      <div class="kpi-label">Kelengkapan SAKIP OPD</div>
       <div class="kpi-value {{ $kpi['kelengkapan_pemda']['pct'] >= 100 ? 'g' : ($kpi['kelengkapan_pemda']['pct'] >= 80 ? 'w' : 'r') }}">
         {{ number_format($kpi['kelengkapan_pemda']['pct'], 1) }}%
       </div>
@@ -158,14 +157,14 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
   </thead>
   <tbody>
     <tr>
-      <td><strong>Indikator RPJMD</strong></td>
-      <td class="tc">{{ $rpjmd_status['total'] ?? 0 }}</td>
-      <td class="tc g">{{ $rpjmd_status['tercapai'] ?? 0 }}</td>
-      <td class="tc w">{{ $rpjmd_status['perlu_perhatian'] ?? 0 }}</td>
-      <td class="tc r">{{ $rpjmd_status['kritis'] ?? 0 }}</td>
+      <td><strong>Capaian Sasaran / Kinerja OPD</strong></td>
+      <td class="tc">{{ $opd_status['total'] ?? 0 }}</td>
+      <td class="tc g">{{ $opd_status['tercapai'] ?? 0 }}</td>
+      <td class="tc w">{{ $opd_status['perlu_perhatian'] ?? 0 }}</td>
+      <td class="tc r">{{ $opd_status['kritis'] ?? 0 }}</td>
     </tr>
     <tr>
-      <td><strong>Indikator Kinerja Utama (IKU) Pemda</strong></td>
+      <td><strong>Indikator Kinerja Utama (IKU) OPD</strong></td>
       <td class="tc">{{ $iku_status['total'] ?? 0 }}</td>
       <td class="tc g">{{ $iku_status['tercapai'] ?? 0 }}</td>
       <td class="tc w">{{ $iku_status['perlu_perhatian'] ?? 0 }}</td>
@@ -227,7 +226,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 </table>
 
 <div class="footer">
-  <div class="fl">Sistem Informasi Akuntabilitas Kinerja Terintegrasi (e-KASUARI) &bull; Pemerintah Provinsi Papua Barat</div>
+  <div class="fl">Sistem Informasi Akuntabilitas Kinerja Terintegrasi (e-SAKIP) &bull; Pemerintah Provinsi Papua Barat</div>
   <div class="fr">Laporan Resmi Eksekutif &bull; Dicetak: {{ $generatedAt }} WIT</div>
 </div>
 

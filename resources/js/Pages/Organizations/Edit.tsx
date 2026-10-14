@@ -35,10 +35,10 @@ interface Props extends PageProps {
  users: Array<{ id: number; name: string }>;
  };
  parents: Array<{ id: number; code: string; name: string; short_name?: string | null }>;
- isProvincialAdmin?: boolean;
+ isOpdAdmin?: boolean;
 }
 
-export default function OrganizationsEdit({ organization, parents, isProvincialAdmin = true }: Props) {
+export default function OrganizationsEdit({ organization, parents, isOpdAdmin = true }: Props) {
  const { data, setData, errors, put, processing, transform } = useForm({
  code: organization.code,
  name: organization.name,
@@ -110,10 +110,10 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
  <Card>
  <CardContent className="p-4 sm:p-6">
  <form autoComplete="off" noValidate onSubmit={submit} className="space-y-4">
- {!isProvincialAdmin && (
+ {!isOpdAdmin && (
  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
  <p className="font-semibold mb-0.5">ℹ️ Mode Edit Profil Instansi (Admin OPD)</p>
- <p>Anda hanya dapat memperbarui informasi kontak dan unit kerja internal instansi Anda. Perubahan struktur master (kode, tipe, induk, status aktif) dikelola secara terpusat oleh Admin Provinsi / Biro Organisasi.</p>
+ <p>Anda hanya dapat memperbarui informasi kontak dan unit kerja internal instansi Anda. Perubahan struktur master (kode, tipe, induk, status aktif) dikelola secara terpusat oleh Super Admin.</p>
  </div>
  )}
 
@@ -124,11 +124,11 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
  id="code"
  placeholder="cth: DISKOMINFO"
  value={data.code}
- disabled={!isProvincialAdmin}
+ disabled={!isOpdAdmin}
  onChange={(e) =>
  setData('code', e.target.value)
  }
- className={cn("mt-1 block w-full", !isProvincialAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
+ className={cn("mt-1 block w-full", !isOpdAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
  />
  <InputError message={errors.code} className="mt-2" />
  </div>
@@ -137,11 +137,11 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
  <SelectNative
  id="type"
  value={data.type}
- disabled={!isProvincialAdmin}
+ disabled={!isOpdAdmin}
  onChange={(e) =>
  setData('type', e.target.value)
  }
- className={cn("mt-1 block w-full", !isProvincialAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
+ className={cn("mt-1 block w-full", !isOpdAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
  >
  <option value="opd">OPD Induk (Dinas / Badan)</option>
  <option value="sekretariat">Sekretariat</option>
@@ -157,9 +157,9 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
                                         id="name"
                                         placeholder="cth: Dinas Komunikasi dan Informatika"
                                         value={data.name}
-                                        disabled={!isProvincialAdmin}
+                                        disabled={!isOpdAdmin}
                                         onChange={(e) => setData('name', e.target.value)}
-                                        className={cn("mt-1 block w-full", !isProvincialAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
+                                        className={cn("mt-1 block w-full", !isOpdAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
                                     />
                                     <InputError message={errors.name} className="mt-2" />
                                 </div>
@@ -169,9 +169,9 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
                                         id="short_name"
                                         placeholder="cth: DISKOMINFO"
                                         value={data.short_name}
-                                        disabled={!isProvincialAdmin}
+                                        disabled={!isOpdAdmin}
                                         onChange={(e) => setData('short_name', e.target.value)}
-                                        className={cn("mt-1 block w-full", !isProvincialAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
+                                        className={cn("mt-1 block w-full", !isOpdAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
                                     />
                                     <InputError message={errors.short_name} className="mt-2" />
                                 </div>
@@ -182,7 +182,7 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
  <SelectNative
  id="parent_id"
  value={data.parent_id}
- disabled={!isProvincialAdmin}
+ disabled={!isOpdAdmin}
  onChange={(e) =>
  setData(
  'parent_id',
@@ -191,7 +191,7 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
  : '',
  )
  }
- className={cn("mt-1 block w-full", !isProvincialAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
+ className={cn("mt-1 block w-full", !isOpdAdmin && "bg-slate-100 text-slate-500 cursor-not-allowed")}
  >
  <option value="">Tanpa induk</option>
  {parents.map((parent) => (
@@ -221,7 +221,7 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
  <TextInput
  id="email"
  type="email"
- placeholder="cth: diskominfo@papuabaratprov.go.id"
+ placeholder="cth: diskominfo@pemda.go.id"
  value={data.email}
  onChange={(e) =>
  setData('email', e.target.value)
@@ -244,7 +244,7 @@ export default function OrganizationsEdit({ organization, parents, isProvincialA
  </div>
  </div>
 
- {isProvincialAdmin && (
+ {isOpdAdmin && (
  <label className="flex items-center">
  <input
  type="checkbox"

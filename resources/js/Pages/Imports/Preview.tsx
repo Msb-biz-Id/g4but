@@ -11,9 +11,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import {Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import ConfirmDialog from '@/Components/ConfirmDialog';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import { ArrowLeft } from 'lucide-react';
 
 interface RowEntry {
     line: number;
@@ -67,12 +69,29 @@ export default function ImportsPreview({ auth, batch }: Props) {
     };
 
     return (
-        <AuthenticatedLayout
-            header="Preview Import"
-        >
-            <Head title="Pratinjau Impor" />
-            <div className="py-12">
-                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <AuthenticatedLayout>
+            <Head title={`Pratinjau Impor - ${batch.file_name}`} />
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title={`Pratinjau Impor: ${batch.file_name}`}
+                    description={`Tinjau validitas data baris file sebelum dimasukkan secara permanen ke basis data.`}
+                    breadcrumbs={[
+                        { label: 'Pengaturan', href: route('settings.index') },
+                        { label: 'Impor Data', href: route('imports.index') },
+                        { label: 'Pratinjau' },
+                    ]}
+                    actions={
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={route('imports.index')} className="gap-1.5">
+                                <ArrowLeft className="h-4 w-4" />
+                                Kembali ke Impor
+                            </Link>
+                        </Button>
+                    }
+                />
+
+                <div className="mx-auto max-w-5xl space-y-6">
                     {flash?.success && (
                         <div className="mb-4 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
                             {flash.success}

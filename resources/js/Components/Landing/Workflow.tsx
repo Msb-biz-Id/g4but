@@ -1,66 +1,74 @@
 import { useState } from 'react';
-import { Check, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, FileText, CheckCircle2, Award, AlertCircle, ArrowUpRight } from 'lucide-react';
 import Reveal from './Reveal';
 
 const phases = [
     {
         id: 'plan',
         step: '01',
-        title: 'Perencanaan Strategis Papua Barat',
+        title: 'Perencanaan Strategis',
         subtitle: 'Cascading Sasaran RPJMD → Renstra OPD → IKU',
-        headline: 'Perumusan Sasaran Strategis, IKU, dan Perjanjian Kinerja',
+        headline: 'Perumusan Sasaran Strategis, IKU, dan Perjanjian Kinerja (PK)',
         description:
-            'Penyusunan tujuan, sasaran strategis, dan indikator kinerja utama (IKU) beserta target per periode pelaporan triwulanan dan tahunan di lingkungan Pemprov Papua Barat secara berjenjang.',
+            'Penyusunan sasaran pembangunan daerah yang diturunkan secara hierarkis ke dinas, badan, dan biro teknis. Menetapkan indikator kinerja utama (IKU) beserta target triwulanan dan formula perhitungan matematis terstandar.',
+        badge: 'Tahap 1: Perencanaan',
+        outputDoc: 'Dokumen Perjanjian Kinerja & Pohon Kinerja OPD',
         items: [
-            'Cascading indikator dari level Gubernur hingga bidang teknis OPD',
-            'Penetapan formula perhitungan & satuan ukur target',
-            'Penyusunan pohon kinerja & perjanjian kinerja daerah',
-            'Manajemen dokumen perencanaan berversi dan tervalidasi',
+            'Cascading indikator dari pimpinan daerah hingga kepala seksi/sub-kegiatan',
+            'Penetapan formula perhitungan & satuan ukur target resmi',
+            'Sinkronisasi target dengan ketersediaan pagu anggaran APBD',
+            'Penyusunan pohon kinerja lintas sektor (cross-cutting)',
         ],
     },
     {
         id: 'measure',
         step: '02',
-        title: 'Pengukuran & Realisasi OPD',
-        subtitle: 'Input capaian + bukti dukung + verifikasi',
-        headline: 'Pencatatan Realisasi Kinerja Fisik & Penyerapan Anggaran',
+        title: 'Pengukuran & Realisasi',
+        subtitle: 'Input Capaian Fisik & Keuangan + Evidence Sah',
+        headline: 'Pencatatan Realisasi Berkala dengan Verifikasi Dokumen Bukti',
         description:
-            'Pencatatan realisasi kinerja fisik dan penyerapan anggaran oleh OPD Papua Barat secara berkala, disertai unggahan bukti dukung (evidence) dan verifikasi bertingkat.',
+            'Pencatatan realisasi kinerja fisik dan serapan anggaran oleh setiap unit kerja secara berkala per triwulan. Dilengkapi unggahan bukti dukung (evidence) digital dan alur persetujuan bertingkat (maker-checker).',
+        badge: 'Tahap 2: Pengukuran',
+        outputDoc: 'Lembar Pengukuran Kinerja Triwulanan Terverifikasi',
         items: [
             'Input realisasi berkala per indikator & sub-kegiatan OPD',
-            'Unggah bukti dukung (dokumen, foto lapangan, tautan)',
-            'Alur persetujuan bertingkat (Analis → Kepala Bidang → Kepala OPD)',
-            'Jejak audit otomatis pada setiap koreksi data realisasi',
+            'Unggah bukti dukung sah (dokumen laporan, foto lapangan, faktur)',
+            'Alur persetujuan berjenjang: Analis (Maker) → Kabid → Kepala OPD (Checker)',
+            'Jejak audit permanen mencatat setiap perubahan data',
         ],
     },
     {
         id: 'evaluate',
         step: '03',
-        title: 'Evaluasi SAKIP & Rekomendasi',
-        subtitle: 'Penilaian mandiri + review Inspektorat Papua Barat',
-        headline: 'Penilaian Mandiri AKIP & Rekomendasi LHE Pengawasan',
+        title: 'Evaluasi AKIP Mandiri',
+        subtitle: 'Penilaian Mandiri + Rekomendasi LHE SAKIP',
+        headline: 'Penilaian Akuntabilitas & Penerbitan Tindak Lanjut Rekomendasi',
         description:
-            'Perhitungan nilai akuntabilitas kinerja, analisis kesenjangan target vs realisasi, serta penerbitan rekomendasi perbaikan dari Inspektorat Provinsi Papua Barat.',
+            'Perhitungan nilai akuntabilitas kinerja berdasarkan formula resmi PermenPAN-RB No. 88/2021. Tim Evaluator Internal menerbitkan Lembar Hasil Evaluasi (LHE) dan memantau realisasi tindak lanjut rekomendasi perbaikan.',
+        badge: 'Tahap 3: Evaluasi',
+        outputDoc: 'Lembar Hasil Evaluasi (LHE) & Matriks Rekomendasi',
         items: [
             'Perhitungan skor capaian otomatis berbasis formula resmi',
-            'Penerbitan rekomendasi LHE SAKIP dengan PIC terdefinisi',
+            'Penerbitan rekomendasi perbaikan dengan penanggung jawab (PIC) definitif',
             'Pelacakan status tindak lanjut rekomendasi secara real-time',
-            'Matriks perbandingan kinerja antar Organisasi Perangkat Daerah',
+            'Matriks perbandingan kinerja antar Perangkat Daerah se-Provinsi',
         ],
     },
     {
         id: 'report',
         step: '04',
-        title: 'Peringatan Dini & LKjIP Papua Barat',
-        subtitle: 'EWS + laporan kinerja + analitik prediktif',
-        headline: 'Early Warning System (EWS) & Penyusunan LKjIP Otomatis',
+        title: 'Pelaporan LKjIP & EWS',
+        subtitle: 'Deteksi Dini Deviasi + Penyusunan LKjIP Otomatis',
+        headline: 'Early Warning System (EWS) & Penyusunan Laporan Terintegrasi',
         description:
-            'Deteksi dini indikator yang berada di bawah ambang batas kinerja, disertai pembuatan Laporan Kinerja Instansi Pemerintah (LKjIP) Papua Barat secara otomatis.',
+            'Deteksi dini indikator yang berada di bawah ambang batas kinerja untuk intervensi pimpinan, disertai pembuatan Laporan Kinerja Instansi Pemerintah (LKjIP) dan ringkasan eksekutif instan.',
+        badge: 'Tahap 4: Pelaporan',
+        outputDoc: 'Laporan Kinerja Instansi Pemerintah (LKjIP) Resmi',
         items: [
-            'Early Warning System (EWS) dengan alur intervensi pimpinan',
+            'Early Warning System (EWS) dengan notifikasi deviasi kinerja',
             'Penyusunan laporan LKjIP & ringkasan eksekutif instan',
-            'Analitik tren, deviasi, dan visualisasi capaian OPD',
-            'Proyeksi ketercapaian target berbasis model statistik',
+            'Analitik tren, deviasi, dan visualisasi capaian historis',
+            'Proyeksi ketercapaian target berbasis model statistik deterministik',
         ],
     },
 ];
@@ -69,110 +77,156 @@ export default function Workflow() {
     const [active, setActive] = useState(0);
 
     return (
-        <section id="sistem" className="relative scroll-mt-20 bg-slate-50/60 py-16 sm:py-24 dark:bg-muted/20 border-b border-slate-200/80 dark:border-border">
-            <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-                <Reveal className="text-center">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-semibold text-slate-800 shadow-2xs dark:border-border dark:bg-muted dark:text-foreground">
-                        <Check className="h-3.5 w-3.5 stroke-[2.5] text-primary" />
-                        <span>Siklus Akuntabilitas Kinerja Papua Barat</span>
+        <section id="sistem" className="relative scroll-mt-14 bg-white dark:bg-[#090d11] py-16 sm:py-24 border-b border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <Reveal className="mb-14 text-center max-w-2xl mx-auto">
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#002B49] border border-amber-400/40 text-[#FFB800] text-xs font-mono font-bold uppercase tracking-wider mb-3 shadow-md">
+                        <Award className="w-3.5 h-3.5 text-[#FFB800]" />
+                        <span>STANDAR SAKIP PUPR • PERMENPAN-RB NO. 88/2021</span>
                     </span>
-                    <h2 className="mt-3.5 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl lg:text-4xl dark:text-foreground">
-                        Alur Kerja Evaluasi Kinerja Terintegrasi
+                    <h2 className="text-2xl sm:text-4xl font-extrabold font-serif text-slate-900 dark:text-white tracking-tight">
+                        Empat Siklus Manajemen Kinerja PUPR Mimika
                     </h2>
-                    <p className="mx-auto mt-2.5 max-w-2xl text-xs sm:text-base leading-relaxed text-gray-600 dark:text-muted-foreground">
-                        Empat tahapan terpadu yang menghubungkan perencanaan hingga pelaporan akuntabilitas kinerja instansi pemerintah di Papua Barat.
+                    <p className="mt-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-light">
+                        Rangkaian siklus akuntabilitas berkesinambungan - menghubungkan perencanaan Renstra dinas, verifikasi fisik lapangan, evaluasi AKIP, hingga publikasi LKjIP Kabupaten Mimika.
                     </p>
                 </Reveal>
 
-                <div className="mt-8 sm:mt-12 grid gap-6 lg:gap-8 lg:grid-cols-[340px_1fr] xl:grid-cols-[360px_1fr]">
-                    <Reveal>
-                        <div className="relative">
-                            <div className="hidden sm:block absolute left-[21px] top-4 bottom-4 w-px bg-slate-200 dark:bg-border" />
-                            <div className="space-y-2.5 sm:space-y-3">
-                                {phases.map((phase, i) => {
-                                    const isActive = i === active;
-                                    return (
-                                        <button
-                                            key={phase.id}
-                                            onClick={() => setActive(i)}
-                                            className={`relative flex w-full items-center gap-3 sm:gap-4 rounded-2xl border p-3 sm:p-4 text-left transition-all ${
-                                                isActive
-                                                    ? 'border-primary bg-white shadow-md ring-1 ring-primary/30 dark:border-primary dark:bg-card'
-                                                    : 'border-slate-200/70 bg-white/70 hover:border-slate-300 hover:bg-white dark:border-border/60 dark:bg-card/40 dark:hover:border-border dark:hover:bg-card/70'
-                                            }`}
-                                        >
-                                            <span
-                                                className={`relative z-10 flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl text-xs sm:text-sm font-extrabold transition ${
-                                                    isActive
-                                                        ? 'bg-primary text-primary-foreground shadow-xs'
-                                                        : 'bg-white text-gray-700 ring-1 ring-slate-200 dark:bg-card dark:text-gray-300 dark:ring-border'
-                                                }`}
-                                            >
-                                                {phase.step}
-                                            </span>
-                                            <div className="flex-1 min-w-0">
-                                                <div
-                                                    className={`text-xs sm:text-sm font-bold truncate leading-snug ${
-                                                        isActive
-                                                            ? 'text-primary'
-                                                            : 'text-gray-900 dark:text-foreground'
-                                                    }`}
-                                                >
-                                                    {phase.title}
-                                                </div>
-                                                <div className="mt-0.5 text-[11px] sm:text-xs text-gray-500 dark:text-muted-foreground truncate">
-                                                    {phase.subtitle}
-                                                </div>
-                                            </div>
-                                            <ChevronRight
-                                                className={`h-4 w-4 shrink-0 transition-transform ${
-                                                    isActive
-                                                        ? 'text-primary translate-x-0.5'
-                                                        : 'text-gray-300 dark:text-muted'
-                                                }`}
-                                            />
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </Reveal>
+                {/* Interactive Process Stepper Progress Bar */}
+                <div className="hidden lg:grid grid-cols-4 gap-4 mb-8">
+                    {phases.map((phase, i) => {
+                        const isActive = i === active;
+                        const isPast = i < active;
+                        return (
+                            <button
+                                key={phase.id}
+                                type="button"
+                                onClick={() => setActive(i)}
+                                className={`text-left p-4 rounded-2xl border transition-all ${
+                                    isActive
+                                        ? 'bg-gradient-to-br from-[#002B49] to-[#0A2540] text-white border-[#FFB800] shadow-xl scale-[1.02]'
+                                        : isPast
+                                        ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800 text-slate-800 dark:text-slate-200'
+                                        : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                                }`}
+                            >
+                                <div className="flex items-center justify-between mb-2">
+                                    <span
+                                        className={`font-mono text-xs font-black px-2 py-0.5 rounded-md ${
+                                            isActive
+                                                ? 'bg-[#FFB800] text-slate-950'
+                                                : isPast
+                                                ? 'bg-[#002B49] text-[#FFB800]'
+                                                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                        }`}
+                                    >
+                                        {phase.step}
+                                    </span>
+                                    {isPast && <Check className="w-4 h-4 text-[#FFB800]" />}
+                                </div>
+                                <div className="font-serif font-bold text-sm truncate">{phase.title}</div>
+                                <div className="text-[10px] opacity-75 truncate mt-0.5">{phase.subtitle}</div>
+                            </button>
+                        );
+                    })}
+                </div>
 
-                    <Reveal delay={2}>
-                        <div
-                            key={active}
-                            className="h-full animate-fade-in rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-7 lg:p-8 shadow-sm dark:border-border dark:bg-card"
-                        >
-                            <div className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                                <span>Tahap {phases[active].step} • {phases[active].title}</span>
+                {/* Mobile / Active Stage Content Card */}
+                <div className="grid lg:grid-cols-12 gap-8 items-stretch">
+                    {/* Left: Mobile selector + Quick Details */}
+                    <div className="lg:col-span-5 space-y-3 lg:hidden">
+                        {phases.map((phase, i) => (
+                            <button
+                                key={phase.id}
+                                type="button"
+                                onClick={() => setActive(i)}
+                                className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left text-xs font-bold transition-all ${
+                                    active === i
+                                        ? 'bg-[#002B49] text-white border-[#FFB800] shadow-md'
+                                        : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="font-mono text-amber-400">{phase.step}</span>
+                                    <span>{phase.title}</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 opacity-50" />
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Detailed Active Stage Console */}
+                    <div className="lg:col-span-12 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-gradient-to-br from-white via-zinc-50 to-zinc-100 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-950 p-6 sm:p-10 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-6 border-b border-zinc-200 dark:border-zinc-800">
+                                <div className="flex items-center gap-2">
+                                    <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-mono text-xs font-bold uppercase">
+                                        {phases[active].badge}
+                                    </span>
+                                    <span className="text-xs font-mono text-zinc-400">
+                                        Tahap {phases[active].step} dari 04
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-2 text-xs font-mono text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-3 py-1 rounded-lg border border-amber-500/20">
+                                    <FileText className="w-3.5 h-3.5" />
+                                    <span>Output: {phases[active].outputDoc}</span>
+                                </div>
                             </div>
-                            <h3 className="mt-2 text-base sm:text-xl font-extrabold text-gray-900 leading-snug dark:text-foreground">
+
+                            <h3 className="text-xl sm:text-2xl font-bold font-serif text-zinc-950 dark:text-white leading-snug">
                                 {phases[active].headline}
                             </h3>
-                            <p className="mt-2 text-xs sm:text-sm leading-relaxed text-gray-600 dark:text-muted-foreground">
+
+                            <p className="mt-3 text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed max-w-3xl">
                                 {phases[active].description}
                             </p>
 
-                            <div className="mt-5 sm:mt-6 border-t border-slate-100 pt-5 sm:pt-6 dark:border-border">
-                                <div className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-wider mb-3">
-                                    Fitur & Output Utama SAKIP Papua Barat
-                                </div>
-                                <ul className="grid gap-2.5 sm:grid-cols-2">
+                            {/* Checklist features */}
+                            <div className="mt-8 pt-6 border-t border-zinc-200/80 dark:border-zinc-800/80">
+                                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block mb-3">
+                                    KOMPONEN OPERASIONAL SAKIP
+                                </span>
+                                <div className="grid sm:grid-cols-2 gap-3">
                                     {phases[active].items.map((item) => (
-                                        <li
+                                        <div
                                             key={item}
-                                            className="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-xs leading-relaxed text-gray-700 dark:border-border dark:bg-muted/30 dark:text-gray-300"
+                                            className="flex items-start gap-3 p-3.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-850 shadow-xs"
                                         >
-                                            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                                                <Check className="h-2.5 w-2.5 stroke-[3]" />
+                                            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#FFB800]/20 text-[#D97706] dark:text-[#FFB800] mt-0.5">
+                                                <Check className="h-3 w-3 stroke-[3]" />
+                                            </div>
+                                            <span className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
+                                                {item}
                                             </span>
-                                            <span>{item}</span>
-                                        </li>
+                                        </div>
                                     ))}
-                                </ul>
+                                </div>
                             </div>
                         </div>
-                    </Reveal>
+
+                        {/* Stage navigation footer */}
+                        <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                            <button
+                                type="button"
+                                disabled={active === 0}
+                                onClick={() => setActive((v) => Math.max(0, v - 1))}
+                                className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                            >
+                                ← Tahap Sebelumnya
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={active === phases.length - 1}
+                                onClick={() => setActive((v) => Math.min(phases.length - 1, v + 1))}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#002B49] to-[#0A2540] hover:from-[#062035] hover:to-[#002B49] text-[#FFB800] border border-[#FFB800]/40 font-bold text-xs shadow-md transition-all disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                                <span>Tahap Selanjutnya</span>
+                                <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

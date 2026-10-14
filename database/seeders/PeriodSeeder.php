@@ -17,86 +17,72 @@ class PeriodSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Planning Period (Tahunan 2026)
-        $pp2026 = PlanningPeriod::updateOrCreate(
-            ['code' => 'TA-2026'],
-            [
-                'name' => 'Tahun Anggaran 2026',
-                'year' => 2026,
-                'type' => 'annual',
-                'start_date' => '2026-01-01',
-                'end_date' => '2026-12-31',
-                'status' => 'active',
-            ]
-        );
+        // 1. Planning Periods (2024, 2025, 2026)
+        $years = [2024, 2025, 2026];
+        $planningPeriods = [];
 
-        // 2. Performance Period (Tahunan 2026)
-        $perf2026 = PerformancePeriod::updateOrCreate(
-            ['year' => 2026],
-            [
-                'name' => 'Tahunan 2026',
-                'status' => 'open',
-                'start_date' => '2026-01-01',
-                'end_date' => '2026-12-31',
-                'description' => 'Periode Kinerja Tahunan 2026',
-            ]
-        );
-
-        // 3. Measurement Periods (Triwulan I - IV)
-        $quarters = [
-            [
-                'code' => '2026-TW1',
-                'name' => 'Triwulan I 2026',
-                'type' => 'quarterly',
-                'start_date' => '2026-01-01',
-                'end_date' => '2026-03-31',
-                'status' => 'closed',
-            ],
-            [
-                'code' => '2026-TW2',
-                'name' => 'Triwulan II 2026',
-                'type' => 'quarterly',
-                'start_date' => '2026-04-01',
-                'end_date' => '2026-06-30',
-                'status' => 'open',
-            ],
-            [
-                'code' => '2026-TW3',
-                'name' => 'Triwulan III 2026',
-                'type' => 'quarterly',
-                'start_date' => '2026-07-01',
-                'end_date' => '2026-09-30',
-                'status' => 'open',
-            ],
-            [
-                'code' => '2026-TW4',
-                'name' => 'Triwulan IV 2026',
-                'type' => 'quarterly',
-                'start_date' => '2026-10-01',
-                'end_date' => '2026-12-31',
-                'status' => 'open',
-            ],
-        ];
-
-        foreach ($quarters as $q) {
-            MeasurementPeriod::updateOrCreate(
-                ['code' => $q['code']],
-                array_merge($q, [
-                    'planning_period_id' => $pp2026->id,
-                ])
+        foreach ($years as $year) {
+            $planningPeriods[$year] = PlanningPeriod::updateOrCreate(
+                ['code' => "TA-{$year}"],
+                [
+                    'name' => "Tahun Anggaran {$year}",
+                    'year' => $year,
+                    'type' => 'annual',
+                    'start_date' => "{$year}-01-01",
+                    'end_date' => "{$year}-12-31",
+                    'status' => $year === 2026 ? 'active' : 'closed',
+                ]
             );
+
+            // 2. Performance Period
+            PerformancePeriod::updateOrCreate(
+                ['year' => $year],
+                [
+                    'name' => "Tahunan {$year}",
+                    'status' => $year === 2026 ? 'open' : 'closed',
+                    'start_date' => "{$year}-01-01",
+                    'end_date' => "{$year}-12-31",
+                    'description' => "Periode Kinerja Tahunan {$year}",
+                ]
+            );
+
+            // 3. Measurement Periods (TW1 - TW4)
+            $twDefinitions = [
+                ['suffix' => 'TW1', 'name' => 'Triwulan I', 'start' => '01-01', 'end' => '03-31', 'status' => $year < 2026 ? 'closed' : 'closed'],
+                ['suffix' => 'TW2', 'name' => 'Triwulan II', 'start' => '04-01', 'end' => '06-30', 'status' => $year < 2026 ? 'closed' : 'open'],
+                ['suffix' => 'TW3', 'name' => 'Triwulan III', 'start' => '07-01', 'end' => '09-30', 'status' => $year < 2026 ? 'closed' : 'open'],
+                ['suffix' => 'TW4', 'name' => 'Triwulan IV', 'start' => '10-01', 'end' => '12-31', 'status' => $year < 2026 ? 'closed' : 'open'],
+            ];
+
+            foreach ($twDefinitions as $tw) {
+                MeasurementPeriod::updateOrCreate(
+                    ['code' => "{$year}-{$tw['suffix']}"],
+                    [
+                        'name' => "{$tw['name']} {$year}",
+                        'type' => 'quarterly',
+                        'planning_period_id' => $planningPeriods[$year]->id,
+                        'start_date' => "{$year}-{$tw['start']}",
+                        'end_date' => "{$year}-{$tw['end']}",
+                        'status' => $tw['status'],
+                    ]
+                );
+            }
         }
 
-        // 4. Measurement Units (Satuan Pengukuran)
+        // 4. Measurement Units (Satuan Pengukuran Lengkap PUPR)
         $units = [
             ['code' => 'PCT', 'name' => 'Persen', 'symbol' => '%', 'description' => 'Persentase Capaian', 'is_active' => true],
             ['code' => 'DOK', 'name' => 'Dokumen', 'symbol' => 'Dokumen', 'description' => 'Jumlah Dokumen', 'is_active' => true],
             ['code' => 'ORG', 'name' => 'Orang / Pegawai', 'symbol' => 'Orang', 'description' => 'Jumlah Individu/Pegawai', 'is_active' => true],
-            ['code' => 'UNIT', 'name' => 'Unit / Sekolah', 'symbol' => 'Unit', 'description' => 'Jumlah Satuan Fasilitas', 'is_active' => true],
-            ['code' => 'PAKET', 'name' => 'Paket Pekerjaan', 'symbol' => 'Paket', 'description' => 'Paket Kegiatan Fisik', 'is_active' => true],
+            ['code' => 'UNIT', 'name' => 'Unit / Bangunan', 'symbol' => 'Unit', 'description' => 'Jumlah Satuan Fasilitas', 'is_active' => true],
+            ['code' => 'PAKET', 'name' => 'Paket Pekerjaan', 'symbol' => 'Paket', 'description' => 'Paket Kegiatan Konstruksi', 'is_active' => true],
             ['code' => 'NILAI', 'name' => 'Indeks / Nilai', 'symbol' => 'Poin', 'description' => 'Skor atau Indeks Evaluasi', 'is_active' => true],
             ['code' => 'BULAN', 'name' => 'Bulan Layanan', 'symbol' => 'Bulan', 'description' => 'Durasi Waktu', 'is_active' => true],
             ['code' => 'RUPIAH', 'name' => 'Rupiah', 'symbol' => 'Rp', 'description' => 'Nilai Nominal Keuangan', 'is_active' => true],
+            ['code' => 'KM', 'name' => 'Kilometer', 'symbol' => 'km', 'description' => 'Panjang Ruas Jalan Daerah', 'is_active' => true],
+            ['code' => 'M', 'name' => 'Meter', 'symbol' => 'm', 'description' => 'Panjang Saluran/Jembatan', 'is_active' => true],
+            ['code' => 'L_DTK', 'name' => 'Liter per Detik', 'symbol' => 'L/dtk', 'description' => 'Kapasitas Debit Air Bersih SPAM', 'is_active' => true],
+            ['code' => 'HA', 'name' => 'Hektar', 'symbol' => 'Ha', 'description' => 'Luas Cakungan Kawasan/Irigasi', 'is_active' => true],
         ];
 
         foreach ($units as $u) {

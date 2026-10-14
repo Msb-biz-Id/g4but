@@ -147,16 +147,6 @@ class User extends Authenticatable
             ->all();
     }
 
-    public function isProvincialAdmin(): bool
-    {
-        return $this->isOpdAdmin();
-    }
-
-    public function isProvincialLevel(): bool
-    {
-        return $this->isOpdAdmin() || $this->hasRole('Kepala OPD');
-    }
-
     public function isOpdLevel(): bool
     {
         return $this->roles()->whereIn('name', [

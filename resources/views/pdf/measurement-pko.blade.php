@@ -41,14 +41,14 @@ tr:nth-child(even) td { background:#f8fafc; }
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Provinsi Papua Barat</div>
       <div class="doc-title">LAPORAN PENILAIAN KINERJA ORGANISASI (PKO)</div>
-      <div class="doc-sub">Evaluasi Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Tingkat: {{ ucfirst($targetType) }} &nbsp;|&nbsp; Sistem e-KASUARI SAKIP</div>
+      <div class="doc-sub">Evaluasi Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Tingkat: {{ ucfirst($targetType) }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
 </table>
 <div class="meta">
   <div class="meta-l"><strong>Tahun:</strong> {{ $year }} &nbsp;|&nbsp;
-  <strong>Tingkat:</strong> {{ $targetType === 'pemda' ? 'Pemerintah Daerah' : 'Perangkat Daerah' }} &nbsp;|&nbsp;
+  <strong>Tingkat:</strong> {{ $targetType === 'pemda' ? 'Perangkat Daerah Induk' : 'Perangkat Daerah' }} &nbsp;|&nbsp;
   @if($organization) <strong>OPD:</strong> {{ $organization->name }} @endif</div>
   <div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div>
 </div>
@@ -150,7 +150,7 @@ tr:nth-child(even) td { background:#f8fafc; }
   </div>
 </div>
 <div class="footer">
-  <div class="fl">Sistem e-KASUARI — SAKIP Provinsi Papua Barat</div>
+  <div class="fl">Sistem e-SAKIP — SAKIP Provinsi Papua Barat</div>
   <div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div>
 </div>
 </body>

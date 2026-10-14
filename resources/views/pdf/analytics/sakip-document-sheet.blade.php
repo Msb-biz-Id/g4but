@@ -66,7 +66,7 @@
                 <div class="instansi">Pemerintah Provinsi Papua Barat</div>
                 <div class="instansi-sub">Sistem Akuntabilitas Kinerja Instansi Pemerintah (SAKIP)</div>
                 <div class="doc-title">LEMBAR PENGESAHAN DOKUMEN SAKIP</div>
-                <div class="doc-sub">Sistem Informasi e-KASUARI LITE &bull; Cetak Otomatis Dashboard Analitik</div>
+                <div class="doc-sub">Sistem Informasi e-SAKIP LITE &bull; Cetak Otomatis Dashboard Analitik</div>
             </td>
             <td class="hdr-spacer-cell"></td>
         </tr>
@@ -153,7 +153,7 @@
     <div class="seal-box">
         <div class="seal-title">Keterangan Keabsahan Dokumen Digital</div>
         <div class="seal-desc">
-            Dokumen ini diakui secara sah dalam Sistem e-KASUARI Provinsi Papua Barat sebagai bagian dari pemenuhan parameter evaluasi akuntabilitas kinerja SAKIP (13 Dokumen Pemda / 12 Dokumen OPD). Apabila OPD bersangkutan mengunggah lampiran berkas lengkap (PDF/XLSX), sistem akan secara otomatis menyediakan berkas asli tersebut pada tautan unduh.
+            Dokumen ini diakui secara sah dalam Sistem e-SAKIP Provinsi Papua Barat sebagai bagian dari pemenuhan parameter evaluasi akuntabilitas kinerja SAKIP (12 Dokumen OPD). Apabila OPD bersangkutan mengunggah lampiran berkas lengkap (PDF/XLSX), sistem akan secara otomatis menyediakan berkas asli tersebut pada tautan unduh.
         </div>
     </div>
 
@@ -179,7 +179,7 @@
     </table>
 
     <div class="footer">
-        <div class="fl">Sistem Informasi e-KASUARI &bull; Dokumen SAKIP {{ $doc->code ?: $doc->id }}</div>
+        <div class="fl">Sistem Informasi e-SAKIP &bull; Dokumen SAKIP {{ $doc->code ?: $doc->id }}</div>
         <div class="fr">Dicetak pada: {{ $generatedAt }}</div>
     </div>
 </body>

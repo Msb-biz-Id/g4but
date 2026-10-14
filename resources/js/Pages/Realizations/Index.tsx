@@ -37,6 +37,8 @@ import {
     X,
 } from 'lucide-react';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -106,7 +108,7 @@ const achievementConfig: Record<string, { text: string; variant: 'success' | 'wa
     good:     { text: 'Baik',    variant: 'success' },
     warning:  { text: 'Waspada', variant: 'warning' },
     critical: { text: 'Kritis',  variant: 'destructive' },
-    no_data:  { text: '—',       variant: 'secondary' },
+    no_data:  { text: '-',       variant: 'secondary' },
 };
 
 // ─── Revision Dialog ──────────────────────────────────────────────────────────
@@ -196,7 +198,7 @@ export default function RealizationsIndex({
     const canApprove    = permissions.includes('realization:approve');
     const canReject     = permissions.includes('realization:reject');
 
-    // Debounced filter navigation — isMounted guard prevents double request on mount
+    // Debounced filter navigation - isMounted guard prevents double request on mount
     useEffect(() => {
         if (!isMounted.current) { isMounted.current = true; return; }
         clearTimeout(filterTimer.current);
@@ -234,12 +236,28 @@ export default function RealizationsIndex({
     };
 
     return (
-        <AuthenticatedLayout
-            header="Realisasi Kinerja"
-        >
+        <AuthenticatedLayout header="Realisasi Kinerja">
             <Head title="Realisasi Kinerja" />
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
+            <div className="py-6">
+                <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+                    <PageHeader
+                        breadcrumbs={[
+                            { label: 'Pengukuran' },
+                            { label: 'Realisasi Kinerja' },
+                        ]}
+                        title="Realisasi Kinerja Indikator"
+                        description="Pengelolaan dan verifikasi capaian realisasi indikator kinerja berkala instansi pemerintah."
+                        actions={
+                            canCreate ? (
+                                <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+                                    <Link href={route('realizations.create')}>
+                                        <PlusCircle className="mr-2 h-4 w-4" />
+                                        Input Realisasi
+                                    </Link>
+                                </Button>
+                            ) : undefined
+                        }
+                    />
 
                     {/* Flash messages */}
                     {flash?.success && (
@@ -286,7 +304,7 @@ export default function RealizationsIndex({
                                 <SelectNative value={organizationId} onChange={(e) => setOrgId(e.target.value)} className="w-full">
                                     <option value="">Semua OPD</option>
                                     {organizations.map((org) => (
-                                        <option key={org.id} value={org.id}>{org.code} — {org.name}</option>
+                                        <option key={org.id} value={org.id}>{org.code} - {org.name}</option>
                                     ))}
                                 </SelectNative>
                                 <SelectNative value={status} onChange={(e) => setStatus(e.target.value)} className="w-full">
@@ -340,7 +358,7 @@ export default function RealizationsIndex({
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="text-sm font-medium">
-                                                        {real.indicator_version?.indicator?.code ?? '—'} — {real.indicator_version?.name ?? '—'}
+                                                        {real.indicator_version?.indicator?.code ?? '-'} - {real.indicator_version?.name ?? '-'}
                                                     </div>
                                                     <div className="mt-0.5 text-xs text-gray-400">v{real.indicator_version?.version_number}</div>
                                                     {/* Show revision reason as inline notice (FR-MSR-010) */}
@@ -352,10 +370,10 @@ export default function RealizationsIndex({
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="whitespace-nowrap text-sm text-gray-500">
-                                                    {real.organization?.code ?? '—'}
+                                                    {real.organization?.code ?? '-'}
                                                 </TableCell>
                                                 <TableCell className="whitespace-nowrap text-sm text-gray-500">
-                                                    {real.measurement_period?.name ?? '—'}
+                                                    {real.measurement_period?.name ?? '-'}
                                                 </TableCell>
                                                 <TableCell className="whitespace-nowrap text-right font-semibold">
                                                     {Number(real.value).toLocaleString('id-ID')}
@@ -373,7 +391,7 @@ export default function RealizationsIndex({
                                                             <span className="text-xs text-gray-400">{achConf.text}</span>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-xs text-gray-400">—</span>
+                                                        <span className="text-xs text-gray-400">-</span>
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="whitespace-nowrap">
@@ -459,7 +477,7 @@ export default function RealizationsIndex({
                 </div>
             </div>
 
-            {/* Revision Dialog (FR-MSR-010) — replaces window.prompt */}
+            {/* Revision Dialog (FR-MSR-010) - replaces window.prompt */}
             <RevisionDialog
                 open={revisionOpen}
                 onClose={() => { setRevisionOpen(false); setRevisionTarget(null); }}

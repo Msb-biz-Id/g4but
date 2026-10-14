@@ -23,7 +23,7 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Provinsi Papua Barat</div>
 <div class="doc-title">NILAI SAKIP OPD — 4 KOMPONEN AKUNTABILITAS</div>
-<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-KASUARI SAKIP</div>
+<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
@@ -68,5 +68,5 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
     * Standar Evaluasi Akuntabilitas Kinerja Instansi Pemerintah (PermenPANRB No. 88/2021)
   </div>
 </div>
-<div class="footer"><div class="fl">Sistem e-KASUARI — SAKIP Provinsi Papua Barat</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
+<div class="footer"><div class="fl">Sistem e-SAKIP — SAKIP Provinsi Papua Barat</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
 </body></html>

@@ -8,646 +8,392 @@ import { FlashToaster } from '@/Components/FlashToaster';
 import { applyServerTheme } from '@/lib/theme';
 import {
     AlertTriangle,
-    BrainCircuit,
     FileBarChart2,
     Lock,
     X,
     BookOpen,
+    Network,
+    LogIn,
+    LayoutDashboard,
+    Clock,
+    Compass,
+    MapPin,
+    Sparkles,
+    HardHat,
+    Building2,
 } from 'lucide-react';
+import { PuprEmblemSvg, BIDANG_PUPR_MIMIKA, DISTRIK_MIMIKA } from '@/Components/Landing/PuprOrnaments';
+import { PuprCitySkylinePattern, PuprBlueprintGrid } from '@/Components/Landing/PuprCityPattern';
 
-// ─── Tipe item nav ────────────────────────────────────────────────────────────
 interface NavItem {
     id: string;
     label: string;
     href: string;
-    /** true = menu sensitif, publik harus login untuk akses */
     requiresLogin?: boolean;
-    /** ikon kecil di samping label (hanya untuk menu sensitif) */
     icon?: React.ElementType;
-    /** tooltip badge kecil (misal "Live", "AI") */
-    badge?: string;
 }
 
-// ─── Dialog "Perlu Login" ─────────────────────────────────────────────────────
-function LoginRequiredModal({
-    open,
-    feature,
-    icon: Icon,
-    onClose,
-}: {
-    open: boolean;
-    feature: string;
-    icon?: React.ElementType;
-    onClose: () => void;
-}) {
-    // Tutup dengan ESC
-    useEffect(() => {
-        if (!open) return;
-        const handler = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
-        };
-        window.addEventListener('keydown', handler);
-        return () => window.removeEventListener('keydown', handler);
-    }, [open, onClose]);
-
-    if (!open) return null;
-
-    return (
-        /* Backdrop */
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-            onClick={onClose}
-        >
-            <div
-                className="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-border dark:bg-card"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Tombol tutup */}
-                <button
-                    onClick={onClose}
-                    className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-muted dark:hover:text-foreground transition"
-                    aria-label="Tutup"
-                >
-                    <X className="h-4 w-4" />
-                </button>
-
-                <div className="p-6">
-                    {/* Ikon fitur */}
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 dark:bg-primary/20">
-                        {Icon ? (
-                            <Icon className="h-7 w-7 text-primary" />
-                        ) : (
-                            <Lock className="h-7 w-7 text-primary" />
-                        )}
-                    </div>
-
-                    <h2 className="mt-4 text-lg font-bold text-gray-900 dark:text-foreground">
-                        Akses Khusus Internal
-                    </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-muted-foreground">
-                        Fitur <span className="font-semibold text-gray-900 dark:text-foreground">{feature}</span> hanya
-                        tersedia untuk pengguna internal Pemerintah Provinsi Papua Barat yang telah terautentikasi.
-                    </p>
-
-                    <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                        <Link
-                            href={route('login')}
-                            className="flex flex-1 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-sm hover:bg-primary/90 transition"
-                        >
-                            Masuk ke Sistem
-                        </Link>
-                        <button
-                            onClick={onClose}
-                            className="flex flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-slate-50 transition dark:border-border dark:bg-card dark:text-foreground dark:hover:bg-muted"
-                        >
-                            Kembali
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// ─── Layout Utama ─────────────────────────────────────────────────────────────
 export default function PublicLayout({
     children,
     active = 'home',
     hideFooter = false,
-}: PropsWithChildren<{ active?: 'home' | 'info' | 'laporan'; hideFooter?: boolean }>) {
-    const { auth, theme } = usePage<PageProps>().props;
+}: PropsWithChildren<{ active?: 'home' | 'info' | 'laporan' | 'pohon'; hideFooter?: boolean }>) {
+    const { auth, theme, appConfig } = usePage<PageProps>().props;
     const [mobileOpen, setMobileOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    const [spy, setSpy] = useState('beranda');
+    const [witTime, setWitTime] = useState<string>('');
 
-    // State modal "Perlu Login"
-    const [loginModal, setLoginModal] = useState<{
-        open: boolean;
-        feature: string;
-        icon?: React.ElementType;
-    }>({ open: false, feature: '' });
-
-    // Apply server theme
     useEffect(() => {
         if (theme) applyServerTheme(theme);
     }, [theme]);
 
+    useEffect(() => {
+        const updateWit = () => {
+            const now = new Date();
+            const formatter = new Intl.DateTimeFormat('id-ID', {
+                timeZone: 'Asia/Jayapura',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
+            setWitTime(formatter.format(now) + ' WIT');
+        };
+        updateWit();
+        const t = setInterval(updateWit, 1000);
+        return () => clearInterval(t);
+    }, []);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     const homeUrl = route('home');
     const infoUrl = route('knowledge.public.index');
 
-    // ─── Navigasi Publik Inti (Sesuai Baseline DEC-003, MOD-001..MOD-003, AC-004) ───
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
+    const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
+    const currentYear = appConfig?.currentYear || new Date().getFullYear();
+
     const navSections: NavItem[] = [
         { id: 'beranda', label: 'Beranda', href: homeUrl },
-        // { id: 'modul',   label: 'Modul',   href: `${homeUrl}#modul` }, // Hidden sesuai permintaan
+        {
+            id: 'pohon',
+            label: 'Pohon Kinerja',
+            href: route('laporan.publik.pohon-kinerja'),
+            requiresLogin: false,
+            icon: Network,
+        },
         {
             id: 'laporan',
-            label: 'Laporan Publik',
+            label: 'Laporan SAKIP',
             href: route('laporan.publik.index'),
             requiresLogin: false,
             icon: FileBarChart2,
-            badge: 'Publik',
         },
         {
-            id: 'info',
-            label: 'Informasi Publik',
+            id: 'regulasi',
+            label: 'Pusat Regulasi',
             href: infoUrl,
             requiresLogin: false,
             icon: BookOpen,
-            badge: 'Publik',
-        },
-        {
-            id: 'ews',
-            label: 'EWS',
-            href: auth.user ? route('alerts.index') : '#',
-            requiresLogin: true,
-            icon: AlertTriangle,
-            badge: 'Live',
-        },
-        {
-            id: 'ai',
-            label: 'AI Performance',
-            href: auth.user ? route('ai.index') : '#',
-            requiresLogin: true,
-            icon: BrainCircuit,
-            badge: 'AI',
         },
     ];
 
-    // ─── Navigasi Sekunder (Untuk Footer & Drawer Mobile) ─────────────────────────
-    const secondarySections = [
-        // { id: 'sistem', label: 'Alur Kerja SAKIP', href: `${homeUrl}#sistem` }, // Hidden sesuai permintaan
-        { id: 'faq',    label: 'Tanya Jawab (FAQ)', href: `${homeUrl}#faq` },
-        { id: 'info',   label: 'Pusat Informasi & Regulasi', href: infoUrl },
-    ];
-
-    // ─── Handler klik nav ─────────────────────────────────────────────────────
-    const handleNavClick = (
-        e: React.MouseEvent,
-        item: NavItem | { id: string; label: string; href: string; requiresLogin?: boolean; icon?: React.ElementType },
-    ) => {
-        // Menu sensitif & belum login → tampilkan modal
-        if (item.requiresLogin && !auth.user) {
-            e.preventDefault();
-            setMobileOpen(false);
-            setLoginModal({ open: true, feature: item.label, icon: item.icon });
-            return;
-        }
-
-        // Navigasi publik (scroll ke section) — hanya di halaman home
-        if (active === 'home' && !item.requiresLogin && item.id !== 'laporan' && item.id !== 'info') {
-            if (item.id === 'beranda') {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                history.pushState(null, '', homeUrl);
-                setMobileOpen(false);
-            } else if (item.href.includes('#')) {
-                const hash = item.href.split('#')[1];
-                const el = document.getElementById(hash);
-                if (el) {
-                    e.preventDefault();
-                    el.scrollIntoView({ behavior: 'smooth' });
-                    history.pushState(null, '', `#${hash}`);
-                    setMobileOpen(false);
-                }
-            }
-        } else {
-            setMobileOpen(false);
-        }
-    };
-
-    // Auto scroll ke hash saat pertama load
-    useEffect(() => {
-        if (typeof window !== 'undefined' && window.location.hash) {
-            const hash = window.location.hash.replace('#', '');
-            const targetEl = document.getElementById(hash);
-            if (targetEl) {
-                setTimeout(() => targetEl.scrollIntoView({ behavior: 'smooth' }), 200);
-            }
-        }
-    }, []);
-
-    // Scroll spy — header sticky
-    useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 8);
-        onScroll();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
-    }, []);
-
-    // Scroll spy — section aktif
-    useEffect(() => {
-        if (active !== 'home') return;
-        const ids: string[] = [];
-        const onScroll = () => {
-            const marker = window.scrollY + window.innerHeight * 0.35;
-            let current = 'beranda';
-            for (const id of ids) {
-                const el = document.getElementById(id);
-                if (el) {
-                    const top = el.getBoundingClientRect().top + window.scrollY;
-                    if (top <= marker) current = id;
-                }
-            }
-            setSpy(current);
-        };
-        onScroll();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
-    }, [active]);
-
-    // ─── Class helpers ────────────────────────────────────────────────────────
     const isActive = (item: NavItem) => {
-        if (item.id === 'laporan') {
-            return (
-                active === 'laporan' ||
-                (typeof window !== 'undefined' && window.location.pathname.startsWith('/laporan'))
-            );
-        }
-        if (item.id === 'info') {
-            return (
-                active === 'info' ||
-                (typeof window !== 'undefined' && window.location.pathname.startsWith('/informasi'))
-            );
-        }
-        if (item.requiresLogin) return false;
-        if (active === 'home') {
-            if (typeof window !== 'undefined' && window.location.pathname.startsWith('/laporan')) {
-                return false;
-            }
-            return spy === item.id;
-        }
+        if (item.id === 'beranda' && active === 'home') return true;
+        if (item.id === 'pohon' && active === 'pohon') return true;
+        if (item.id === 'laporan' && active === 'laporan') return true;
+        if (item.id === 'regulasi' && active === 'info') return true;
         return false;
     };
 
-    const linkClass = (item: NavItem) => {
-        const base =
-            'group relative inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium transition-all duration-300 px-3 py-1.5 rounded-lg';
-        if (item.requiresLogin) {
-            return `${base} text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 dark:text-muted-foreground dark:hover:text-foreground dark:hover:bg-muted/50`;
-        }
-        return `${base} ${
-            isActive(item)
-                ? 'bg-primary/10 font-semibold text-primary dark:bg-primary/20 dark:text-primary'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 dark:text-muted-foreground dark:hover:text-foreground dark:hover:bg-muted/50'
-        }`;
-    };
-
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="relative min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#070E17] text-slate-900 dark:text-slate-100 selection:bg-[#FFB800] selection:text-slate-950 font-sans transition-colors duration-300">
+            <ScrollToTop />
+            <FlashToaster />
 
-            {/* ── Modal "Perlu Login" (AC-005) ───────────────────────────── */}
-            <LoginRequiredModal
-                open={loginModal.open}
-                feature={loginModal.feature}
-                icon={loginModal.icon}
-                onClose={() => setLoginModal({ open: false, feature: '' })}
-            />
+            {/* ── Top Official PUPR Accent Stripe ────────────────────────────── */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#FFB800] via-[#002B49] to-[#FFB800] shadow-sm" />
 
-            {/* ── Header / Navbar ─────────────────────────────────────────── */}
+            {/* ── Sticky Navigation Header ───────────────────────────────────── */}
             <header
-                className={`fixed top-0 left-0 right-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur-md dark:border-border dark:bg-background/95 transition-all duration-300 ${
-                    scrolled ? 'shadow-sm' : 'shadow-xs'
+                className={`sticky top-0 z-40 w-full transition-all duration-200 border-b ${
+                    scrolled
+                        ? 'bg-[#002B49]/95 dark:bg-[#041320]/95 backdrop-blur-md shadow-lg border-[#FFB800]/20 text-white'
+                        : 'bg-[#002B49] dark:bg-[#041320] border-amber-500/20 text-white'
                 }`}
             >
-                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6">
-                    {/* Logo */}
+                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+                    {/* Brand & PUPR Mimika Identity */}
                     <Link
-                        href={route('home')}
-                        onClick={(e) => {
-                            if (active === 'home') {
-                                e.preventDefault();
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                history.pushState(null, '', homeUrl);
-                            }
-                        }}
-                        className="flex shrink-0 items-center gap-2.5"
+                        href={homeUrl}
+                        className="group flex shrink-0 items-center gap-3"
                     >
-                        <ApplicationLogo className="h-9 w-9 shrink-0 drop-shadow-sm transition-transform hover:scale-105" />
-                        <div className="flex flex-col">
-                            <span className="text-lg font-extrabold tracking-tight leading-none text-gray-900 dark:text-foreground">
-                                e-KASUARI
+                        <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 p-2 shadow-md border border-amber-300/40 group-hover:scale-105 transition-transform">
+                            <PuprEmblemSvg className="h-full w-full object-contain" color="#002B49" />
+                            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#002B49] text-[8px] font-black text-[#FFB800] border border-amber-400">
+                                PU
                             </span>
-                            <span className="text-[10px] font-semibold tracking-wider uppercase text-primary">
-                                Pemprov Papua Barat
+                        </div>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <span className="text-base font-black tracking-tight font-serif text-white leading-none">
+                                    {appName}
+                                </span>
+                                <span className="rounded-md bg-[#FFB800] px-1.5 py-0.5 text-[9px] font-mono font-black text-slate-950">
+                                    PUPR
+                                </span>
+                            </div>
+                            <span className="text-[11px] text-amber-300 font-semibold tracking-tight mt-0.5 leading-none">
+                                {orgName} • Mimika
                             </span>
                         </div>
                     </Link>
 
-                    {/* Nav Desktop */}
-                    <nav className="hidden items-center gap-1.5 lg:flex">
-                        {navSections.map((item) => (
-                            <Link
-                                key={item.id}
-                                href={item.href}
-                                onClick={(e) => handleNavClick(e, item)}
-                                className={linkClass(item)}
-                            >
-                                {item.icon && (
-                                    <item.icon className="h-4 w-4 shrink-0 transition-transform group-hover:scale-105 opacity-80 group-hover:opacity-100" />
-                                )}
-                                <span className="whitespace-nowrap">{item.label}</span>
-                                {item.requiresLogin && !auth.user ? (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 ring-1 ring-inset ring-slate-200/80 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700/60 leading-none select-none">
-                                        {item.badge && <span>{item.badge}</span>}
-                                        <Lock className="h-2.5 w-2.5 shrink-0 text-slate-400 dark:text-slate-500" />
-                                    </span>
-                                ) : item.badge ? (
-                                    <span
-                                        className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none select-none ${
-                                            item.badge === 'Live'
-                                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
-                                                : item.badge === 'AI'
-                                                ? 'bg-primary/10 text-primary dark:bg-primary/20'
-                                                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
-                                        }`}
-                                    >
-                                        {item.badge}
-                                    </span>
-                                ) : null}
-                            </Link>
-                        ))}
-
-                        {/* Nav Desktop Selesai */}
+                    {/* Nav Desktop with PUPR styling */}
+                    <nav className="hidden items-center gap-1 lg:flex bg-[#07243c] p-1 rounded-xl border border-white/10">
+                        {navSections.map((item) => {
+                            const isCurrent = isActive(item);
+                            const Icon = item.icon;
+                            return (
+                                <Link
+                                    key={item.id}
+                                    href={item.href}
+                                    className={`relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                        isCurrent
+                                            ? 'bg-[#FFB800] text-slate-950 shadow-md'
+                                            : 'text-slate-200 hover:text-white hover:bg-white/10'
+                                    }`}
+                                >
+                                    {Icon && <Icon className="h-3.5 w-3.5 opacity-80" />}
+                                    <span>{item.label}</span>
+                                </Link>
+                            );
+                        })}
                     </nav>
 
-                    {/* Right Controls: Auth Button + Theme Toggle + Mobile Hamburger */}
-                    <div className="flex items-center gap-2 sm:gap-2.5">
-                        {auth.user ? (
-                            <Link
-                                href={route('dashboard')}
-                                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all active:scale-95 whitespace-nowrap"
-                            >
-                                Dashboard
-                            </Link>
-                        ) : (
-                            <Link
-                                href={route('login')}
-                                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-3.5 py-1.5 text-xs font-bold text-slate-700 shadow-2xs hover:border-primary/40 hover:bg-slate-50 hover:text-primary dark:border-border dark:bg-card dark:text-slate-200 transition-all whitespace-nowrap"
-                            >
-                                <Lock className="h-3 w-3 text-slate-400" />
-                                <span>Masuk</span>
-                            </Link>
+                    {/* Right Controls: WIT Timika Clock, Theme, Auth */}
+                    <div className="flex items-center gap-3">
+                        {witTime && (
+                            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#07243c] border border-amber-400/30 text-xs font-mono text-amber-300">
+                                <Clock className="w-3.5 h-3.5 text-[#FFB800]" />
+                                <span>{witTime}</span>
+                            </div>
                         )}
 
                         <ThemeToggle />
 
+                        {auth.user ? (
+                            <Link
+                                href={route('dashboard')}
+                                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#FFB800] to-amber-500 hover:from-amber-400 hover:to-[#FFB800] text-slate-950 px-4 py-2 text-xs font-black shadow-md transition-transform active:scale-95"
+                            >
+                                <LayoutDashboard className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Dashboard</span>
+                            </Link>
+                        ) : (
+                            <Link
+                                href={route('login')}
+                                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#FFB800] to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 px-4 py-2 text-xs font-black shadow-md transition-all active:scale-95"
+                            >
+                                <LogIn className="w-3.5 h-3.5" />
+                                <span>Masuk</span>
+                            </Link>
+                        )}
+
+                        {/* Mobile Toggle */}
                         <button
+                            type="button"
                             onClick={() => setMobileOpen((o) => !o)}
-                            className="flex h-10 w-10 items-center justify-center rounded-lg transition text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-accent lg:hidden"
-                            aria-label={mobileOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+                            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white lg:hidden"
+                            aria-label={mobileOpen ? 'Tutup navigasi' : 'Buka navigasi'}
                         >
-                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                {mobileOpen ? (
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                ) : (
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                                )}
-                            </svg>
+                            {mobileOpen ? <X className="h-5 w-5" /> : (
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            )}
                         </button>
                     </div>
                 </div>
 
-                {/* Nav Mobile */}
+                {/* Mobile Drawer */}
                 {mobileOpen && (
-                    <nav className="border-t border-gray-100 bg-white px-4 py-3 dark:border-border dark:bg-background lg:hidden">
-                        <div className="flex flex-col gap-1">
-                            <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-3 py-1">
-                                Menu Utama
-                            </div>
+                    <div className="border-t border-white/10 bg-[#002B49] p-5 lg:hidden animate-fade-in shadow-2xl text-white">
+                        <div className="mb-4 flex items-center justify-between pb-3 border-b border-white/10">
+                            <span className="text-xs font-mono font-bold text-[#FFB800] flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>{witTime} (Timika, Mimika)</span>
+                            </span>
+                            <span className="text-[10px] uppercase font-mono text-slate-300">
+                                PUPR MIMIKA
+                            </span>
+                        </div>
+                        <div className="space-y-1.5">
                             {navSections.map((item) => (
                                 <Link
                                     key={item.id}
                                     href={item.href}
-                                    onClick={(e) => handleNavClick(e, item)}
-                                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap ${
+                                    onClick={() => setMobileOpen(false)}
+                                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold ${
                                         isActive(item)
-                                            ? 'bg-primary/10 font-semibold text-primary dark:bg-primary/20 dark:text-primary'
-                                            : item.requiresLogin
-                                            ? 'text-gray-700 hover:bg-slate-50 hover:text-primary dark:text-gray-200 dark:hover:bg-muted/50'
-                                            : 'text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-accent'
+                                            ? 'bg-[#FFB800] text-slate-950 shadow-md'
+                                            : 'text-slate-200 hover:bg-white/10'
                                     }`}
                                 >
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4 shrink-0 text-primary/70" />
-                                    )}
-                                    <span className="flex-1 whitespace-nowrap">{item.label}</span>
-                                    {item.requiresLogin && !auth.user ? (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-400">
-                                            {item.badge && <span>{item.badge}</span>}
-                                            <Lock className="h-2.5 w-2.5" />
-                                        </span>
-                                    ) : item.badge ? (
-                                        <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none ${
-                                                item.badge === 'Live'
-                                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
-                                                    : item.badge === 'AI'
-                                                    ? 'bg-primary/10 text-primary dark:bg-primary/20'
-                                                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
-                                            }`}
-                                        >
-                                            {item.badge}
-                                        </span>
-                                    ) : null}
+                                    <div className="flex items-center gap-2.5">
+                                        {item.icon && <item.icon className="h-4 w-4" />}
+                                        <span>{item.label}</span>
+                                    </div>
                                 </Link>
                             ))}
-
-                            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-border">
-                                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-3 py-1">
-                                    Informasi Tambahan
-                                </div>
-                                {secondarySections.map((item) => (
-                                    <Link
-                                        key={item.id}
-                                        href={item.href}
-                                        onClick={(e) => handleNavClick(e, item)}
-                                        className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-accent whitespace-nowrap"
-                                    >
-                                        <span>{item.label}</span>
-                                    </Link>
-                                ))}
-                            </div>
-
-                            {/* Auth Action */}
-                            {auth.user ? (
-                                <div className="mt-3 border-t border-gray-100 pt-2 dark:border-border">
-                                    <Link
-                                        href={route('dashboard')}
-                                        className="flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-sm hover:bg-primary/90 transition"
-                                    >
-                                        Buka Dashboard
-                                    </Link>
-                                </div>
-                            ) : (
-                                <div className="mt-3 border-t border-slate-100 pt-2 dark:border-border">
-                                    <Link
-                                        href={route('login')}
-                                        onClick={() => setMobileOpen(false)}
-                                        className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-sm font-bold text-slate-800 shadow-2xs hover:bg-slate-100 dark:border-border dark:bg-card dark:text-foreground dark:hover:bg-muted transition"
-                                    >
-                                        <Lock className="h-4 w-4 text-slate-500" />
-                                        <span>Masuk ke Sistem</span>
-                                    </Link>
-                                </div>
-                            )}
                         </div>
-                    </nav>
+                    </div>
                 )}
             </header>
 
-            {/* ── Konten Halaman ─────────────────────────────────────────── */}
-            <main className="pt-16">
+            {/* ── Main Page Content ──────────────────────────────────────── */}
+            <main className="flex-1">
                 {children}
             </main>
 
-            {/* ── Footer ─────────────────────────────────────────────────── */}
+            {/* ── Rich PUPR Mimika Civic Footer ──────────────────────────── */}
             {!hideFooter && (
-                <footer className="border-t border-slate-200/80 bg-slate-50/70 dark:border-border dark:bg-card">
-                <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-                    <div className="grid gap-10 md:grid-cols-12">
-                        {/* Kolom 1: Logo & Deskripsi (5 cols) */}
-                        <div className="space-y-4 md:col-span-5">
-                            <div className="flex items-center gap-3">
-                                <ApplicationLogo className="h-10 w-10 shrink-0 drop-shadow-xs" />
-                                <div>
-                                    <div className="text-base font-extrabold tracking-tight text-gray-900 dark:text-foreground">
-                                        e-KASUARI
+                <footer className="relative border-t border-amber-500/30 bg-gradient-to-b from-[#002B49] via-[#051c2f] to-[#020e17] text-white pt-14 pb-8 overflow-hidden">
+                    {/* Blueprint Grid & City Skyline PUPR Pattern */}
+                    <PuprBlueprintGrid className="opacity-[0.06]" />
+                    <PuprCitySkylinePattern className="text-[#FFB800] z-0" opacity="0.22" />
+
+                    <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        {/* 5 Matra Pembangunan PUPR Mimika */}
+                        <div className="mb-10 pb-8 border-b border-white/10">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                                <div className="flex items-center gap-2">
+                                    <HardHat className="w-4 h-4 text-[#FFB800]" />
+                                    <span className="text-xs font-bold uppercase tracking-wider text-amber-300 font-mono">
+                                        5 Matra Penyelenggaraan Infrastruktur • Dinas PUPR Kabupaten Mimika
+                                    </span>
+                                </div>
+                                <span className="text-[11px] text-slate-300 font-mono">
+                                    Konektivitas Bumi Amungme &amp; Kamoro
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                                {BIDANG_PUPR_MIMIKA.map((b) => (
+                                    <div
+                                        key={b.code}
+                                        className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-[#FFB800]/50 transition-colors"
+                                    >
+                                        <div className="text-[10px] font-mono font-bold text-[#FFB800]">
+                                            BIDANG {b.code}
+                                        </div>
+                                        <div className="text-xs font-bold text-white mt-0.5">
+                                            {b.name}
+                                        </div>
+                                        <div className="text-[11px] text-slate-300 leading-snug mt-1 opacity-80">
+                                            {b.scope}
+                                        </div>
                                     </div>
-                                    <div className="text-[11px] font-semibold text-primary uppercase tracking-wider">
-                                        Pemerintah Provinsi Papua Barat
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Main Footer Grid */}
+                        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 pb-10 border-b border-white/10">
+                            {/* Brand & Slogan */}
+                            <div className="lg:col-span-2 space-y-3.5">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 p-2 border border-amber-300/40 flex items-center justify-center shadow-lg">
+                                        <PuprEmblemSvg className="h-full w-full object-contain" color="#002B49" />
+                                    </div>
+                                    <div>
+                                        <div className="text-lg font-black font-serif text-white">
+                                            {orgName}
+                                        </div>
+                                        <div className="text-xs text-[#FFB800] font-bold">
+                                            {instansiName}
+                                        </div>
                                     </div>
                                 </div>
+
+                                <p className="text-xs text-slate-300 leading-relaxed max-w-lg font-light">
+                                    Sistem Informasi Akuntabilitas Kinerja Terintegrasi (<strong>{appName}</strong>) menyelaraskan perencanaan, pencatatan realisasi fisik &amp; keuangan, serta evaluasi SAKIP berkala dengan semboyan insan PUPR: <em>Bekerja Keras, Bergerak Cepat, Bertindak Tepat</em>.
+                                </p>
+
+                                <div className="flex items-center gap-2 text-xs font-mono text-amber-300 pt-1">
+                                    <MapPin className="w-4 h-4 text-[#FFB800]" />
+                                    <span>Kantor: Jalan Poros Timika - Kuala Kencana, Mimika, Papua Tengah</span>
+                                </div>
                             </div>
-                            <p className="max-w-sm text-xs leading-relaxed text-gray-600 dark:text-muted-foreground">
-                                Sistem Informasi Akuntabilitas Kinerja Instansi Pemerintah (SAKIP) Terpadu untuk percepatan integrasi perencanaan, pengukuran capaian, evaluasi berkala, dan pelaporan kinerja daerah menuju Papua Barat Bangkit, Mandiri, dan Sejahtera.
-                            </p>
-                            <div className="flex items-center gap-2 pt-1 text-[11px] text-gray-500 dark:text-muted-foreground">
-                                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                                <span>Biro Organisasi Setda Provinsi Papua Barat</span>
+
+                            {/* Tautan Layanan */}
+                            <div>
+                                <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-[#FFB800] mb-3 flex items-center gap-1.5">
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>Akses Kinerja Publik</span>
+                                </h4>
+                                <ul className="space-y-2 text-xs text-slate-300">
+                                    <li>
+                                        <Link href={homeUrl} className="hover:text-[#FFB800] transition-colors">
+                                            Beranda Utama
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href={route('laporan.publik.pohon-kinerja')} className="hover:text-[#FFB800] transition-colors">
+                                            Pohon Kinerja Cascading PUPR
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href={route('laporan.publik.index')} className="hover:text-[#FFB800] transition-colors">
+                                            Laporan SAKIP &amp; LHE
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href={infoUrl} className="hover:text-[#FFB800] transition-colors">
+                                            Bank Regulasi &amp; SOP Teknis
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            {/* Konsol Aparatur */}
+                            <div>
+                                <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-[#FFB800] mb-3">
+                                    Internal Dinas PUPR
+                                </h4>
+                                <ul className="space-y-2 text-xs text-slate-300">
+                                    <li>
+                                        <Link href={route('login')} className="hover:text-[#FFB800] transition-colors font-bold text-amber-300">
+                                            Masuk Portal Aparatur →
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <span className="opacity-75">Verifikasi Maker-Checker</span>
+                                    </li>
+                                    <li>
+                                        <span className="opacity-75">Evidence Fisik &amp; Keuangan</span>
+                                    </li>
+                                    <li>
+                                        <span className="opacity-75">Audit Trail Permanen</span>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
 
-                        {/* Kolom 2: Navigasi Sistem SAKIP (4 cols) */}
-                        <div className="space-y-3 md:col-span-4">
-                            <div className="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-foreground">
-                                Navigasi Sistem SAKIP
-                            </div>
-                            <ul className="space-y-2.5 text-xs text-gray-600 dark:text-muted-foreground">
-                                <li>
-                                    <Link
-                                        href={homeUrl}
-                                        onClick={(e) => handleNavClick(e, { id: 'beranda', label: 'Beranda', href: homeUrl })}
-                                        className="transition-colors hover:text-primary"
-                                    >
-                                        Beranda Utama
-                                    </Link>
-                                </li>
-                                {/* Hidden sesuai permintaan:
-                                <li>
-                                    <Link
-                                        href={`${homeUrl}#modul`}
-                                        onClick={(e) => handleNavClick(e, { id: 'modul', label: 'Modul', href: `${homeUrl}#modul` })}
-                                        className="transition-colors hover:text-primary"
-                                    >
-                                        Modul Fungsional SAKIP
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href={`${homeUrl}#sistem`}
-                                        onClick={(e) => handleNavClick(e, { id: 'sistem', label: 'Alur Kerja SAKIP', href: `${homeUrl}#sistem` })}
-                                        className="transition-colors hover:text-primary"
-                                    >
-                                        Alur Kerja 4 Tahap SAKIP
-                                    </Link>
-                                </li>
-                                */}
-                                <li>
-                                    <Link
-                                        href={route('laporan.publik.index')}
-                                        className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
-                                    >
-                                        <span>Laporan Kinerja Publik</span>
-                                        <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary dark:bg-primary/20">
-                                            Publik
-                                        </span>
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-
-                        {/* Kolom 3: Layanan & Regulasi (3 cols) */}
-                        <div className="space-y-3 md:col-span-3">
-                            <div className="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-foreground">
-                                Informasi & Layanan
-                            </div>
-                            <ul className="space-y-2.5 text-xs text-gray-600 dark:text-muted-foreground">
-                                <li>
-                                    <Link
-                                        href={infoUrl}
-                                        className="transition-colors hover:text-primary"
-                                    >
-                                        Pusat Regulasi & Pedoman
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href={`${homeUrl}#faq`}
-                                        onClick={(e) => handleNavClick(e, { id: 'faq', label: 'Tanya Jawab (FAQ)', href: `${homeUrl}#faq` })}
-                                        className="transition-colors hover:text-primary"
-                                    >
-                                        Tanya Jawab (FAQ)
-                                    </Link>
-                                </li>
-                                <li>
-                                    <button
-                                        onClick={(e) => {
-                                            const item = navSections.find((n) => n.id === 'ews');
-                                            if (item) handleNavClick(e, item);
-                                        }}
-                                        className="flex items-center gap-1.5 transition-colors hover:text-primary text-left"
-                                    >
-                                        <span>Early Warning System (EWS)</span>
-                                        <Lock className="h-3 w-3 text-slate-400" />
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        onClick={(e) => {
-                                            const item = navSections.find((n) => n.id === 'ai');
-                                            if (item) handleNavClick(e, item);
-                                        }}
-                                        className="flex items-center gap-1.5 transition-colors hover:text-primary text-left"
-                                    >
-                                        <span>AI Performance Analytics</span>
-                                        <Lock className="h-3 w-3 text-slate-400" />
-                                    </button>
-                                </li>
-                            </ul>
+                        {/* Bottom Copyright */}
+                        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 font-mono">
+                            <p>© {currentYear} {orgName} • {instansiName}. Hak Cipta Dilindungi.</p>
+                            <p>PermenPAN-RB No. 88/2021 • Perpres No. 29/2014</p>
                         </div>
                     </div>
-
-                    {/* Bottom bar */}
-                    <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200/60 pt-6 text-xs text-muted-foreground sm:flex-row dark:border-border/60">
-                        <p>© {new Date().getFullYear()} Biro Organisasi Sekretariat Daerah Provinsi Papua Barat. Hak Cipta Dilindungi.</p>
-                        <div className="flex items-center gap-4 text-[11px]">
-                            <span>e-KASUARI Lite v1.0</span>
-                            {auth.user && (
-                                <Link
-                                    href={route('dashboard')}
-                                    className="font-semibold text-primary hover:underline"
-                                >
-                                    Dashboard Internal →
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </footer>
+                </footer>
             )}
-
-            <ScrollToTop />
-            <FlashToaster />
         </div>
     );
 }

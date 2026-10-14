@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import PublicLayout from '@/Layouts/PublicLayout';
+import { PuprBlueprintGrid, PuprCitySkylinePattern } from '@/Components/Landing/PuprCityPattern';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { SelectNative } from '@/Components/ui/select-native';
@@ -278,6 +279,10 @@ export default function PohonKinerjaPublik({
     treeLevels,
     filters,
 }: PohonKinerjaPublikProps) {
+    const { appConfig } = usePage<any>().props;
+    const appName = appConfig?.appName || 'SIM Kinerja';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+
     const [highlightedId, setHighlightedId] = useState<number | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [layerFilterOpen, setLayerFilterOpen] = useState(false);
@@ -424,56 +429,66 @@ export default function PohonKinerjaPublik({
     };
 
     return (
-        <PublicLayout active="laporan" hideFooter={true}>
+        <PublicLayout active="pohon" hideFooter={true}>
             <Head>
-                <title>Pohon Kinerja Publik — e-KASUARI Papua Barat</title>
+                <title>{`Pohon Kinerja Publik - ${appName} ${instansiName}`}</title>
                 <meta
                     name="description"
-                    content="Visualisasi Pohon Kinerja (Cascading Kinerja) Pemerintah Provinsi Papua Barat. Telusuri keselarasan tujuan, sasaran strategis, program, dan indikator kinerja seluruh OPD."
+                    content={`Visualisasi Pohon Kinerja (Cascading Kinerja) ${instansiName}. Telusuri keselarasan tujuan, sasaran strategis, program, dan indikator kinerja seluruh unit kerja.`}
                 />
                 <meta
                     name="keywords"
-                    content="pohon kinerja papua barat, cascading kinerja, sasaran strategis opd, sakip papua barat, akuntabilitas"
+                    content={`pohon kinerja, cascading kinerja, sasaran strategis, sakip, akuntabilitas, ${instansiName.toLowerCase()}`}
                 />
-                <meta property="og:title" content="Pohon Kinerja Publik — e-KASUARI Papua Barat" />
+                <meta property="og:title" content={`Pohon Kinerja Publik - ${appName} ${instansiName}`} />
                 <meta
                     property="og:description"
-                    content="Visualisasi Pohon Kinerja (Cascading Kinerja) Pemerintah Provinsi Papua Barat secara interaktif dan transparan."
+                    content={`Visualisasi Pohon Kinerja (Cascading Kinerja) ${instansiName} secara interaktif dan transparan.`}
                 />
                 <meta property="og:type" content="website" />
                 <meta name="twitter:card" content="summary_large_image" />
             </Head>
 
-            <div className="flex flex-col h-[calc(100vh-4rem)] bg-slate-100 dark:bg-slate-950">
-                {/* Header Toolbar */}
-                <div className="shrink-0 flex flex-col gap-2.5 border-b border-slate-200 bg-white px-4 py-3 dark:border-border dark:bg-card shadow-xs">
+            <div className="flex flex-col h-[calc(100vh-4rem)] bg-[#f5f5f4] dark:bg-[#080d11] relative overflow-hidden">
+                {/* PUPR Blueprint Grid di Latar Belakang Pohon Kinerja */}
+                <PuprBlueprintGrid className="opacity-[0.04]" />
+
+                {/* Header Toolbar - PUPR Mimika Spirit */}
+                <div className="relative z-10 shrink-0 flex flex-col gap-2.5 border-b border-amber-500/30 bg-gradient-to-r from-[#002B49] via-[#051c2f] to-[#020e17] px-4 py-3 text-white shadow-md">
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5">
                             <Button
                                 size="sm"
                                 variant="ghost"
                                 asChild
-                                className="h-8 px-2 text-xs gap-1"
+                                className="h-8 px-2.5 text-xs gap-1.5 text-slate-200 hover:text-white hover:bg-white/10"
                             >
                                 <Link href={backUrl} onClick={handleBack}>
-                                    <ArrowLeft className="h-3.5 w-3.5" />
+                                    <ArrowLeft className="h-3.5 w-3.5 text-[#FFB800]" />
                                     <span>Kembali ke Laporan</span>
                                 </Link>
                             </Button>
-                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-                            <div className="flex items-center gap-1.5">
-                                <GitBranch className="h-4 w-4 text-indigo-600" />
-                                <h1 className="text-sm font-bold text-slate-800 dark:text-foreground">
-                                    Pohon Kinerja Publik (Cascading Outcome)
-                                </h1>
-                                <Badge variant="outline" className="text-[10px] hidden sm:inline-flex">
+                            <div className="h-4 w-px bg-white/20" />
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFB800] text-slate-950 font-bold shadow-sm">
+                                    <GitBranch className="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <h1 className="text-sm font-bold font-serif text-white leading-none">
+                                        Pohon Kinerja Cascading • PUPR Mimika
+                                    </h1>
+                                    <span className="text-[10px] font-mono text-[#FFB800]">
+                                        Penyelarasan 5 Matra Infrastruktur Bumi Amungme &amp; Kamoro
+                                    </span>
+                                </div>
+                                <span className="ml-2 rounded-md bg-[#FFB800] text-slate-950 px-2 py-0.5 text-[9px] font-mono font-black hidden sm:inline-flex">
                                     PermenPAN-RB 89/2021
-                                </Badge>
+                                </span>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <Button size="sm" variant="outline" asChild className="h-8 text-xs gap-1">
+                            <Button size="sm" asChild className="h-8 text-xs gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-bold shadow-md">
                                 <a
                                     href={route('planning.trees.print', {
                                         ...(filters.organization ? { organization: filters.organization } : {}),

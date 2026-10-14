@@ -10,6 +10,8 @@ import { YouTubePlayer, YouTubeIcon } from '@/Components/YouTubePlayer';
 import { isYouTubeUrl } from '@/lib/video';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface Props extends PageProps {
     document: {
@@ -62,11 +64,30 @@ export default function KnowledgeEdit({ auth, document }: Props) {
     const hasYouTubeUrl = isYouTubeUrl(form.data.external_url);
 
     return (
-        <AuthenticatedLayout header="Edit Dokumen">
+        <AuthenticatedLayout>
             <Head title="Edit Dokumen" />
-            <div className="py-12">
-                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-                    <Card>
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Edit Dokumen Informasi"
+                    description={`Memperbarui dokumen "${document.title}".`}
+                    breadcrumbs={[
+                        { label: 'Pusat Informasi', href: route('knowledge.index') },
+                        { label: 'Basis Pengetahuan', href: route('knowledge.index') },
+                        { label: 'Edit Dokumen' },
+                    ]}
+                    actions={
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={route('knowledge.index')} className="gap-1.5">
+                                <ArrowLeft className="h-4 w-4" />
+                                Kembali
+                            </Link>
+                        </Button>
+                    }
+                />
+
+                <div className="mx-auto max-w-4xl">
+                    <Card className="rounded-xl border border-slate-200/80 shadow-sm dark:border-slate-800">
                         <form
                             autoComplete="off"
                             noValidate

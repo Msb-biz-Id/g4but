@@ -16,7 +16,6 @@ use App\Models\PlanningTree;
 use App\Models\Realization;
 use App\Models\RealizationOpdItem;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 
 class OpdAnalyticsService
 {
@@ -54,30 +53,30 @@ class OpdAnalyticsService
      */
     public function resolveYears(int $year = 2026): array
     {
-        $rpjmd = PlanningPeriod::where('status', 'active')
+        $planningPeriod = PlanningPeriod::where('status', 'active')
             ->where(function ($q) {
-                $q->where('type', 'rpjmd')
-                    ->orWhere('name', 'like', '%RPJMD%')
-                    ->orWhere('code', 'like', '%RPJMD%');
+                $q->whereIn('type', ['renstra', 'rpjmd'])
+                    ->orWhere('name', 'like', '%Renstra%')
+                    ->orWhere('code', 'like', '%RENSTRA%');
             })
             ->orderByDesc('id')
             ->first()
             ?? PlanningPeriod::where(function ($q) {
-                $q->where('type', 'rpjmd')
-                    ->orWhere('name', 'like', '%RPJMD%')
-                    ->orWhere('code', 'like', '%RPJMD%');
+                $q->whereIn('type', ['renstra', 'rpjmd'])
+                    ->orWhere('name', 'like', '%Renstra%')
+                    ->orWhere('code', 'like', '%RENSTRA%');
             })
                 ->orderByDesc('id')
                 ->first();
 
-        if ($rpjmd && $rpjmd->start_date && $rpjmd->end_date) {
-            $s = (int) date('Y', strtotime((string) $rpjmd->start_date));
-            $e = (int) date('Y', strtotime((string) $rpjmd->end_date));
+        if ($planningPeriod && $planningPeriod->start_date && $planningPeriod->end_date) {
+            $s = (int) date('Y', strtotime((string) $planningPeriod->start_date));
+            $e = (int) date('Y', strtotime((string) $planningPeriod->end_date));
             $start = ($s >= 2000 && $s <= 2100) ? $s : 2025;
             $end = ($e >= $start && $e <= 2100) ? $e : $start + 4;
-        } elseif ($rpjmd && $rpjmd->start_year && $rpjmd->end_year) {
-            $s = (int) $rpjmd->start_year;
-            $e = (int) $rpjmd->end_year;
+        } elseif ($planningPeriod && $planningPeriod->start_year && $planningPeriod->end_year) {
+            $s = (int) $planningPeriod->start_year;
+            $e = (int) $planningPeriod->end_year;
             $start = ($s >= 2000 && $s <= 2100) ? $s : 2025;
             $end = ($e >= $start && $e <= 2100) ? $e : $start + 4;
         } else {
@@ -98,7 +97,7 @@ class OpdAnalyticsService
             $end = $start + 4;
         }
 
-        // Petakan indeks relatif (1..10) ke tahun kalender RPJMD (misal 1 -> 2025, 2 -> 2026)
+        // Petakan indeks relatif (1..10) ke tahun kalender periode (misal 1 -> 2025, 2 -> 2026)
         if ($year >= 1 && $year <= 10) {
             $year = $start + $year - 1;
         } elseif ($year < 2000 || $year > 2100) {
@@ -255,19 +254,14 @@ class OpdAnalyticsService
     }
 
     // =========================================================================
-    // 1. CAPAIAN IKU PEMERINTAH DAERAH (Item 3 Panduan)
+    // 1. CAPAIAN IKU PERANGKAT DAERAH (Item 3 Panduan)
     // =========================================================================
-    public function getIkuPemdaMatrix(int $year = 2026, ?string $filterStatus = null): array
+    public function getIkuMatrix(int $year = 2026, ?string $filterStatus = null): array
     {
         $years = $this->resolveYears($year);
 
         $indicators = Indicator::query()
             ->where('is_iku', true)
-            ->where(function ($q) {
-                $q->where('level', 'pemda')
-                    ->orWhereNull('owner_organization_id')
-                    ->orWhereHas('organization', fn ($o) => $o->where('type', 'province')->orWhere('code', 'BAPPEDA-PB'));
-            })
             ->where('status', 'active')
             ->with(['currentVersion.measurementUnit', 'strategicObjective', 'organization', 'targets'])
             ->orderBy('code')
@@ -346,7 +340,7 @@ class OpdAnalyticsService
             $capaian = $this->calculateCapaian($realVal, $targetVal, $pol);
             $statusObj = $this->getStatusCapaian($capaian, $targetVal, $realVal);
 
-            // Perhitungan per tahun (siklus RPJMD dinamis) untuk deret waktu & tabel 5 tahun
+            // Perhitungan per tahun (periode perencanaan dinamis) untuk deret waktu & tabel 5 tahun
             $yearly = [];
             foreach ($years as $yr) {
                 $tYr = null;
@@ -429,7 +423,7 @@ class OpdAnalyticsService
                 'color' => $statusObj['color'],
                 'bgClass' => $statusObj['bgClass'],
                 'tren' => $tren,
-                'opd_pengampu' => $ind->organization?->name ?? 'Pemerintah Provinsi Papua Barat',
+                'opd_pengampu' => $ind->organization?->name ?? 'Perangkat Daerah',
                 'yearly' => $yearly,
             ];
         }
@@ -488,6 +482,14 @@ class OpdAnalyticsService
             'trend' => $trend,
             'years' => $years,
         ];
+    }
+
+    /**
+     * Compatibility alias for getIkuMatrix.
+     */
+    public function getIkuPemdaMatrix(int $year = 2026, ?string $filterStatus = null): array
+    {
+        return $this->getIkuMatrix($year, $filterStatus);
     }
 
     // =========================================================================
@@ -678,7 +680,7 @@ class OpdAnalyticsService
                 continue;
             }
 
-            // Hitung tren 5 tahun (siklus RPJMD dinamis) untuk OPD ini (in-memory, no SQL)
+            // Hitung tren 5 tahun (periode perencanaan dinamis) untuk OPD ini (in-memory, no SQL)
             $yearly = [];
             foreach ($years as $yr) {
                 if ($yr === $year) {
@@ -919,132 +921,10 @@ class OpdAnalyticsService
     }
 
     // =========================================================================
-    // 3A. NILAI SAKIP PEMERINTAH DAERAH (4 KOMPONEN) - DARI MODUL EVALUASI PEMDA
-    // =========================================================================
-    public function getSakipPemdaMatrix(int $year = 2026): array
-    {
-        $pemda = Organization::where('type', 'province')->first() ?? Organization::find(1);
-        $period = PlanningPeriod::where('year', $year)->first() ?? PlanningPeriod::where('code', 'like', "%{$year}%")->first();
-        $years = $this->resolveYears($year);
-
-        $evalPemda = null;
-        if ($pemda) {
-            $evalPemda = Evaluation::with('scores')
-                ->where('organization_id', $pemda->id)
-                ->where(function ($q) use ($period, $year) {
-                    if ($period) {
-                        $q->where('planning_period_id', $period->id);
-                    }
-                    $q->orWhere('code', 'like', "%{$year}%")
-                        ->orWhere('title', 'like', "%{$year}%");
-                })
-                ->latest('id')
-                ->first();
-
-            if (! $evalPemda) {
-                $evalPemda = Evaluation::with('scores')
-                    ->where('organization_id', $pemda->id)
-                    ->latest('id')
-                    ->first();
-            }
-        }
-
-        $scores = $evalPemda?->scores ?? collect();
-
-        $p1 = (float) ($scores->where('component', 'Perencanaan Kinerja')->first()?->score ?? 0);
-        $p2 = (float) ($scores->where('component', 'Pengukuran Kinerja')->first()?->score ?? 0);
-        $p3 = (float) ($scores->where('component', 'Pelaporan Kinerja')->first()?->score ?? 0);
-        $p4 = (float) ($scores->where('component', 'Evaluasi Internal')->first()?->score ?? 0);
-
-        $hasScores = $evalPemda && $scores->isNotEmpty() && ($p1 > 0 || $p2 > 0 || $p3 > 0 || $p4 > 0);
-        $nilai = $hasScores ? round($p1 + $p2 + $p3 + $p4, 2) : 0.0;
-        $predikat = $hasScores ? $this->getPredikatSakip($nilai) : 'BELUM DINILAI';
-
-        $komponenDetail = [
-            [
-                'no' => 1,
-                'komponen' => 'Perencanaan Kinerja',
-                'bobot' => 30.0,
-                'nilai' => $p1,
-                'persen' => $p1 > 0 ? round(($p1 / 30.0) * 100, 2) : 0.0,
-                'predikat' => $p1 > 0 ? $this->getPredikatSakip(($p1 / 30.0) * 100) : 'BELUM DINILAI',
-                'deskripsi' => 'Kualitas dokumen perencanaan kinerja Renstra/RPJMD, cascading tujuan dan sasaran, serta keterukuran indikator kinerja daerah.',
-            ],
-            [
-                'no' => 2,
-                'komponen' => 'Pengukuran Kinerja',
-                'bobot' => 30.0,
-                'nilai' => $p2,
-                'persen' => $p2 > 0 ? round(($p2 / 30.0) * 100, 2) : 0.0,
-                'predikat' => $p2 > 0 ? $this->getPredikatSakip(($p2 / 30.0) * 100) : 'BELUM DINILAI',
-                'deskripsi' => 'Efektivitas sistem pengukuran capaian IKU triwulanan dan tahunan berbasis data realisasi kinerja yang valid dan terverifikasi.',
-            ],
-            [
-                'no' => 3,
-                'komponen' => 'Pelaporan Kinerja',
-                'bobot' => 15.0,
-                'nilai' => $p3,
-                'persen' => $p3 > 0 ? round(($p3 / 15.0) * 100, 2) : 0.0,
-                'predikat' => $p3 > 0 ? $this->getPredikatSakip(($p3 / 15.0) * 100) : 'BELUM DINILAI',
-                'deskripsi' => 'Penyusunan dan ketepatan waktu Laporan Kinerja Instansi Pemerintah (LKjIP) menyajikan efisiensi penggunaan sumber daya terhadap capaian.',
-            ],
-            [
-                'no' => 4,
-                'komponen' => 'Evaluasi Internal',
-                'bobot' => 25.0,
-                'nilai' => $p4,
-                'persen' => $p4 > 0 ? round(($p4 / 25.0) * 100, 2) : 0.0,
-                'predikat' => $p4 > 0 ? $this->getPredikatSakip(($p4 / 25.0) * 100) : 'BELUM DINILAI',
-                'deskripsi' => 'Pelaksanaan evaluasi akuntabilitas kinerja internal oleh Inspektorat dan pemantauan tindak lanjut rekomendasi hasil evaluasi.',
-            ],
-        ];
-
-        // Tren deret waktu SAKIP Pemda 5 tahun (siklus RPJMD)
-        $trend = [];
-        foreach ($years as $yr) {
-            $val = ($yr === $year && $hasScores) ? $nilai : null;
-            $trend[] = [
-                'tahun' => $yr,
-                'nilai' => $val,
-                'predikat' => $val !== null ? $this->getPredikatSakip($val) : '-',
-            ];
-        }
-
-        return [
-            'tahun' => $year,
-            'organization_id' => $pemda?->id,
-            'organization_code' => $pemda?->code ?? 'PEMPROV-PB',
-            'organization_name' => $pemda?->name ?? 'Pemerintah Provinsi Papua Barat',
-            'perencanaan' => $p1,
-            'pengukuran' => $p2,
-            'pelaporan' => $p3,
-            'evaluasi_internal' => $p4,
-            'nilai' => $nilai,
-            'predikat' => $predikat,
-            'status_evaluasi' => $evalPemda?->evaluation_status ?? 'Belum Dievaluasi',
-            'lhe_file_path' => $evalPemda?->lhe_file_path,
-            'lhe_file_url' => $evalPemda?->lhe_file_path ? Storage::disk('public')->url($evalPemda->lhe_file_path) : null,
-            'lhe' => $evalPemda ? [
-                'nomor_lhe' => $evalPemda->lhe_number ?? ('LHE-SAKIP-PEMPROV-PB/'.$year),
-                'tanggal' => $evalPemda->approved_at ? $evalPemda->approved_at->format('d/m/Y') : ('10/11/'.$year),
-                'evaluator' => 'Kementerian Pendayagunaan Aparatur Negara dan Reformasi Birokrasi (KemenPANRB)',
-                'catatan' => "Pemerintah Provinsi Papua Barat telah dievaluasi dengan predikat mutu {$predikat}.",
-                'rekomendasi' => 'Tingkatkan kualitas efektivitas evaluasi internal terhadap seluruh perangkat daerah dan percepat integrasi sistem pelaporan kinerja digital real-time.',
-                'status_dokumen' => $evalPemda->lhe_file_path ? 'LHE Resmi KemenPANRB' : 'LHE Siap Unduh',
-            ] : null,
-            'komponen' => $komponenDetail,
-            'trend' => $trend,
-            'years' => $years,
-        ];
-    }
-
-    // =========================================================================
-    // 3B. NILAI SAKIP OPD (4 KOMPONEN) (Item 5 Panduan)
+    // 3. NILAI SAKIP OPD (4 KOMPONEN)
     // =========================================================================
     public function getSakipEvaluationMatrix(int $year = 2026, ?int $filterOpdId = null, ?string $filterPredikat = null): array
     {
-        $sakipPemda = $this->getSakipPemdaMatrix($year);
-
         $allOpd = Organization::where('type', 'opd')
             ->where('is_active', true)
             ->when($filterOpdId, fn ($q) => $q->where('id', $filterOpdId))
@@ -1131,7 +1011,7 @@ class OpdAnalyticsService
 
             $totalNilai += $nilai;
 
-            // Hitung data matriks 5 tahun (siklus RPJMD dinamis) per OPD
+            // Hitung data matriks 5 tahun (periode perencanaan dinamis) per OPD
             $yearly = [];
             foreach ($years as $yr) {
                 if ($yr === $year) {
@@ -1188,7 +1068,7 @@ class OpdAnalyticsService
                 'lhe' => $ev ? [
                     'nomor_lhe' => 'LHE-'.$opd->code.'/'.$year,
                     'tanggal' => $ev->approved_at ? $ev->approved_at->format('d/m/Y') : '15/08/'.$year,
-                    'evaluator' => 'Inspektorat Provinsi Papua Barat',
+                    'evaluator' => 'Tim Evaluator Internal',
                     'catatan' => 'Penerapan SAKIP telah memenuhi standar akuntabilitas dengan perbaikan berkelanjutan pada kualitas indikator kinerja.',
                     'rekomendasi' => 'Tingkatkan integrasi pengukuran triwulanan dan evaluasi tindak lanjut rekomendasi tahun sebelumnya.',
                     'status_dokumen' => $ev->lhe_file_path ? 'LHE Diterbitkan' : 'LHE Siap Unduh',
@@ -1239,12 +1119,12 @@ class OpdAnalyticsService
             'rows' => $rows,
             'trend' => $sakipTrend,
             'years' => $years,
-            'pemda' => $sakipPemda,
+            'pemda' => null,
         ];
     }
 
     // =========================================================================
-    // 4. PKO PEMDA & PERANGKAT DAERAH (Item 6 & 7 Panduan)
+    // 4. PKO PERANGKAT DAERAH (Item 6 & 7 Panduan)
     // =========================================================================
     public function getPkoMatrix(int $year = 2026, ?int $filterOpdId = null, ?array $opdRankRes = null, ?array $sakipRes = null): array
     {

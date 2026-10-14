@@ -182,7 +182,7 @@ export default function UserForm({ roles, organizations, user }: Props) {
  />
  <span className="text-sm">
  <span className="font-medium">{org.code}</span>
- <span className="ml-1 text-gray-400">—</span>
+ <span className="ml-1 text-gray-400">-</span>
  <span className="ml-1 text-xs text-gray-500">{org.name}</span>
  </span>
  {data.organization_ids[0] === org.id && (

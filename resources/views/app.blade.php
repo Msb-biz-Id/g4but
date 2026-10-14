@@ -3,13 +3,13 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="e-KASUARI - Sistem Informasi Akuntabilitas Kinerja Terintegrasi Pemerintah Provinsi Papua Barat. Portal perencanaan, pengukuran kinerja SAKIP, dan keterbukaan informasi publik.">
-        <meta name="keywords" content="e-kasuari, sakip papua barat, akuntabilitas kinerja, pemprov papua barat, iku, rpjmd, informasi publik papua barat, regulasi kinerja daerah">
+        <meta name="description" content="e-SAKIP - Sistem Informasi Akuntabilitas Kinerja Terintegrasi Pemerintah Provinsi Papua Barat. Portal perencanaan, pengukuran kinerja SAKIP, dan keterbukaan informasi publik.">
+        <meta name="keywords" content="e-sakip, sakip papua barat, akuntabilitas kinerja, pemprov papua barat, iku, informasi publik papua barat, regulasi kinerja daerah">
         <meta name="author" content="Pemerintah Provinsi Papua Barat">
         <meta name="robots" content="index, follow">
 
         <!-- Open Graph / Facebook -->
-        <meta property="og:site_name" content="e-KASUARI Papua Barat">
+        <meta property="og:site_name" content="e-SAKIP Papua Barat">
         <meta property="og:locale" content="id_ID">
         <meta property="og:type" content="website">
         <meta property="og:image" content="{{ asset('favicon-32x32.png') }}">

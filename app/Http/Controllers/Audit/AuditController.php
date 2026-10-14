@@ -259,20 +259,15 @@ class AuditController extends Controller
             return false;
         }
 
-        // Global province/auditor roles see everything
-        if ($user->hasRole('Super Admin') ||
-            $user->hasRole('Admin Provinsi') ||
-            $user->hasRole('Evaluator Provinsi') ||
-            $user->hasRole('Inspektorat') ||
-            $user->hasRole('Auditor') ||
-            $user->hasRole('Pimpinan Provinsi')) {
+        // Global OPD Admin and Leadership roles see everything
+        if ($user->isOpdAdmin() || $user->isLeadership()) {
             return false;
         }
 
         return true;
     }
 
-    private function formatDescription(AuditLog $log): string
+    private function formatDescription(object $log): string
     {
         if (! empty($log->reason)) {
             return $log->reason;

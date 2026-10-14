@@ -1,7 +1,7 @@
 import Reveal from '@/Components/Landing/Reveal';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { formatDate } from '@/lib/utils';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { YouTubePlayer, YouTubeIcon } from '@/Components/YouTubePlayer';
 import { isYouTubeUrl } from '@/lib/video';
 import { ArrowLeft, Download, ExternalLink } from 'lucide-react';
@@ -41,6 +41,10 @@ const typeLabel: Record<string, string> = {
 };
 
 export default function PublicShow({ document }: Props) {
+    const { appConfig } = usePage<any>().props;
+    const appName = appConfig?.appName || 'SIM Kinerja';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+
     const isVideo =
         document.document_type === 'video_tutorial' ||
         (document.external_url ? isYouTubeUrl(document.external_url) : false);
@@ -52,16 +56,16 @@ export default function PublicShow({ document }: Props) {
     return (
         <PublicLayout active="info">
             <Head>
-                <title>{`${document.title} • Informasi Publik e-KASUARI`}</title>
+                <title>{`${document.title} • Informasi Publik ${appName}`}</title>
                 <meta
                     name="description"
                     content={document.content ? document.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 160) : document.title}
                 />
                 <meta
                     name="keywords"
-                    content={`${document.tags ? document.tags + ', ' : ''}${typeLabel[document.document_type] || ''}, informasi publik papua barat, sakip, e-kasuari`}
+                    content={`${document.tags ? document.tags + ', ' : ''}${typeLabel[document.document_type] || ''}, informasi publik, sakip, ${appName.toLowerCase()}, ${instansiName.toLowerCase()}`}
                 />
-                <meta property="og:title" content={`${document.title} • Informasi Publik e-KASUARI`} />
+                <meta property="og:title" content={`${document.title} • Informasi Publik ${appName}`} />
                 <meta
                     property="og:description"
                     content={document.content ? document.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 160) : document.title}
@@ -83,11 +87,11 @@ export default function PublicShow({ document }: Props) {
                         datePublished: document.published_at || undefined,
                         author: {
                             '@type': 'GovernmentOrganization',
-                            name: document.publisher?.name || 'Pemerintah Provinsi Papua Barat',
+                            name: document.publisher?.name || instansiName,
                         },
                         publisher: {
                             '@type': 'GovernmentOrganization',
-                            name: 'Pemerintah Provinsi Papua Barat',
+                            name: instansiName,
                         },
                     })}
                 </script>

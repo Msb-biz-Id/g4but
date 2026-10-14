@@ -558,7 +558,7 @@ class AiController extends Controller
     // ─── P3-B: Manajemen Kuota Harian per OPD (MOD-AI-006) ──────────────────────
 
     /**
-     * Halaman manajemen kuota harian AI per OPD untuk Super Admin / Admin Provinsi.
+     * Halaman manajemen kuota harian AI per OPD untuk Super Admin / Admin OPD.
      * Menampilkan daftar semua OPD aktif beserta kuota hari ini (atau default jika belum ada record).
      */
     public function quotaIndex(): Response
@@ -644,7 +644,7 @@ class AiController extends Controller
     }
 
     /**
-     * Export Hasil Analisis AI sebagai Dokumen Resmi PDF e-KASUARI.
+     * Export Hasil Analisis AI sebagai Dokumen Resmi PDF e-SAKIP.
      */
     public function exportPdf(Request $request): \Symfony\Component\HttpFoundation\Response
     {
@@ -661,7 +661,7 @@ class AiController extends Controller
 
         $title = $validated['title'];
         $feature = $validated['feature'] ?? 'analisis';
-        $scope = $validated['scope'] ?? 'Pemerintah Provinsi Papua Barat';
+        $scope = $validated['scope'] ?? (AppConfig::where('key', 'instansi_name')->value('value') ?: 'Pemerintah Daerah');
         $output = $validated['output'];
         $user = $request->user();
         $generatedAt = now()->format('d/m/Y H:i');

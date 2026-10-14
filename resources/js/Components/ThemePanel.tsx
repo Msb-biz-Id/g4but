@@ -267,7 +267,7 @@ export default function ThemePanel() {
                     {/* ── Tipografi ── */}
                     <section>
                         <Label className="mb-2.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Tipografi — Judul
+                            Tipografi - Judul
                         </Label>
                         <div className="space-y-1.5">
                             {FONT_HEADING_OPTIONS.map((f) => (
@@ -289,7 +289,7 @@ export default function ThemePanel() {
                         </div>
 
                         <Label className="mb-2.5 mt-4 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Tipografi — Konten
+                            Tipografi - Konten
                         </Label>
                         <div className="space-y-1.5">
                             {FONT_BODY_OPTIONS.map((f) => (

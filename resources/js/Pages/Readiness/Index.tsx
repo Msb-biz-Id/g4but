@@ -2,7 +2,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Badge } from '@/Components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import {Head, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 import { formatDateTime } from '@/lib/utils';
 
 interface ReadinessItem {
@@ -50,12 +51,20 @@ export default function ReadinessIndex({ auth, items, progress }: Props) {
     }, {});
 
     return (
-        <AuthenticatedLayout
-            header="Go-Live Readiness"
-        >
+        <AuthenticatedLayout>
             <Head title="Kesiapan Sistem" />
-            <div className="py-12">
-                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Kesiapan Sistem (Go-Live Readiness)"
+                    description="Daftar periksa kesiapan operasional, integritas data, dan konfigurasi keamanan sebelum peluncuran sistem penuh."
+                    breadcrumbs={[
+                        { label: 'Pengaturan', href: route('settings.index') },
+                        { label: 'Go-Live Readiness' },
+                    ]}
+                />
+
+                <div className="mx-auto max-w-4xl space-y-6">
                     {flash?.success && (
                         <div className="mb-4 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
                             {flash.success}

@@ -23,6 +23,8 @@ import {
  Star,
 } from 'lucide-react';
 import { router } from '@inertiajs/react';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import PageBreadcrumb from '@/Components/Dashboard/PageBreadcrumb';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -156,7 +158,7 @@ function RecommendationRow({
  <p className="mt-0.5 text-xs text-gray-500">{rec.description}</p>
  )}
  <div className="mt-0.5 text-xs text-gray-400">
- {rec.owner_organization?.code ?? '—'}
+ {rec.owner_organization?.code ?? '-'}
  {rec.due_date ? ` · jatuh tempo ${formatDate(rec.due_date)}` : ''}
  {` · ${rec.followups.length} tindak lanjut`}
  </div>
@@ -200,7 +202,7 @@ function RecommendationRow({
  <div>
  <p className="text-gray-700 dark:text-gray-300">{fu.description}</p>
  <p className="text-gray-400">
- {fu.submitter?.name ?? 'Sistem'} · {fu.submitted_at ? formatDate(fu.submitted_at) : '—'}
+ {fu.submitter?.name ?? 'Sistem'} · {fu.submitted_at ? formatDate(fu.submitted_at) : '-'}
  </p>
  </div>
  </li>
@@ -294,8 +296,24 @@ export default function EvaluationsShow({
  header="Detail Evaluasi"
  >
  <Head title="Detail Evaluasi" />
- <div className="py-8">
+ <div className="py-6">
  <div className="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
+ <PageHeader
+ breadcrumbs={[
+ { label: 'Evaluasi', href: route('evaluations.index') },
+ { label: evaluation.organization?.name || 'Detail Evaluasi' },
+ ]}
+ title={`Evaluasi Kinerja: ${evaluation.organization?.name || '-'}`}
+ description={`Rincian lembar kerja evaluasi akuntabilitas kinerja instansi pemerintah tahun ${evaluation.planning_period?.year || '-'}.`}
+ actions={
+ <Button variant="outline" asChild size="sm">
+ <Link href={route('evaluations.index')}>
+ <ArrowLeft className="mr-2 h-4 w-4" />
+ Kembali ke Daftar
+ </Link>
+ </Button>
+ }
+ />
 
  {flash?.success && (
  <div className="flex items-center gap-2 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
@@ -309,12 +327,12 @@ export default function EvaluationsShow({
  <div className="grid gap-4 sm:grid-cols-4">
  <div>
  <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">OPD</div>
- <div className="mt-1 text-sm font-medium">{evaluation.organization?.name ?? '—'}</div>
+ <div className="mt-1 text-sm font-medium">{evaluation.organization?.name ?? '-'}</div>
  <div className="text-xs text-gray-400">{evaluation.organization?.code}</div>
  </div>
  <div>
  <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">Periode</div>
- <div className="mt-1 text-sm font-medium">{evaluation.planning_period?.name ?? '—'}</div>
+ <div className="mt-1 text-sm font-medium">{evaluation.planning_period?.name ?? '-'}</div>
  <div className="text-xs text-gray-400">{evaluation.planning_period?.year}</div>
  </div>
  <div>

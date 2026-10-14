@@ -10,7 +10,8 @@ import { YouTubePlayer, YouTubeIcon } from '@/Components/YouTubePlayer';
 import { isYouTubeUrl } from '@/lib/video';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import { AlertCircle, Video } from 'lucide-react';
+import { AlertCircle, Video, ArrowLeft } from 'lucide-react';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface Props extends PageProps {}
 
@@ -46,11 +47,30 @@ export default function KnowledgeCreate({ auth }: Props) {
     const hasYouTubeUrl = isYouTubeUrl(form.data.external_url);
 
     return (
-        <AuthenticatedLayout header="Tambah Dokumen">
+        <AuthenticatedLayout>
             <Head title="Tambah Dokumen" />
-            <div className="py-12">
-                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-                    <Card>
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Tambah Dokumen Informasi"
+                    description="Publikasikan dokumen regulasi, SOP, pedoman, atau tutorial baru ke repositori pengetahuan."
+                    breadcrumbs={[
+                        { label: 'Pusat Informasi', href: route('knowledge.index') },
+                        { label: 'Basis Pengetahuan', href: route('knowledge.index') },
+                        { label: 'Tambah Dokumen' },
+                    ]}
+                    actions={
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={route('knowledge.index')} className="gap-1.5">
+                                <ArrowLeft className="h-4 w-4" />
+                                Kembali
+                            </Link>
+                        </Button>
+                    }
+                />
+
+                <div className="mx-auto max-w-4xl">
+                    <Card className="rounded-xl border border-slate-200/80 shadow-sm dark:border-slate-800">
                         <form
                             autoComplete="off"
                             noValidate

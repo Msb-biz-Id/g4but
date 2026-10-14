@@ -23,7 +23,9 @@ const maxWidthMap: Record<string, string> = {
 };
 
 export default function Guest({ children, className, maxWidth = 'md' }: GuestProps) {
-    const { theme } = usePage<PageProps>().props;
+    const { theme, appConfig } = usePage<PageProps>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
 
     useEffect(() => {
         if (theme) {
@@ -40,10 +42,10 @@ export default function Guest({ children, className, maxWidth = 'md' }: GuestPro
                 <ApplicationLogo className="h-12 w-12 shrink-0 drop-shadow-md" />
                 <div className="flex flex-col">
                     <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-foreground">
-                        e-KASUARI
+                        {appName}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                        Sistem Akuntabilitas Kinerja Instansi Pemerintah Papua Barat
+                        Sistem Akuntabilitas Kinerja • {instansiName}
                     </span>
                 </div>
             </Link>

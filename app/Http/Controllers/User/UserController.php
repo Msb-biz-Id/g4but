@@ -13,6 +13,7 @@ use App\Services\AuthorizationService;
 use App\Services\UserExportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
@@ -28,15 +29,17 @@ class UserController extends Controller
     ) {}
 
     private const OPD_LEVEL_ROLES = [
-        'Operator OPD',
-        'Validator OPD',
-        'Kepala OPD',
         'Admin OPD',
+        'Kepala OPD',
+        'Admin Sekretariat',
+        'Kepala Sekretariat',
+        'Admin Bidang',
+        'Kepala Bidang',
     ];
 
     private function ensureCanManageUser(User $currentUser, User $targetUser): void
     {
-        if ($currentUser->hasRole('Super Admin') || $currentUser->hasRole('Admin Provinsi')) {
+        if ($currentUser->isOpdAdmin()) {
             return;
         }
 
@@ -47,12 +50,12 @@ class UserController extends Controller
             abort(403, 'Anda tidak berwenang mengelola pengguna di luar organisasi Anda.');
         }
 
-        $isProvincialOrSuper = $targetUser->roles()->whereIn('name', [
-            'Super Admin', 'Admin Provinsi', 'Pimpinan Provinsi', 'Auditor', 'Evaluator Provinsi', 'Inspektorat',
+        $isRestrictedRole = $targetUser->roles()->whereIn('name', [
+            'Super Admin', 'Admin OPD', 'Kepala OPD',
         ])->exists();
 
-        if ($isProvincialOrSuper) {
-            abort(403, 'Anda tidak memiliki hak akses untuk mengelola akun administrator tingkat provinsi.');
+        if ($isRestrictedRole) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengelola akun dengan tingkat wewenang ini.');
         }
     }
 
@@ -88,7 +91,7 @@ class UserController extends Controller
         $this->authorize('view-users');
 
         $currentUser = $request->user();
-        $isProvincialAdmin = $currentUser->hasRole('Super Admin') || $currentUser->hasRole('Admin Provinsi');
+        $isOpdAdmin = $currentUser->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($currentUser);
 
         $users = User::query()
@@ -96,7 +99,7 @@ class UserController extends Controller
                 'roles:id,name',
                 'organizations:id,code,name',
             ])
-            ->when(! $isProvincialAdmin, function ($query) use ($accessibleOrgIds) {
+            ->when(! $isOpdAdmin, function ($query) use ($accessibleOrgIds) {
                 $query->whereHas('organizations', fn ($q) => $q->whereIn('organizations.id', $accessibleOrgIds));
             })
             ->when($request->filled('search'), function ($query) use ($request) {
@@ -118,7 +121,7 @@ class UserController extends Controller
             ->paginate($request->integer('per_page', 25))
             ->withQueryString();
 
-        $statsQuery = User::query()->when(! $isProvincialAdmin, function ($query) use ($accessibleOrgIds) {
+        $statsQuery = User::query()->when(! $isOpdAdmin, function ($query) use ($accessibleOrgIds) {
             $query->whereHas('organizations', fn ($q) => $q->whereIn('organizations.id', $accessibleOrgIds));
         });
 
@@ -130,7 +133,7 @@ class UserController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'code', 'name']),
             'roles' => Role::query()
-                ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('name', self::OPD_LEVEL_ROLES))
+                ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('name', self::OPD_LEVEL_ROLES))
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'stats' => [
@@ -146,12 +149,12 @@ class UserController extends Controller
         $this->authorize('manage-users');
 
         $currentUser = request()->user();
-        $isProvincialAdmin = $currentUser->hasRole('Super Admin') || $currentUser->hasRole('Admin Provinsi');
+        $isOpdAdmin = $currentUser->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($currentUser);
 
         return Inertia::render('Users/Create', [
             'roles' => Role::query()
-                ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('name', self::OPD_LEVEL_ROLES))
+                ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('name', self::OPD_LEVEL_ROLES))
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'organizations' => Organization::query()
@@ -164,12 +167,12 @@ class UserController extends Controller
     public function store(StoreUserRequest $request): RedirectResponse
     {
         $currentUser = $request->user();
-        $isProvincialAdmin = $currentUser->hasRole('Super Admin') || $currentUser->hasRole('Admin Provinsi');
+        $isOpdAdmin = $currentUser->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($currentUser);
 
         $validated = $request->validated();
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             // Validasi: Admin OPD hanya boleh mendaftarkan ke organisasinya sendiri
             $requestedOrgs = $validated['organization_ids'] ?? [];
             if (array_diff($requestedOrgs, $accessibleOrgIds)) {
@@ -180,7 +183,7 @@ class UserController extends Controller
             $allowedRoleIds = Role::whereIn('name', self::OPD_LEVEL_ROLES)->pluck('id')->all();
             $requestedRoles = $validated['role_ids'] ?? [];
             if (array_diff($requestedRoles, $allowedRoleIds)) {
-                abort(403, 'Anda tidak memiliki wewenang untuk menetapkan role tingkat provinsi.');
+                abort(403, 'Anda tidak memiliki wewenang untuk menetapkan role Super Admin atau di luar lingkup OPD Anda.');
             }
         }
 
@@ -221,7 +224,7 @@ class UserController extends Controller
         $currentUser = request()->user();
         $this->ensureCanManageUser($currentUser, $user);
 
-        $isProvincialAdmin = $currentUser->hasRole('Super Admin') || $currentUser->hasRole('Admin Provinsi');
+        $isOpdAdmin = $currentUser->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($currentUser);
 
         $user->load([
@@ -232,7 +235,7 @@ class UserController extends Controller
         return Inertia::render('Users/Edit', [
             'user' => $user,
             'roles' => Role::query()
-                ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('name', self::OPD_LEVEL_ROLES))
+                ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('name', self::OPD_LEVEL_ROLES))
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'organizations' => Organization::query()
@@ -247,12 +250,12 @@ class UserController extends Controller
         $currentUser = $request->user();
         $this->ensureCanManageUser($currentUser, $user);
 
-        $isProvincialAdmin = $currentUser->hasRole('Super Admin') || $currentUser->hasRole('Admin Provinsi');
+        $isOpdAdmin = $currentUser->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($currentUser);
 
         $validated = $request->validated();
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             // Validasi: Admin OPD hanya boleh menugaskan ke organisasinya sendiri
             if (array_key_exists('organization_ids', $validated)) {
                 $requestedOrgs = $validated['organization_ids'] ?? [];
@@ -266,7 +269,7 @@ class UserController extends Controller
                 $allowedRoleIds = Role::whereIn('name', self::OPD_LEVEL_ROLES)->pluck('id')->all();
                 $requestedRoles = $validated['role_ids'] ?? [];
                 if (array_diff($requestedRoles, $allowedRoleIds)) {
-                    abort(403, 'Anda tidak memiliki wewenang untuk menetapkan role tingkat provinsi.');
+                    abort(403, 'Anda tidak memiliki wewenang untuk menetapkan role Super Admin atau di luar lingkup OPD Anda.');
                 }
             }
         }
@@ -313,7 +316,9 @@ class UserController extends Controller
 
         $this->ensureCanManageUser(request()->user(), $user);
 
-        if ($user->is(auth()->user())) {
+        /** @var User|null $currentUser */
+        $currentUser = Auth::user();
+        if ($currentUser && $user->is($currentUser)) {
             return back()->with('error', 'Tidak dapat menonaktifkan akun sendiri.');
         }
 
@@ -375,7 +380,7 @@ class UserController extends Controller
         ]);
 
         $users = User::whereIn('id', $validated['user_ids'])
-            ->where('id', '!=', auth()->id())
+            ->where('id', '!=', Auth::id())
             ->get();
 
         $currentUser = $request->user();
@@ -387,10 +392,10 @@ class UserController extends Controller
 
         DB::transaction(function () use ($validated, $users, $count) {
             if ($validated['action'] === 'activate') {
-                $users->each(fn ($u) => $u->update(['is_active' => true]));
+                $users->each(fn (User $u) => $u->update(['is_active' => true]));
                 $this->audit->log('bulk_activate', 'user', null, null, ['count' => $count]);
             } else {
-                $users->each(function ($u) {
+                $users->each(function (User $u) {
                     $u->update(['is_active' => false]);
                     $u->tokens()->delete();
                 });

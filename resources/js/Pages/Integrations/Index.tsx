@@ -6,6 +6,7 @@ import { formatDateTime } from '@/lib/utils';
 import { Badge } from '@/Components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 import {
     Table,
     TableBody,
@@ -44,13 +45,21 @@ export default function IntegrationsIndex({ auth, integrationsEnabled, logs }: P
     const to = total > 0 ? Math.min(safeCurrentPage * perPage, total) : 0;
     const paginatedLogs = logs.slice((safeCurrentPage - 1) * perPage, safeCurrentPage * perPage);
     return (
-        <AuthenticatedLayout
-            header="Integrasi"
-        >
-            <Head title="Integrasi" />
-            <div className="py-12">
-                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-                    <Card>
+        <AuthenticatedLayout>
+            <Head title="Integrasi API" />
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Integrasi Sistem & API"
+                    description="Penerimaan data realisasi idempotent otomatis melalui Sanctum Bearer token ber-ability dan audit webhook log."
+                    breadcrumbs={[
+                        { label: 'Pengaturan', href: route('settings.index') },
+                        { label: 'Integrasi Sistem' },
+                    ]}
+                />
+
+                <div className="mx-auto max-w-5xl space-y-6">
+                    <Card className="rounded-xl border border-slate-200/80 shadow-sm dark:border-slate-800">
                         <CardHeader>
                             <CardTitle>API Integrasi</CardTitle>
                             <CardDescription>

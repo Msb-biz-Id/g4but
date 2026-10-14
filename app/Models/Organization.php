@@ -14,15 +14,13 @@ class Organization extends Model
 
     protected $fillable = [
         'code', 'name', 'short_name', 'type', 'parent_id', 'address', 'phone', 'email',
-        'is_active', 'is_bappeda', 'is_pilot_project',
+        'is_active',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
-            'is_bappeda' => 'boolean', // BR-003
-            'is_pilot_project' => 'boolean', // G-11
         ];
     }
 

@@ -34,13 +34,13 @@ class NotificationController extends Controller
 
         $users = [];
         if ($canSend) {
-            $isProvincialAdmin = $this->authorization->isProvincialAdmin($currentUser);
+            $isOpdAdmin = $this->authorization->isOpdAdmin($currentUser);
             $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($currentUser);
 
             $usersQuery = User::query()
                 ->where('is_active', true);
 
-            if (! $isProvincialAdmin) {
+            if (! $isOpdAdmin) {
                 $usersQuery->whereHas('organizations', fn ($q) => $q->whereIn('organizations.id', $accessibleOrgIds));
             }
 
@@ -99,7 +99,7 @@ class NotificationController extends Controller
             'event' => ['required', 'string', 'in:assignment,submission,revision,approval,rejection,deadline,announcement'],
         ]);
 
-        if (! $this->authorization->isProvincialAdmin($currentUser)) {
+        if (! $this->authorization->isOpdAdmin($currentUser)) {
             $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($currentUser);
             $recipient = User::findOrFail($validated['user_id']);
             $isRecipientInScope = $recipient->organizations()->whereIn('organizations.id', $accessibleOrgIds)->exists()

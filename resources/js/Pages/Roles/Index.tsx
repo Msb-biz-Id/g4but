@@ -9,6 +9,7 @@ import { Button } from '@/Components/ui/button';
 import { Shield, ShieldCheck, Users, KeyRound, Search, ArrowRight, Lock, CheckCircle2 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface Props extends PageProps {
     roles: Array<{
@@ -50,27 +51,24 @@ export default function RolesIndex({ roles }: Props) {
     const totalUsersInRoles = useMemo(() => roles.reduce((acc, r) => acc + (r.users_count || 0), 0), [roles]);
     const maxPermissions = useMemo(() => Math.max(...roles.map((r) => r.permissions_count || 0), 0), [roles]);
 
+    const { appConfig } = usePage<PageProps>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+
     return (
         <AuthenticatedLayout header="Manajemen Peran & Hak Akses (RBAC)">
             <Head title="Manajemen Peran & Hak Akses (RBAC)" />
 
             <div className="space-y-6">
-                {/* Header Banner & Context */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                                Manajemen Peran & Hak Akses (RBAC)
-                            </h2>
-                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs">
-                                Terlindungi Guardrail
-                            </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Pengaturan matriks kewenangan berbasis peran (*Role-Based Access Control*) per modul sistem e-KASUARI Pemerintah Provinsi Papua Barat.
-                        </p>
-                    </div>
-                </div>
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Master Data & Pengaturan' },
+                        { label: 'Peran & Hak Akses' },
+                    ]}
+                    title="Manajemen Peran & Hak Akses (RBAC)"
+                    description={`Pengaturan matriks kewenangan berbasis peran (Role-Based Access Control) per modul sistem ${appName} ${instansiName}.`}
+                    badge="Terlindungi Guardrail"
+                />
 
                 {/* Summary Metric Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -253,7 +251,7 @@ export default function RolesIndex({ roles }: Props) {
                                                                 </Link>
                                                             </Button>
                                                         ) : (
-                                                            <span className="text-xs text-muted-foreground">—</span>
+                                                            <span className="text-xs text-muted-foreground">-</span>
                                                         )}
                                                     </TableCell>
                                                 </TableRow>

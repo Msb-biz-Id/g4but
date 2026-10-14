@@ -93,7 +93,7 @@ class PromptGuardrail
 
         // Out-of-scope request: asking for data outside the allowed modules.
         if (! $this->isInScope($lower, $context)) {
-            return $this->refuse('Permintaan berada di luar cakupan layanan SAKIP e-KASUARI.');
+            return $this->refuse('Permintaan berada di luar cakupan layanan analisis kinerja SAKIP.');
         }
 
         return ['blocked' => false, 'response' => ''];
@@ -111,7 +111,7 @@ class PromptGuardrail
                     [
                         'message' => substr($message, 0, 200),
                         'reason' => $reason,
-                        'user_id' => auth()->id(),
+                        'user_id' => \Illuminate\Support\Facades\Auth::id(),
                     ]
                 );
             }
@@ -157,9 +157,13 @@ class PromptGuardrail
      */
     public function label(string $content, string $channel = 'web'): string
     {
+        $appName = class_exists(\App\Models\AppConfig::class)
+            ? (\App\Models\AppConfig::where('key', 'app_name')->value('value') ?: config('app.name', 'e-SAKIP'))
+            : config('app.name', 'e-SAKIP');
+
         $mark = $channel === 'whatsapp'
-            ? '[Hasil analisis otomatis e-KASUARI]'
-            : 'Sumber: analisis otomatis e-KASUARI';
+            ? "[Hasil analisis otomatis {$appName}]"
+            : "Sumber: analisis otomatis {$appName}";
 
         $trimmed = rtrim($content);
 

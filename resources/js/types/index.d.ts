@@ -59,6 +59,14 @@ export interface ThemeConfig {
 export interface AppConfig {
     appName: string;
     appDescription: string;
+    instansiName: string;
+    organizationName: string;
+    currentYear: number;
+    activePeriodName?: string;
+    activePeriodStartYear?: number;
+    activePeriodEndYear?: number;
+    activePeriodRange?: string;
+    activePeriodYears?: number[];
     logoUrl: string;
     faviconUrl: string;
     headlineImageUrl: string;

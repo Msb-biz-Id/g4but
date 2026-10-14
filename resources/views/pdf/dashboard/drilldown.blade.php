@@ -67,7 +67,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
   <div class="doc-sub">
     <strong>{{ $organization->name }}</strong> ({{ $organization->code }}) &nbsp;|&nbsp;
     Periode: <strong>{{ $periodName }}</strong> &nbsp;|&nbsp;
-    Sistem {{ $appName ?? 'e-KASUARI' }} SAKIP
+    Sistem {{ $appName ?? 'e-SAKIP' }} SAKIP
   </div>
 </div>
 
@@ -195,7 +195,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 </div>
 
 <div class="footer">
-  <div class="fl">Sistem e-KASUARI — SAKIP Terintegrasi Pemerintah Provinsi Papua Barat</div>
+  <div class="fl">Sistem e-SAKIP — SAKIP Terintegrasi Pemerintah Provinsi Papua Barat</div>
   <div class="fr">Dicetak otomatis: {{ $generatedAt }} WIT</div>
 </div>
 

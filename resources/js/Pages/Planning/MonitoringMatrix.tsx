@@ -20,7 +20,7 @@ interface Cell {
 interface OrgRow {
     organization: {
         id: number; code: string; name: string;
-        type: string | null; is_bappeda: boolean;
+        type: string | null;
     };
     cells: Record<string, Cell>;
     score: {
@@ -57,7 +57,7 @@ function MatrixCell({ cell }: { cell: Cell }) {
     if (cell.status === 'draft') {
         return (
             <td className="p-0 text-center">
-                <div className="flex items-center justify-center" title="Draft — belum disetujui">
+                <div className="flex items-center justify-center" title="Draft - belum disetujui">
                     <AlertTriangle className="h-5 w-5 text-amber-400" />
                 </div>
             </td>
@@ -141,7 +141,7 @@ export default function MonitoringMatrix({ matrix, types, year, years, summary }
                                     Monitoring Matrix Kelengkapan Dokumen
                                 </h1>
                                 <p className="text-xs text-gray-500 dark:text-muted-foreground">
-                                    Status upload dokumen perencanaan per OPD — Tahun {year}
+                                    Status upload dokumen perencanaan per OPD - Tahun {year}
                                 </p>
                             </div>
                         </div>
@@ -218,13 +218,13 @@ export default function MonitoringMatrix({ matrix, types, year, years, summary }
                                                     i % 2 === 0 ? '' : 'bg-slate-50/50 dark:bg-muted/10'
                                                 }`}
                                             >
-                                                {/* No column — sticky on desktop */}
+                                                {/* No column - sticky on desktop */}
                                                 <td className={`md:sticky md:left-0 z-20 border-r border-slate-100 dark:border-border px-3 py-2.5 text-center text-sm text-gray-500 tabular-nums w-12 ${
                                                     i % 2 === 0 ? 'bg-white dark:bg-card' : 'bg-slate-50 dark:bg-card'
                                                 }`}>
                                                     {from + i}
                                                 </td>
-                                                {/* OPD name column — sticky on desktop */}
+                                                {/* OPD name column - sticky on desktop */}
                                                 <td className={`md:sticky md:left-12 z-10 border-r border-slate-100 dark:border-border px-4 py-2.5 whitespace-nowrap md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] ${
                                                     i % 2 === 0 ? 'bg-white dark:bg-card' : 'bg-slate-50 dark:bg-card'
                                                 }`}>
@@ -234,9 +234,6 @@ export default function MonitoringMatrix({ matrix, types, year, years, summary }
                                                         </span>
                                                         <div className="flex items-center gap-1.5 mt-0.5">
                                                             <span className="font-mono text-[10px] text-gray-400">{row.organization.code}</span>
-                                                            {row.organization.is_bappeda && (
-                                                                <span className="rounded-full bg-blue-100 px-1.5 py-0 text-[10px] font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">Bappeda</span>
-                                                            )}
                                                         </div>
                                                     </div>
                                                 </td>

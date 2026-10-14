@@ -24,11 +24,16 @@ class PerformanceMeasurementController extends Controller
 
     /**
      * Dapatkan rentang tahun dinamis untuk Realisasi RPJMD, IKU, dan OPD.
-     * Membaca dari data periode perencanaan bertipe 'rpjmd' (atau mengandung nama/kode RPJMD) yang aktif.
+     * Membaca dari data periode perencanaan Renstra / multi-tahun yang aktif.
      *
      * @return int[]
      */
-    private function getRpjmdYears(?int $periodId = null, ?PlanningPeriod &$selectedPeriod = null): array
+        private function getRpjmdYears(?int $periodId = null, ?PlanningPeriod &$selectedPeriod = null): array
+    {
+        return $this->getPlanningYears($periodId, $selectedPeriod);
+    }
+
+    private function getPlanningYears(?int $periodId = null, ?PlanningPeriod &$selectedPeriod = null): array
     {
         if ($periodId) {
             $selectedPeriod = PlanningPeriod::find($periodId);
@@ -82,11 +87,16 @@ class PerformanceMeasurementController extends Controller
     /**
      * Daftar periode RPJMD yang tersedia di sistem untuk dipilih oleh pengguna.
      */
-    private function getAvailableRpjmdPeriods()
+        private function getAvailableRpjmdPeriods()
     {
-        return PlanningPeriod::where('type', 'rpjmd')
-            ->orWhere('name', 'like', '%RPJMD%')
-            ->orWhere('code', 'like', '%RPJMD%')
+        return $this->getAvailablePlanningPeriods();
+    }
+
+    private function getAvailablePlanningPeriods()
+    {
+        return PlanningPeriod::whereIn('type', ['renstra', 'rpjmd'])
+            ->orWhere('name', 'like', '%Renstra%')
+            ->orWhere('code', 'like', '%RENSTRA%')
             ->orderByDesc('year')
             ->get(['id', 'code', 'name', 'start_date', 'end_date', 'status']);
     }
@@ -138,19 +148,14 @@ class PerformanceMeasurementController extends Controller
             || $user->hasRole('Kepala OPD');
     }
 
-    private function isProvincialAdmin(User $user): bool
+    private function isOpdAdmin(User $user): bool
     {
         return $this->isOpdWideAdmin($user);
     }
 
-    private function isBappedaUser(User $user): bool
+    private function canManageAllOpd(User $user): bool
     {
-        return false;
-    }
-
-    private function isSpBappeda(User $user): bool
-    {
-        return $this->isOpdWideAdmin($user);
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -190,20 +195,20 @@ class PerformanceMeasurementController extends Controller
     public function opdIndex(Request $request): Response
     {
         $user = $request->user();
-        $isSpBappeda = $this->isSpBappeda($user);
+        $canManageAllOpd = $this->canManageAllOpd($user);
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $organizations = Organization::query()
             ->whereIn('type', ['opd', 'sekretariat', 'bidang'])
             ->where('is_active', true)
-            ->when(! $isSpBappeda, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $canManageAllOpd, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'type']);
 
         $selectedOrgId = $this->parseIntegerInput($request, 'organization_id', $organizations->first()?->id ?? null);
 
-        if ($selectedOrgId && ! $isSpBappeda && ! in_array($selectedOrgId, $accessibleOrgIds, true)) {
+        if ($selectedOrgId && ! $canManageAllOpd && ! in_array($selectedOrgId, $accessibleOrgIds, true)) {
             abort(403, 'Anda tidak memiliki hak akses untuk melihat data Perangkat Daerah ini.');
         }
 
@@ -216,7 +221,7 @@ class PerformanceMeasurementController extends Controller
         $canManage = false;
 
         if ($selectedOrgId) {
-            $canManage = $this->isProvincialAdmin($user) || in_array($selectedOrgId, $accessibleOrgIds, true);
+            $canManage = $this->isOpdAdmin($user) || in_array($selectedOrgId, $accessibleOrgIds, true);
 
             // Fetch Goals with their child Objectives for hierarchical tree view
             $goals = RealizationOpdItem::goals()
@@ -259,11 +264,13 @@ class PerformanceMeasurementController extends Controller
             'organizations' => $organizations,
             'selectedOrgId' => $selectedOrgId,
             'years' => $years,
+            'activePlanningPeriod' => $selectedPeriod,
+            'availablePlanningPeriods' => $this->getAvailablePlanningPeriods(),
             'activeRpjmdPeriod' => $selectedPeriod,
-            'availableRpjmdPeriods' => $this->getAvailableRpjmdPeriods(),
+            'availableRpjmdPeriods' => $this->getAvailablePlanningPeriods(),
             'activeYear' => $this->getActiveYear(),
             'canManage' => $canManage,
-            'userIsSpBappeda' => $isSpBappeda,
+            'canManageAllOpd' => $canManageAllOpd,
         ]);
     }
 
@@ -841,20 +848,20 @@ class PerformanceMeasurementController extends Controller
     public function outputIndex(Request $request): Response
     {
         $user = $request->user();
-        $isSpBappeda = $this->isSpBappeda($user);
+        $canManageAllOpd = $this->canManageAllOpd($user);
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $organizations = Organization::query()
             ->whereIn('type', ['opd', 'sekretariat', 'bidang'])
             ->where('is_active', true)
-            ->when(! $isSpBappeda, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $canManageAllOpd, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'type']);
 
         $selectedOrgId = $this->parseIntegerInput($request, 'organization_id', $organizations->first()?->id ?? null);
 
-        if ($selectedOrgId && ! $isSpBappeda && ! in_array($selectedOrgId, $accessibleOrgIds, true)) {
+        if ($selectedOrgId && ! $canManageAllOpd && ! in_array($selectedOrgId, $accessibleOrgIds, true)) {
             abort(403, 'Anda tidak memiliki hak akses untuk melihat data Perangkat Daerah ini.');
         }
 
@@ -864,7 +871,7 @@ class PerformanceMeasurementController extends Controller
         $canManage = false;
 
         if ($selectedOrgId) {
-            $canManage = $this->isProvincialAdmin($user) || in_array($selectedOrgId, $accessibleOrgIds, true);
+            $canManage = $this->isOpdAdmin($user) || in_array($selectedOrgId, $accessibleOrgIds, true);
 
             $items = MonitoringActionPlanOutput::query()
                 ->where('organization_id', $selectedOrgId)
@@ -913,7 +920,7 @@ class PerformanceMeasurementController extends Controller
             'year' => $year,
             'availableYears' => $this->getRpjmdYears(),
             'canManage' => $canManage,
-            'userIsSpBappeda' => $isSpBappeda,
+            'canManageAllOpd' => $canManageAllOpd,
         ]);
     }
 
@@ -1024,20 +1031,20 @@ class PerformanceMeasurementController extends Controller
     public function budgetIndex(Request $request): Response
     {
         $user = $request->user();
-        $isSpBappeda = $this->isSpBappeda($user);
+        $canManageAllOpd = $this->canManageAllOpd($user);
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $organizations = Organization::query()
             ->whereIn('type', ['opd', 'sekretariat', 'bidang'])
             ->where('is_active', true)
-            ->when(! $isSpBappeda, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+            ->when(! $canManageAllOpd, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
             ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'type']);
 
         $selectedOrgId = $this->parseIntegerInput($request, 'organization_id', $organizations->first()?->id ?? null);
 
-        if ($selectedOrgId && ! $isSpBappeda && ! in_array($selectedOrgId, $accessibleOrgIds, true)) {
+        if ($selectedOrgId && ! $canManageAllOpd && ! in_array($selectedOrgId, $accessibleOrgIds, true)) {
             abort(403, 'Anda tidak memiliki hak akses untuk melihat data Perangkat Daerah ini.');
         }
 
@@ -1047,7 +1054,7 @@ class PerformanceMeasurementController extends Controller
         $canManage = false;
 
         if ($selectedOrgId) {
-            $canManage = $this->isProvincialAdmin($user) || in_array($selectedOrgId, $accessibleOrgIds, true);
+            $canManage = $this->isOpdAdmin($user) || in_array($selectedOrgId, $accessibleOrgIds, true);
 
             $items = MonitoringActionPlanBudget::query()
                 ->where('organization_id', $selectedOrgId)
@@ -1096,7 +1103,7 @@ class PerformanceMeasurementController extends Controller
             'year' => $year,
             'availableYears' => $this->getRpjmdYears(),
             'canManage' => $canManage,
-            'userIsSpBappeda' => $isSpBappeda,
+            'canManageAllOpd' => $canManageAllOpd,
         ]);
     }
 
@@ -1357,15 +1364,15 @@ class PerformanceMeasurementController extends Controller
         if ($orgId) {
             $this->checkOpdViewAccess($user, $orgId);
             $goalsQuery->where('organization_id', $orgId);
-        } elseif (! $this->isSpBappeda($user)) {
+        } elseif (! $this->canManageAllOpd($user)) {
             $accessibleIds = $this->authorization->accessibleOrganizationIds($user);
             $goalsQuery->whereIn('organization_id', $accessibleIds);
         }
 
-        $goals = $goalsQuery->get()->map(function ($goal) use ($years) {
+        $goals = $goalsQuery->get()->map(function (RealizationOpdItem $goal) use ($years) {
             $goal->setAttribute('calculations', $this->buildCalculations($goal, $years));
             $goal->setAttribute('goal_indicators_list', $this->enrichIndicators($goal->goal_indicators_list, $years));
-            $goal->children->each(function ($child) use ($years) {
+            $goal->children->each(function (RealizationOpdItem $child) use ($years) {
                 $child->setAttribute('calculations', $this->buildCalculations($child, $years));
                 $child->setAttribute('objective_indicators_list', $this->enrichIndicators($child->objective_indicators_list, $years));
             });
@@ -1393,12 +1400,12 @@ class PerformanceMeasurementController extends Controller
             $query = RealizationOpdItem::with('organization:id,name,code')->orderBy('organization_id')->orderBy('id');
             if ($orgId) {
                 $query->where('organization_id', (int) $orgId);
-            } elseif (! $this->isSpBappeda($user)) {
+            } elseif (! $this->canManageAllOpd($user)) {
                 $accessibleIds = $this->authorization->accessibleOrganizationIds($user);
                 $query->whereIn('organization_id', $accessibleIds);
             }
             $items = $query->get()
-                ->map(function ($item, $idx) use ($years) {
+                ->map(function (RealizationOpdItem $item, $idx) use ($years) {
                     $item->number_code = '('.($idx + 1).')';
                     $item->setAttribute('calculations', $this->buildCalculations($item, $years));
 
@@ -1446,7 +1453,7 @@ class PerformanceMeasurementController extends Controller
         if ($orgId) {
             $this->checkOpdViewAccess($user, $orgId);
             $query->where('organization_id', $orgId);
-        } elseif (! $this->isSpBappeda($user)) {
+        } elseif (! $this->canManageAllOpd($user)) {
             $accessibleIds = $this->authorization->accessibleOrganizationIds($user);
             $query->whereIn('organization_id', $accessibleIds);
         }
@@ -1483,7 +1490,7 @@ class PerformanceMeasurementController extends Controller
         if ($orgId) {
             $this->checkOpdViewAccess($user, $orgId);
             $query->where('organization_id', $orgId);
-        } elseif (! $this->isSpBappeda($user)) {
+        } elseif (! $this->canManageAllOpd($user)) {
             $accessibleIds = $this->authorization->accessibleOrganizationIds($user);
             $query->whereIn('organization_id', $accessibleIds);
         }

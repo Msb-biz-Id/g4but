@@ -3,7 +3,7 @@ import { check, group, sleep } from 'k6';
 import { Rate, Trend } from 'k6/metrics';
 
 // ============================================================
-//  e-KASUARI — Load Test Suite (FR-OPS-PERF)
+//  e-SAKIP — Load Test Suite (FR-OPS-PERF)
 //  Target MVP: p95 < 5000ms, error rate < 1%, 50 VU concurrent
 //
 //  Penggunaan:

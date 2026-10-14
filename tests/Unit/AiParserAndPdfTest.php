@@ -143,10 +143,10 @@ JSON;
             'generatedAt' => '17/09/2026 03:00',
             'logoBase64' => PdfService::getLogoBase64(),
             'provinceName' => 'Provinsi Papua Barat',
-            'appName' => 'e-KASUARI',
+            'appName' => 'e-SAKIP',
         ])->render();
 
-        $this->assertStringContainsString('E-KASUARI &mdash; SISTEM AKUNTABILITAS KINERJA INSTANSI PEMERINTAH', $html);
+        $this->assertStringContainsString('E-SAKIP &mdash; SISTEM AKUNTABILITAS KINERJA INSTANSI PEMERINTAH', $html);
         $this->assertStringContainsString('EXECUTIVE SUMMARY', $html);
         $this->assertStringContainsString('hdr-table', $html);
         $this->assertStringContainsString('hdr-logo-cell', $html);

@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import TablePagination from '@/Components/TablePagination';
 import { Select2 } from '@/Components/ui/select2';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface AuditLogItem {
     id: number;
@@ -214,23 +215,28 @@ export default function AuditIndex({
         <AuthenticatedLayout header="Audit Log">
             <Head title="Audit Log" />
 
-            <div className="space-y-4 max-w-[1400px] mx-auto">
-                {/* Header Card */}
-                <div className="bg-white dark:bg-slate-900 border border-border/80 rounded-xl p-5 shadow-xs">
-                    <div className="flex items-center gap-2.5">
-                        <div className="text-primary">
-                            <Shield className="h-5 w-5" strokeWidth={2.2} />
+            <div className="space-y-6 max-w-[1400px] mx-auto">
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Master Data & Pengaturan' },
+                        { label: 'Audit Trail' },
+                    ]}
+                    title="Audit Log"
+                    description={`Riwayat aktivitas pengguna pada sistem. Retensi otomatis 30 hari. Total ${totalEntries.toLocaleString('id-ID')} aktivitas tercatat.`}
+                    actions={
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={copyForExcel}
+                                className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                            >
+                                <FileSpreadsheet className="mr-2 h-4 w-4 text-emerald-600" />
+                                Salin ke Excel
+                            </Button>
                         </div>
-                        <h2 className="text-lg font-bold tracking-tight text-foreground">
-                            Audit Log
-                        </h2>
-                    </div>
-                    <p className="mt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                        Riwayat aktivitas user di sistem. Data disimpan selama{' '}
-                        <span className="font-semibold text-foreground">30 hari</span> & dibersihkan otomatis. Total{' '}
-                        <span className="font-semibold text-foreground">{totalEntries.toLocaleString('id-ID')}</span> entri.
-                    </p>
-                </div>
+                    }
+                />
 
                 {/* Filter Controls Card */}
                 <div className="bg-white dark:bg-slate-900 border border-border/80 rounded-xl p-4 sm:p-5 shadow-xs space-y-4">

@@ -16,11 +16,12 @@ import {
 
 interface MeasurementNavProps {
     activeTab: 'opd' | 'output' | 'budget';
-    userIsSpBappeda?: boolean;
+    userIsSuperAdmin?: boolean;
+    canManageAllOpd?: boolean;
     exportPdfUrl?: string | null;
 }
 
-export default function MeasurementNav({ activeTab, userIsSpBappeda, exportPdfUrl }: MeasurementNavProps) {
+export default function MeasurementNav({ activeTab, userIsSuperAdmin, canManageAllOpd, exportPdfUrl }: MeasurementNavProps) {
     const [showGuide, setShowGuide] = useState(false);
 
     const tabs = [

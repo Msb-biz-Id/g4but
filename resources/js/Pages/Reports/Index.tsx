@@ -26,6 +26,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import TablePagination from '@/Components/TablePagination';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import React, { useState, useMemo } from 'react';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 import {
     AlertCircle,
     Building2,
@@ -238,39 +239,33 @@ export default function ReportsIndex({
                 )}
 
                 {/* ─── Header Toolbar ────────────────────────────────────────── */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-card p-5 rounded-xl border shadow-xs">
-                    <div className="flex items-center gap-3.5">
-                        <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                            <FileCheck2 className="h-6 w-6" />
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Pelaporan' },
+                        { label: 'LKIP' },
+                    ]}
+                    title="Pelaporan Kinerja (LKIP)"
+                    description={`Pengelolaan dokumen Laporan Kinerja Instansi Pemerintah (LKIP) per unit kerja tahun ${selected_year}.`}
+                    actions={
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-lg border">
+                                <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                                <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Tahun:</span>
+                                <SelectNative
+                                    value={selected_year}
+                                    onChange={(e) => handleYearChange(Number(e.target.value))}
+                                    className="h-8 py-0 px-2 font-bold text-sm bg-background border-none shadow-none w-24"
+                                >
+                                    {available_years.map((yr) => (
+                                        <option key={yr} value={yr}>
+                                            {yr}
+                                        </option>
+                                    ))}
+                                </SelectNative>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-foreground">
-                                Pelaporan Kinerja (LKIP)
-                            </h1>
-                            <p className="text-sm text-muted-foreground">
-                                Pengelolaan dokumen Laporan Kinerja Instansi Pemerintah (LKIP) per unit kerja tahun {selected_year}.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-lg border">
-                            <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                            <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Tahun:</span>
-                            <SelectNative
-                                value={selected_year}
-                                onChange={(e) => handleYearChange(Number(e.target.value))}
-                                className="h-8 py-0 px-2 font-bold text-sm bg-background border-none shadow-none w-24"
-                            >
-                                {available_years.map((yr) => (
-                                    <option key={yr} value={yr}>
-                                        {yr}
-                                    </option>
-                                ))}
-                            </SelectNative>
-                        </div>
-                    </div>
-                </div>
+                    }
+                />
 
                 {/* ─── KPI Ringkasan Statistik ───────────────────────────────── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

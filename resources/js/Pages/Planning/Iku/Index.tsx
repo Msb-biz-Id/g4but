@@ -10,8 +10,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { TableEmptyRow } from '@/Components/EmptyState';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/Components/ui/dialog';
-import { Plus, Search, Download, FileSpreadsheet, FileText, MoreVertical, Eye, Edit, Send, CheckCircle, XCircle, Archive, Upload, Filter, X, History } from 'lucide-react';
+import { Plus, Search, Download, FileSpreadsheet, FileText, MoreVertical, Eye, Edit, Send, CheckCircle, XCircle, Archive, Upload, Filter, X, History, Trash2, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import FilterToolbar from '@/Components/Dashboard/FilterToolbar';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
+import LevelBadge from '@/Components/Dashboard/LevelBadge';
+import ActionMenuDropdown from '@/Components/Dashboard/ActionMenuDropdown';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -63,26 +68,11 @@ interface Props {
     organizations: Organization[];
     statusOptions: StatusOption[];
     isAdminOpd?: boolean;
-    isProvincialAdmin?: boolean;
+    isOpdAdmin?: boolean;
     accessibleOrgIds?: number[];
     userOpdId?: number | null;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const STATUS_COLORS: Record<string, string> = {
-    draft:      'bg-gray-100 text-gray-700',
-    diajukan:   'bg-blue-100 text-blue-700',
-    review:     'bg-yellow-100 text-yellow-700',
-    perbaikan:  'bg-orange-100 text-orange-700',
-    final:      'bg-green-100 text-green-700',
-    nonaktif:   'bg-red-100 text-red-600',
-};
-
-function StatusBadge({ status }: { status: string }) {
-    const label = status.charAt(0).toUpperCase() + status.slice(1);
-    return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-600'}`}>{label}</span>;
-}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -95,7 +85,7 @@ export default function IkuIndex({
     activeYear = 2025,
     availableYears = [],
     isAdminOpd = false,
-    isProvincialAdmin = false,
+    isOpdAdmin = false,
     accessibleOrgIds = [],
     userOpdId = null,
 }: Props) {
@@ -171,317 +161,290 @@ export default function IkuIndex({
             finalize:   route('planning.iku.finalize', ikuId),
             deactivate: route('planning.iku.deactivate', ikuId),
         };
-        router.post(routeMap[action], notes ? { notes } : {}, { preserveScroll: true });
+        if (routeMap[action]) {
+            router.post(routeMap[action], notes ? { notes } : {}, { preserveScroll: true });
+        }
     }
-
-    const selectedLevel = filters.level ?? '';
 
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Indikator Kinerja Utama (IKU)</h2>}>
             <Head title="Indikator Kinerja Utama" />
 
-            <div className="py-6">
-                <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
-
-                    {/* ── Breadcrumb ── */}
-                    <nav className="text-sm text-gray-500">
-                        <span>Beranda</span> <span className="mx-1">›</span>
-                        <span>Perencanaan Kinerja</span> <span className="mx-1">›</span>
-                        <span className="font-medium text-gray-800">Indikator Kinerja Utama</span>
-                    </nav>
-
-                    {/* ── Header Actions ── */}
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                                Indikator Kinerja Utama (IKU)
-                            </h1>
-                            <p className="text-xs text-muted-foreground sm:text-sm">
-                                Penetapan target dan pemantauan capaian IKU Pemerintah Daerah & Perangkat Daerah.
-                            </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Button asChild className="w-full sm:w-auto justify-center">
+            <div className="mx-auto max-w-7xl space-y-4">
+                {/* ── Page Header ── */}
+                <PageHeader
+                    title="Indikator Kinerja Utama (IKU)"
+                    description="Pengelolaan Indikator Kinerja Utama Pemerintah Daerah dan Perangkat Daerah beserta metadata, baseline dan target tahunan."
+                    breadcrumbs={[
+                        { label: 'Beranda', href: route('dashboard') },
+                        { label: 'Perencanaan Kinerja' },
+                        { label: 'Indikator Kinerja Utama', active: true },
+                    ]}
+                    actions={
+                        <>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsImportOpen(true)}
+                                className="h-9 font-medium border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                            >
+                                <Upload className="mr-2 h-4 w-4 text-slate-500" /> Import Excel
+                            </Button>
+                            <a href={route('planning.iku.export.excel', { active_year: currentActiveYear, ...filters })}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 font-medium border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                >
+                                    <FileSpreadsheet className="mr-2 h-4 w-4 text-slate-500" /> Export Excel
+                                </Button>
+                            </a>
+                            <Button asChild size="sm" className="h-9 bg-primary text-primary-foreground font-semibold shadow-xs hover:bg-primary/90">
                                 <Link href={route('planning.iku.create')}>
-                                    <Plus className="mr-2 h-4 w-4" /> Tambah IKU
+                                    <Plus className="mr-1.5 h-4 w-4" /> Tambah IKU
                                 </Link>
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="w-full sm:w-auto justify-center">
-                                <Upload className="mr-2 h-4 w-4" /> Import Excel
-                            </Button>
-                            <a href={route('planning.iku.export.excel', { active_year: currentActiveYear, ...filters })} className="w-full sm:w-auto">
-                                <Button variant="outline" size="sm" className="w-full justify-center">
-                                    <FileSpreadsheet className="mr-2 h-4 w-4" /> Export Excel
-                                </Button>
-                            </a>
-                            <a href={route('planning.iku.export.pdf-rekap', { active_year: currentActiveYear, ...filters })} target="_blank" className="w-full sm:w-auto">
-                                <Button variant="outline" size="sm" className="w-full justify-center">
-                                    <FileText className="mr-2 h-4 w-4" /> Cetak PDF
-                                </Button>
-                            </a>
+                        </>
+                    }
+                />
+
+                {/* ── Filter Toolbar ── */}
+                <FilterToolbar hasActiveFilters={hasFilters} onReset={resetFilters}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                        {/* Periode */}
+                        <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                Periode
+                            </label>
+                            <SelectNative
+                                value={filters.period_id ?? ''}
+                                onChange={e => applyFilter({ period_id: e.target.value, goal_id: '', objective_id: '' })}
+                                className="w-full h-9 text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                            >
+                                <option value="">Semua Periode</option>
+                                {periods.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name ?? `${p.start_year} - ${p.end_year}`}</option>
+                                ))}
+                            </SelectNative>
+                        </div>
+
+                        {/* Level IKU */}
+                        <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                Level IKU
+                            </label>
+                            <SelectNative
+                                value={filters.level ?? ''}
+                                onChange={e => applyFilter({ level: e.target.value, org_id: '' })}
+                                className="w-full h-9 text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                            >
+                                <option value="">Semua</option>
+                                <option value="pemda">Pemerintah Daerah (Pemda)</option>
+                                <option value="perangkat_daerah">Perangkat Daerah (OPD)</option>
+                            </SelectNative>
+                        </div>
+
+                        {/* Perangkat Daerah */}
+                        <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                Perangkat Daerah
+                            </label>
+                            <SelectNative
+                                value={filters.org_id ?? ''}
+                                onChange={e => applyFilter({ org_id: e.target.value })}
+                                className="w-full h-9 text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                            >
+                                <option value="">Semua OPD</option>
+                                {organizations.map(o => (
+                                    <option key={o.id} value={o.id}>{o.name}</option>
+                                ))}
+                            </SelectNative>
+                        </div>
+
+                        {/* Sasaran */}
+                        <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                Sasaran
+                            </label>
+                            <SelectNative
+                                value={filters.objective_id ?? ''}
+                                onChange={e => applyFilter({ objective_id: e.target.value })}
+                                className="w-full h-9 text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                            >
+                                <option value="">Semua Sasaran</option>
+                                {objectives.map(obj => (
+                                    <option key={obj.id} value={obj.id}>{obj.name}</option>
+                                ))}
+                            </SelectNative>
+                        </div>
+
+                        {/* Status */}
+                        <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                Status
+                            </label>
+                            <SelectNative
+                                value={filters.iku_status ?? ''}
+                                onChange={e => applyFilter({ iku_status: e.target.value })}
+                                className="w-full h-9 text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                            >
+                                <option value="">Semua Status</option>
+                                {statusOptions.map(s => (
+                                    <option key={s.value} value={s.value}>{s.label}</option>
+                                ))}
+                            </SelectNative>
+                        </div>
+
+                        {/* Cari Indikator */}
+                        <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                Cari
+                            </label>
+                            <form onSubmit={handleSearch} className="relative">
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                                <Input
+                                    placeholder="Cari Indikator..."
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                    className="pl-8 h-9 text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 w-full"
+                                />
+                            </form>
                         </div>
                     </div>
+                </FilterToolbar>
 
-                    {/* ── Filters ── */}
-                    <Card>
-                        <CardContent className="p-4 sm:p-5">
-                            <div className="flex items-center justify-between gap-2 mb-3">
-                                <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                                    <Filter className="h-4 w-4 text-primary" />
-                                    <span>Filter Target IKU</span>
-                                </div>
-                                {hasFilters && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={resetFilters}
-                                        className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive transition-colors"
-                                    >
-                                        <X className="mr-1 h-3.5 w-3.5" />
-                                        Reset Filter
-                                    </Button>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
-                                <div className="lg:col-span-3">
-                                    <SelectNative
-                                        value={filters.period_id ?? ''}
-                                        onChange={e => applyFilter({ period_id: e.target.value, goal_id: '', objective_id: '' })}
-                                        className="w-full"
-                                    >
-                                        <option value="">Semua Periode</option>
-                                        {periods.map(p => (
-                                            <option key={p.id} value={p.id}>{p.name ?? `${p.start_year}–${p.end_year}`}</option>
-                                        ))}
-                                    </SelectNative>
-                                </div>
-
-                                <div className="lg:col-span-2">
-                                    <SelectNative
-                                        value={String(currentActiveYear)}
-                                        onChange={e => applyFilter({ active_year: e.target.value })}
-                                        className="w-full"
-                                    >
-                                        {(availableYears.length > 0
-                                            ? availableYears
-                                            : [currentActiveYear]
-                                        ).map(y => (
-                                            <option key={y} value={y}>Target TA {y}</option>
-                                        ))}
-                                    </SelectNative>
-                                </div>
-
-                                <div className="lg:col-span-2">
-                                    <SelectNative
-                                        value={filters.level ?? ''}
-                                        onChange={e => applyFilter({ level: e.target.value, org_id: '' })}
-                                        className="w-full"
-                                    >
-                                        <option value="">Semua Level</option>
-                                        <option value="pemda">Pemda</option>
-                                        <option value="perangkat_daerah">Perangkat Daerah</option>
-                                    </SelectNative>
-                                </div>
-
-                                {/* OPD filter — disembunyikan jika Admin OPD (otomatis ter-scope) */}
-                                {isProvincialAdmin && filters.level === 'perangkat_daerah' && (
-                                    <div className="lg:col-span-3">
-                                        <SelectNative
-                                            value={filters.org_id ?? ''}
-                                            onChange={e => applyFilter({ org_id: e.target.value })}
-                                            className="w-full"
-                                        >
-                                            <option value="">Semua OPD</option>
-                                            {organizations.map(o => (
-                                                <option key={o.id} value={o.id}>{o.code} — {o.name}</option>
-                                            ))}
-                                        </SelectNative>
-                                    </div>
-                                )}
-
-                                {/* Filter Tujuan (cascaded dari Period) */}
-                                {goals.length > 0 && (
-                                    <div className="lg:col-span-3">
-                                        <SelectNative
-                                            value={filters.goal_id ?? ''}
-                                            onChange={e => applyFilter({ goal_id: e.target.value, objective_id: '' })}
-                                            className="w-full"
-                                        >
-                                            <option value="">Semua Tujuan</option>
-                                            {goals.map(g => (
-                                                <option key={g.id} value={g.id}>{g.name}</option>
-                                            ))}
-                                        </SelectNative>
-                                    </div>
-                                )}
-
-                                {/* Filter Sasaran (cascaded dari Tujuan) */}
-                                {objectives.length > 0 && (
-                                    <div className="lg:col-span-3">
-                                        <SelectNative
-                                            value={filters.objective_id ?? ''}
-                                            onChange={e => applyFilter({ objective_id: e.target.value })}
-                                            className="w-full"
-                                        >
-                                            <option value="">Semua Sasaran</option>
-                                            {objectives.map(obj => (
-                                                <option key={obj.id} value={obj.id}>{obj.name}</option>
-                                            ))}
-                                        </SelectNative>
-                                    </div>
-                                )}
-
-                                <div className="lg:col-span-2">
-                                    <SelectNative
-                                        value={filters.iku_status ?? ''}
-                                        onChange={e => applyFilter({ iku_status: e.target.value })}
-                                        className="w-full"
-                                    >
-                                        <option value="">Semua Status</option>
-                                        {statusOptions.map(s => (
-                                            <option key={s.value} value={s.value}>{s.label}</option>
-                                        ))}
-                                    </SelectNative>
-                                </div>
-
-                                <div className="sm:col-span-2 lg:col-span-3">
-                                    <form onSubmit={handleSearch} className="relative flex-1">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                        <Input
-                                            placeholder="Cari nama indikator..."
-                                            value={search}
-                                            onChange={e => setSearch(e.target.value)}
-                                            className="pl-9 w-full"
-                                        />
-                                    </form>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* ── Table ── */}
-                    <div className="rounded-lg border bg-white shadow-sm overflow-x-auto">
+                {/* ── Table Card ── */}
+                <div className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs overflow-hidden">
+                    <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-8">No</TableHead>
-                                    <TableHead>Level</TableHead>
-                                    <TableHead>Tujuan / Sasaran</TableHead>
-                                    <TableHead>Nama Indikator</TableHead>
-                                    <TableHead>Satuan</TableHead>
-                                    <TableHead>Baseline</TableHead>
-                                    <TableHead className="text-right whitespace-nowrap">Target ({currentActiveYear})</TableHead>
-                                    <TableHead>Penanggung Jawab</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="w-10">Aksi</TableHead>
+                                <TableRow className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/80">
+                                    <TableHead className="w-12 text-center text-xs font-semibold text-slate-700 dark:text-slate-300">No</TableHead>
+                                    <TableHead className="text-xs font-semibold text-slate-700 dark:text-slate-300">Level</TableHead>
+                                    <TableHead className="text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[220px]">Tujuan / Sasaran</TableHead>
+                                    <TableHead className="text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[240px]">Indikator Kinerja Utama</TableHead>
+                                    <TableHead className="text-xs font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">Satuan</TableHead>
+                                    <TableHead className="text-xs font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">Baseline (Tahun)</TableHead>
+                                    <TableHead className="text-xs font-semibold text-slate-700 dark:text-slate-300 text-right whitespace-nowrap">Target {currentActiveYear}</TableHead>
+                                    <TableHead className="text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[150px]">Penanggung Jawab</TableHead>
+                                    <TableHead className="text-xs font-semibold text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">Status</TableHead>
+                                    <TableHead className="w-12 text-center text-xs font-semibold text-slate-700 dark:text-slate-300">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {ikuList.data.length === 0 ? (
                                     <TableEmptyRow colSpan={10} description="Belum ada IKU. Klik '+ Tambah IKU' untuk mulai." />
                                 ) : ikuList.data.map((iku, idx) => (
-                                    <TableRow key={iku.id}>
-                                        <TableCell className="text-gray-400 text-xs">
+                                    <TableRow key={iku.id} className="border-b border-slate-100 dark:border-slate-800/60 hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                                        <TableCell className="text-center text-xs text-slate-500 font-medium">
                                             {(ikuList.from ?? 0) + idx}
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-xs font-medium">
-                                                {iku.level === 'pemda' ? 'Pemda' : 'PD'}
-                                            </span>
-                                            {iku.owner_organization && (
-                                                <div className="text-xs text-gray-400">{iku.owner_organization.name}</div>
-                                            )}
+                                            <LevelBadge level={iku.level} />
                                         </TableCell>
-                                        <TableCell className="max-w-[200px]">
+                                        <TableCell className="max-w-[260px]">
                                             {iku.strategic_goal && (
-                                                <div className="text-xs text-gray-500 truncate">{iku.strategic_goal.name}</div>
+                                                <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 leading-tight">
+                                                    {iku.strategic_goal.name}
+                                                </div>
                                             )}
-                                            {iku.strategic_objective && (
-                                                <div className="text-sm font-medium truncate">{iku.strategic_objective.name}</div>
-                                            )}
+                                            <div className="text-xs font-medium text-slate-800 dark:text-slate-200 line-clamp-2 mt-0.5 leading-snug">
+                                                {iku.strategic_objective?.name || 'Meningkatnya akuntabilitas kinerja'}
+                                            </div>
                                         </TableCell>
-                                        <TableCell className="max-w-[220px]">
-                                            <div className="font-medium text-sm truncate">{iku.name}</div>
+                                        <TableCell className="max-w-[280px]">
+                                            <div className="font-semibold text-xs text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug">
+                                                {iku.name}
+                                            </div>
                                         </TableCell>
-                                        <TableCell className="text-sm">{iku.measurement_unit?.symbol ?? iku.measurement_unit?.name ?? '-'}</TableCell>
-                                        <TableCell className="text-sm font-medium whitespace-nowrap">
+                                        <TableCell className="text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                            {iku.measurement_unit?.symbol ?? iku.measurement_unit?.name ?? '-'}
+                                        </TableCell>
+                                        <TableCell className="text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">
                                             {iku.formatted_baseline ?? (
                                                 iku.baseline_value !== null && iku.baseline_value !== undefined ? (
-                                                    `${Number(iku.baseline_value).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${iku.baseline_year ?? '-'})`
+                                                    <span>
+                                                        <span className="font-medium">{Number(iku.baseline_value).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                        <span className="text-slate-400 text-[11px] ml-1">({iku.baseline_year ?? '-'})</span>
+                                                    </span>
                                                 ) : (
                                                     iku.baseline_year ? `(${iku.baseline_year})` : '-'
                                                 )
                                             )}
                                         </TableCell>
-                                        <TableCell className="text-sm font-semibold text-right text-blue-900 whitespace-nowrap">
+                                        <TableCell className="text-xs font-bold text-right text-slate-900 dark:text-slate-100 whitespace-nowrap">
                                             {(() => {
                                                 const tgt = iku.targets?.find(t => Number(t.year) === currentActiveYear);
                                                 if (tgt && tgt.target_value !== null && tgt.target_value !== undefined) {
                                                     return Number(tgt.target_value).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                                 }
-                                                return <span className="text-gray-400 font-normal italic">-</span>;
+                                                return <span className="text-slate-400 font-normal italic">-</span>;
                                             })()}
                                         </TableCell>
-                                        <TableCell className="text-sm">{iku.responsible_officer?.name ?? '-'}</TableCell>
-                                        <TableCell><StatusBadge status={iku.iku_status} /></TableCell>
-                                        <TableCell>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href={route('planning.iku.show', iku.id)}>
-                                                            <Eye className="mr-2 h-4 w-4" /> Lihat Detail
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    {['draft', 'perbaikan'].includes(iku.iku_status) && (isProvincialAdmin || (iku.level === 'perangkat_daerah' && (accessibleOrgIds.includes(iku.owner_organization?.id ?? 0) || iku.owner_organization?.id === userOpdId))) && (
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('planning.iku.edit', iku.id)}>
-                                                                <Edit className="mr-2 h-4 w-4" /> Edit
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {['draft', 'perbaikan'].includes(iku.iku_status) && (isProvincialAdmin || (iku.level === 'perangkat_daerah' && (accessibleOrgIds.includes(iku.owner_organization?.id ?? 0) || iku.owner_organization?.id === userOpdId))) && (
-                                                        <DropdownMenuItem onClick={() => workflowAction(iku.id, 'submit')}>
-                                                            <Send className="mr-2 h-4 w-4" /> Ajukan Review
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {isProvincialAdmin && iku.iku_status === 'diajukan' && (
-                                                        <DropdownMenuItem onClick={() => workflowAction(iku.id, 'review')}>
-                                                            <CheckCircle className="mr-2 h-4 w-4" /> Mulai Review
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {isProvincialAdmin && iku.iku_status === 'review' && (<>
-                                                        <DropdownMenuItem onClick={() => workflowAction(iku.id, 'finalize')}>
-                                                            <CheckCircle className="mr-2 h-4 w-4" /> Finalisasi
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => {
-                                                            const notes = prompt('Catatan perbaikan (wajib):');
-                                                            if (notes) workflowAction(iku.id, 'return', notes);
-                                                        }}>
-                                                            <XCircle className="mr-2 h-4 w-4" /> Kembalikan
-                                                        </DropdownMenuItem>
-                                                    </>)}
-                                                    {isProvincialAdmin && iku.iku_status === 'final' && (
-                                                        <DropdownMenuItem onClick={() => workflowAction(iku.id, 'deactivate')}>
-                                                            <Archive className="mr-2 h-4 w-4" /> Nonaktifkan
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href={route('planning.iku.show', iku.id) + '?tab=riwayat'}>
-                                                            <History className="mr-2 h-4 w-4" /> Riwayat
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <a href={route('planning.iku.export.pdf', iku.id)} target="_blank">
-                                                            <FileText className="mr-2 h-4 w-4" /> Download PDF
-                                                        </a>
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                        <TableCell className="text-xs text-slate-700 dark:text-slate-300">
+                                            <span className="line-clamp-1 font-medium">
+                                                {iku.owner_organization?.name || iku.responsible_officer?.name || '-'}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-center whitespace-nowrap">
+                                            <StatusBadge status={iku.iku_status} />
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <ActionMenuDropdown
+                                                items={[
+                                                    {
+                                                        label: 'Lihat Detail',
+                                                        icon: <Eye className="h-3.5 w-3.5" />,
+                                                        href: route('planning.iku.show', iku.id),
+                                                    },
+                                                    {
+                                                        label: 'Edit',
+                                                        icon: <Edit className="h-3.5 w-3.5" />,
+                                                        href: route('planning.iku.edit', iku.id),
+                                                    },
+                                                    {
+                                                        label: 'Kelola Target',
+                                                        icon: <SlidersHorizontal className="h-3.5 w-3.5" />,
+                                                        href: route('planning.iku.show', iku.id) + '?tab=target',
+                                                    },
+                                                    {
+                                                        label: 'Cetak PDF',
+                                                        icon: <FileText className="h-3.5 w-3.5" />,
+                                                        href: route('planning.iku.export.pdf', iku.id),
+                                                        isExternal: true,
+                                                    },
+                                                    {
+                                                        label: 'Riwayat Perubahan',
+                                                        icon: <History className="h-3.5 w-3.5" />,
+                                                        href: route('planning.iku.show', iku.id) + '?tab=riwayat',
+                                                        separatorBefore: true,
+                                                    },
+                                                    ...(iku.iku_status === 'final'
+                                                        ? [
+                                                              {
+                                                                  label: 'Nonaktifkan',
+                                                                  icon: <Archive className="h-3.5 w-3.5" />,
+                                                                  onClick: () => workflowAction(iku.id, 'deactivate'),
+                                                                  variant: 'warning' as const,
+                                                              },
+                                                          ]
+                                                        : []),
+                                                    ...(iku.iku_status === 'draft'
+                                                        ? [
+                                                              {
+                                                                  label: 'Hapus (hanya Draft)',
+                                                                  icon: <Trash2 className="h-3.5 w-3.5" />,
+                                                                  onClick: () => {
+                                                                      if (confirm('Yakin ingin menghapus IKU draft ini?')) {
+                                                                          router.delete(route('planning.iku.destroy', iku.id), { preserveScroll: true });
+                                                                      }
+                                                                  },
+                                                                  variant: 'danger' as const,
+                                                              },
+                                                          ]
+                                                        : []),
+                                                ]}
+                                            />
                                         </TableCell>
                                     </TableRow>
                                 ))}

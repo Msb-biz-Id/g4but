@@ -141,7 +141,7 @@ Route::middleware('auth')->group(function () {
         Route::put('measurement-periods/{period}', [PeriodController::class, 'updateMeasurementPeriod'])->name('measurement-periods.update');
         Route::delete('measurement-periods/{period}', [PeriodController::class, 'destroyMeasurementPeriod'])->name('measurement-periods.destroy');
 
-        Route::resource('units', MeasurementUnitController::class)->except(['show', 'destroy']);
+        Route::resource('units', MeasurementUnitController::class)->only(['index', 'store', 'update']);
 
         Route::resource('indicators', IndicatorController::class)->except(['show', 'destroy']);
         Route::post('indicators/{indicator}/activate', [IndicatorController::class, 'activate'])->name('indicators.activate');
@@ -310,7 +310,7 @@ Route::middleware('auth')->group(function () {
         Route::get('ai/templates', [AiController::class, 'templates'])->name('ai.templates');
         Route::post('ai/templates', [AiController::class, 'storeTemplate'])->name('ai.templates.store');
         Route::post('ai/templates/{template}/activate', [AiController::class, 'activateTemplate'])->name('ai.templates.activate');
-        // MOD-AI-006: Manajemen kuota harian per OPD (Super Admin / Admin Provinsi)
+        // MOD-AI-006: Manajemen kuota harian per OPD (Super Admin only)
         Route::get('ai/quota', [AiController::class, 'quotaIndex'])->name('ai.quota.index');
         Route::put('ai/quota/{organization}', [AiController::class, 'quotaUpdate'])->name('ai.quota.update');
 
@@ -445,12 +445,12 @@ Route::middleware('auth')->group(function () {
         ->name('planning.docs.approve');
 
     // Monitoring Matrix kelengkapan dokumen OPD (MOD-003 / AC-007)
-    // Hanya Super Admin & Admin Provinsi — gated by 'view-planning-docs' di controller
+    // Hanya Super Admin — gated by 'view-planning-docs' di controller
     Route::get('planning/monitoring-matrix', [MonitoringMatrixController::class, 'index'])
         ->name('planning.monitoring-matrix');
 
-    // BR-006: Catatan revisi dokumen (Biro → OPD, satu arah)
-    // Super Admin / Admin Provinsi kirim catatan → Admin OPD notif + revisi wajib
+    // BR-006: Catatan revisi dokumen (Super Admin → OPD, satu arah)
+    // Super Admin kirim catatan → Admin OPD notif + revisi wajib
     Route::post('planning/documents/{document}/revisions', [DocumentRevisionController::class, 'store'])
         ->name('planning.documents.revisions.store');
     Route::patch('planning/revisions/{revision}/acknowledge', [DocumentRevisionController::class, 'acknowledge'])
@@ -484,6 +484,8 @@ Route::prefix('informasi')->group(function () {
     Route::get('{document}/download', [KnowledgeController::class, 'publicDownload'])->name('knowledge.public.download');
     Route::get('{document}', [KnowledgeController::class, 'publicShow'])->name('knowledge.public.show');
 });
+
+Route::redirect('/regulasi', '/informasi?kategori=regulasi');
 
 // ── Portal Laporan Publik — MOD-003 (Baseline) ─────────────────────────────
 // Dokumen perencanaan OPD yang sudah approved, bisa diakses publik tanpa login.

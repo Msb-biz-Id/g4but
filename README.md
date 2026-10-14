@@ -3,10 +3,10 @@
   <img src="https://img.shields.io/badge/PHP-8.4-purple?style=flat-square" alt="PHP" />
   <img src="https://img.shields.io/badge/Laravel-13-red?style=flat-square" alt="Laravel" />
   <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square" alt="React" />
-  <img src="https://img.shields.io/github/actions/workflow/status/your-org/e-kasuari/ci.yml?style=flat-square&label=CI" alt="CI" />
+  <img src="https://img.shields.io/github/actions/workflow/status/your-org/e-sakip/ci.yml?style=flat-square&label=CI" alt="CI" />
 </p>
 
-# e-KASUARI
+# e-SAKIP
 **Sistem Akuntabilitas Kinerja Instansi Pemerintah — Provinsi Papua Barat**
 
 Aplikasi web terpadu untuk perencanaan, pengukuran, evaluasi, dan pelaporan kinerja OPD (Organisasi Perangkat Daerah) berbasis SAKIP. Dibangun di atas Laravel 13 + React/TypeScript (Inertia.js).
@@ -56,8 +56,8 @@ Aplikasi web terpadu untuk perencanaan, pengukuran, evaluasi, dan pelaporan kine
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-org/e-kasuari.git
-cd e-kasuari
+git clone https://github.com/your-org/e-sakip.git
+cd e-sakip
 
 # 2. Install PHP dependencies
 composer install
@@ -120,7 +120,7 @@ Target: **0 failed, 0 errors** sebelum merge ke `main`.
 ## 📁 Struktur Direktori
 
 ```
-e-kasuari/
+e-sakip/
 ├── app/
 │   ├── Contracts/         # Interface (AiProvider, dll.)
 │   ├── Http/

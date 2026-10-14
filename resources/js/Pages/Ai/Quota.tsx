@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import PageHeader from '@/Components/PageHeader';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 import { PageProps } from '@/types';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -166,16 +166,21 @@ export default function AiQuota({ auth, organizations, kuota_default, today }: P
  }, 0);
 
  return (
-  <AuthenticatedLayout header="Manajemen Kuota AI">
+  <AuthenticatedLayout>
    <Head title="Manajemen Kuota AI" />
-   <div className="mx-auto max-w-4xl space-y-5">
+   <div className="space-y-6 p-6">
 
     <PageHeader
      title="Manajemen Kuota AI per OPD"
      description={`Atur batas pemanggilan AI harian per OPD (MOD-AI-006, BR-AI-009) · Tanggal: ${today}`}
+     breadcrumbs={[
+      { label: 'Kecerdasan Buatan' },
+      { label: 'Asisten AI', href: route('ai.index') },
+      { label: 'Manajemen Kuota' },
+     ]}
      actions={
       <Button variant="outline" size="sm" asChild>
-       <Link href={route('ai.index')}><ArrowLeft className="h-3.5 w-3.5 mr-1" /> Kembali ke AI</Link>
+       <Link href={route('ai.index')} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Kembali ke AI</Link>
       </Button>
      }
     />
@@ -218,7 +223,7 @@ export default function AiQuota({ auth, organizations, kuota_default, today }: P
     <Card className="border-blue-100 bg-blue-50/40 dark:border-blue-900/30 dark:bg-blue-950/10">
      <CardContent className="pt-3 pb-2 text-xs text-blue-700 dark:text-blue-300 space-y-1">
       <p>• Kuota berlaku per hari kalender. Jika OPD belum ada aktivitas hari ini, kuota default sistem (<strong>{kuota_default}/hari</strong>) berlaku.</p>
-      <p>• Nilai <strong>-1</strong> berarti <strong>unlimited</strong> (tidak dibatasi) — gunakan hanya untuk pengujian atau OPD tertentu.</p>
+      <p>• Nilai <strong>-1</strong> berarti <strong>unlimited</strong> (tidak dibatasi) - gunakan hanya untuk pengujian atau OPD tertentu.</p>
       <p>• Perubahan kuota langsung berlaku untuk sisa hari ini. Hari berikutnya akan kembali ke nilai default kecuali diatur ulang.</p>
       <p>• Default global dapat diubah via variabel environment <code className="bg-blue-100 px-1 rounded dark:bg-blue-900">EKASUARI_AI_DAILY_QUOTA</code>.</p>
      </CardContent>

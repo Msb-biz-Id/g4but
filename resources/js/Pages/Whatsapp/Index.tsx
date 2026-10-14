@@ -12,6 +12,7 @@ import { PageProps } from '@/types';
 import { cn, formatDateTime } from '@/lib/utils';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import { toast } from 'sonner';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface WhatsappIdentity {
  id: number;
@@ -131,14 +132,22 @@ export default function WhatsappIndex({
             <Head title="AI Chatbot WhatsApp" />
 
             <div className="space-y-6">
-                {canManage && (
-                    <div className="flex justify-end">
-                        <Button onClick={() => setRegModal(true)} className="w-full sm:w-auto justify-center">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Daftarkan Nomor
-                        </Button>
-                    </div>
-                )}
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Integrasi & Gateway' },
+                        { label: 'WhatsApp Bot' },
+                    ]}
+                    title="Integrasi AI Chatbot WhatsApp"
+                    description="Kelola gateway WhatsApp resmi, pendaftaran nomor admin/aparatur, dan penanganan permohonan informasi."
+                    actions={
+                        canManage ? (
+                            <Button onClick={() => setRegModal(true)} className="w-full sm:w-auto justify-center bg-primary text-primary-foreground hover:bg-primary/90">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Daftarkan Nomor
+                            </Button>
+                        ) : undefined
+                    }
+                />
 
                 {!canManage && (
                     <Card>
@@ -169,7 +178,7 @@ export default function WhatsappIndex({
                                                     {i.display_number || i.phone_number}
                                                 </p>
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    {i.user?.name || '—'} &middot; {i.user?.email || ''}
+                                                    {i.user?.name || '-'} &middot; {i.user?.email || ''}
                                                 </p>
                                                 <div className="flex flex-wrap gap-2 mt-2">
                                                     <Badge variant={(i.is_verified ? "success" : "warning") as any}>

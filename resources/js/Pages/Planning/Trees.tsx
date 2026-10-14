@@ -391,7 +391,7 @@ function SurabayaSubTree({
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// PANEL KIRI — Tree List Hierarkis
+// PANEL KIRI - Tree List Hierarkis
 // ═══════════════════════════════════════════════════════════════════
 function TreeNodeListItem({
     node,
@@ -725,7 +725,7 @@ function TreeModal({
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// HALAMAN UTAMA POHON KINERJA (e-KASUARI MODEL KOTA SURABAYA)
+// HALAMAN UTAMA POHON KINERJA (e-SAKIP MODEL KOTA SURABAYA)
 // ═══════════════════════════════════════════════════════════════════
 export default function Trees({
     tree,
@@ -1402,7 +1402,7 @@ export default function Trees({
                                 value={uploadForm.data.organization_id}
                                 onChange={(e) => uploadForm.setData('organization_id', e.target.value)}
                             >
-                                <option value="">— Pilih OPD —</option>
+                                <option value="">- Pilih OPD -</option>
                                 {organizations.map((o) => (
                                     <option key={o.id} value={String(o.id)}>
                                         {o.name}
@@ -1414,7 +1414,7 @@ export default function Trees({
                             )}
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="sf-file">File (PDF / JPG / PNG — maks 10 MB)</Label>
+                            <Label htmlFor="sf-file">File (PDF / JPG / PNG - maks 10 MB)</Label>
                             <Input
                                 id="sf-file"
                                 type="file"
@@ -1429,7 +1429,7 @@ export default function Trees({
                                 id="sf-label"
                                 value={uploadForm.data.label}
                                 onChange={(e) => uploadForm.setData('label', e.target.value)}
-                                placeholder="cth: Pohon Kinerja Bappeda 2025"
+                                placeholder="cth: Pohon Kinerja OPD 2025"
                             />
                         </div>
                         <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">

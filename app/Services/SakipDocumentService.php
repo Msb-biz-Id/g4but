@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Organization;
 use App\Models\PlanningDocument;
+use App\Models\PlanningPeriod;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -55,6 +56,12 @@ class SakipDocumentService
      */
     public function getCanonicalOpdDefinitions(): array
     {
+        $activePeriod = PlanningPeriod::where('status', 'active')->first()
+            ?? PlanningPeriod::latest('start_year')->first();
+        $startYear = $activePeriod?->start_year ?? (int) date('Y');
+        $endYear = $activePeriod?->end_year ?? ($startYear + 4);
+        $periodLabel = "{$startYear}-{$endYear}";
+
         return [
             [
                 'no' => 1,
@@ -62,9 +69,9 @@ class SakipDocumentService
                 'name' => 'Renstra',
                 'aliases' => ['renstra'],
                 'period_type' => 'lima_tahunan',
-                'start_year' => 2025,
-                'end_year' => 2029,
-                'period_label' => '2025-2029',
+                'start_year' => $startYear,
+                'end_year' => $endYear,
+                'period_label' => $periodLabel,
             ],
             [
                 'no' => 2,
@@ -100,9 +107,9 @@ class SakipDocumentService
                 'name' => 'IKU',
                 'aliases' => ['iku'],
                 'period_type' => 'lima_tahunan',
-                'start_year' => 2025,
-                'end_year' => 2029,
-                'period_label' => '2025-2029',
+                'start_year' => $startYear,
+                'end_year' => $endYear,
+                'period_label' => $periodLabel,
             ],
             [
                 'no' => 7,

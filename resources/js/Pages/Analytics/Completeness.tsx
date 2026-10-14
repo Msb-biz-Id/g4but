@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import TablePagination from '@/Components/TablePagination';
 import { PageProps } from '@/types';
 import { cn } from '@/lib/utils';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface CompletenessEntry {
     organization_id: number;
@@ -31,7 +32,7 @@ interface Props extends PageProps {
 }
 
 function PctBar({ pct }: { pct: number | null }) {
-    if (pct === null) return <span className="text-muted-foreground text-sm">—</span>;
+    if (pct === null) return <span className="text-muted-foreground text-sm">-</span>;
     const color = pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500';
     return (
         <div className="flex items-center gap-2">
@@ -74,30 +75,36 @@ export default function AnalyticsCompleteness({ completenessData, periods, filte
         <AuthenticatedLayout header="Kelengkapan Data Realisasi">
             <Head title="Kelengkapan Data Realisasi" />
 
-            <div className="space-y-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-xl font-semibold">Kelengkapan Data Realisasi per OPD</h1>
-                        <p className="text-sm text-muted-foreground">Monitoring OPD yang belum mengisi realisasi (FR-MSR-014)</p>
-                    </div>
-                    <SelectNative
-                        value={filters.measurement_period_id?.toString() ?? ''}
-                        onChange={(e) => router.get(route('analytics.completeness'), { measurement_period_id: e.target.value || undefined }, { preserveState: true })}
-                        className="w-full sm:w-52"
-                    >
-                        <option value="">Semua Periode</option>
-                        {periods.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </SelectNative>
-                </div>
+            <div className="space-y-6">
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Analitik & Evaluasi', href: route('analytics.index') },
+                        { label: 'Kelengkapan Data Realisasi' },
+                    ]}
+                    title="Kelengkapan Data Realisasi per OPD"
+                    description="Monitoring kepatuhan pengisian data realisasi kinerja organisasi perangkat daerah."
+                    actions={
+                        <SelectNative
+                            value={filters.measurement_period_id?.toString() ?? ''}
+                            onChange={(e) => router.get(route('analytics.completeness'), { measurement_period_id: e.target.value || undefined }, { preserveState: true })}
+                            className="w-full sm:w-52"
+                        >
+                            <option value="">Semua Periode</option>
+                            {periods.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </SelectNative>
+                    }
+                />
 
                 {/* Summary Cards */}
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                    <Card>
-                        <CardContent className="pt-4">
+                    <Card className="border-border shadow-xs">
+                        <CardContent className="p-4 sm:p-5">
                             <div className="flex items-center gap-3">
-                                <BarChart3 className="h-8 w-8 text-blue-500" />
+                                <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+                                    <BarChart3 className="h-6 w-6" />
+                                </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{avgPct !== null ? `${avgPct}%` : '—'}</p>
+                                    <p className="text-2xl font-bold">{avgPct !== null ? `${avgPct}%` : '-'}</p>
                                     <p className="text-xs text-muted-foreground">Rata-rata kelengkapan</p>
                                 </div>
                             </div>
@@ -175,7 +182,7 @@ export default function AnalyticsCompleteness({ completenessData, periods, filte
                                         </TableCell>
                                         <TableCell className="text-right">{row.total_targets}</TableCell>
                                         <TableCell className="text-right text-green-700">{row.with_realization}</TableCell>
-                                        <TableCell className="text-right text-destructive font-medium">{row.missing > 0 ? row.missing : '—'}</TableCell>
+                                        <TableCell className="text-right text-destructive font-medium">{row.missing > 0 ? row.missing : '-'}</TableCell>
                                         <TableCell><PctBar pct={row.completeness_pct} /></TableCell>
                                         <TableCell>{statusBadge(row.completeness_pct)}</TableCell>
                                     </TableRow>

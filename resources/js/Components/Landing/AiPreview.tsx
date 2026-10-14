@@ -1,169 +1,178 @@
 import { useState } from 'react';
-import { FileSpreadsheet, Sparkles, TrendingUp, ShieldCheck, MessageSquareCheck } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
+import { PageProps } from '@/types';
+import { FileSpreadsheet, Sparkles, TrendingUp, ShieldCheck, MessageSquareCheck, Terminal, Cpu } from 'lucide-react';
 import Reveal from './Reveal';
 
 const modes = [
     {
         id: 'summary',
         label: 'Ringkasan Eksekutif Pimpinan',
+        badge: 'EXECUTIVE BRIEF',
         icon: FileSpreadsheet,
-        text: 'Capaian Triwulan III Pemerintah Provinsi Papua Barat mencatat 84.6% target sasaran strategis terpenuhi. Empat OPD Pilot Project (Bappeda, Inspektorat, Koperasi & UKM, PUPR) mencatatkan kepatuhan pelaporan tepat waktu, sementara program prioritas dikawal intensif melalui Early Warning System (EWS).',
-        tags: ['Berbasis Data SAKIP Papua Barat', 'Dapat Diaudit Inspektorat', 'Format LKjIP Resmi'],
+        headline: 'Konsolidasi Kepatuhan & Capaian Kinerja 8 Kabupaten',
+        text: 'Capaian indikator kinerja utama (IKU) pada triwulan berjalan menunjukkan tingkat kepatuhan pelaporan tepat waktu sebesar 94.2% di seluruh Perangkat Daerah. Unit kerja bidang infrastruktur dan pendidikan dasar mencatatkan progres signifikan.',
+        actionNote: 'Siap diverifikasi Tim Evaluator SAKIP Provinsi Papua Tengah',
+        tags: ['Formula Resmi PermenPAN-RB', 'Format LKjIP Sah', 'Jejak Audit Permanen'],
     },
     {
         id: 'insight',
-        label: 'Analisis Kesenjangan & Rekomendasi',
+        label: 'Deteksi Deviasi & Rekomendasi',
+        badge: 'GAP ANALYSIS',
         icon: Sparkles,
-        text: 'Terdeteksi deviasi realisasi fisik pada program strategis infrastruktur wilayah dan konektivitas antardaerah di Tanah Papua Barat. Rekomendasi: Penyesuaian jadwal pengadaan barang/jasa dan penguatan bukti dukung teknis sebelum audit Inspektorat.',
-        tags: ['Pendeteksian Deviasi OPD', 'Rekomendasi Terstruktur', 'PIC Sektor Jelas'],
+        headline: 'Identifikasi Dini Deviasi Realisasi Fisik vs Anggaran',
+        text: 'Terdeteksi selisih deviasi lebih dari 15% pada penyerapan anggaran sub-kegiatan tertentu akibat keterlambatan bukti dukung lapangan (evidence). Rekomendasi: Penerbitan disposisi percepatan verifikasi administrasi sebelum tutup buku triwulan.',
+        actionNote: 'Rekomendasi LHE otomatis terpetakan ke Penanggung Jawab (PIC)',
+        tags: ['Early Warning Alert', 'PIC Definitif', 'Bebas Asumsi Sepihak'],
     },
     {
         id: 'prediction',
-        label: 'Proyeksi Ketercapaian Akhir Tahun',
+        label: 'Proyeksi Ketercapaian Target',
+        badge: 'PREDICTIVE STATS',
         icon: TrendingUp,
-        text: 'Berdasarkan model regresi time-series atas data capaian kinerja di lingkungan Pemprov Papua Barat (R² = 0.94), estimasi nilai SAKIP provinsi pada akhir tahun anggaran diproyeksikan mencapai skor 86.20 (Predikat A Memuaskan).',
-        tags: ['Model Numerik Statistik', 'Verifikasi Empiris Papua Barat', 'Bukan Keputusan Otomatis'],
+        headline: 'Estimasi Realisasi Akhir Tahun Berbasis Tren Historis',
+        text: 'Model regresi runtun waktu atas historis data capaian IKU organisasi memproyeksikan indeks akuntabilitas kinerja SAKIP berada pada tren peningkatan positif menuju predikat kinerja Sangat Baik (A).',
+        actionNote: 'Model statistik deterministik murni - keputusan akhir tetap di tangan pimpinan',
+        tags: ['Regresi Runtun Waktu', 'Validasi Empiris', 'Data Sah Terverifikasi'],
     },
 ];
 
-const forecast = [62, 68, 66, 74, 78, 84, 80, 88, 92];
-
 export default function AiPreview() {
+    const { appConfig } = usePage<PageProps>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
+    const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
+
     const [active, setActive] = useState(0);
     const mode = modes[active];
     const ActiveIcon = mode.icon;
 
     return (
-        <section id="ai" className="relative scroll-mt-20 overflow-hidden bg-slate-900 py-20 text-white dark:bg-card border-b border-slate-800">
-            {/* Subtle Ambient Glows */}
-            <div className="pointer-events-none absolute -top-24 right-0 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-24 left-0 h-80 w-80 rounded-full bg-slate-700/10 blur-3xl" />
-
-            <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-                <Reveal className="text-center">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/20 px-4 py-1 text-xs font-semibold text-primary">
-                        <Sparkles className="h-3.5 w-3.5 stroke-[2.5] text-primary" />
-                        <span>Asisten Cerdas Kinerja Papua Barat</span>
+        <section id="ai" className="scroll-mt-14 bg-gradient-to-b from-[#002B49] via-[#062237] to-[#041624] text-white py-16 sm:py-24 border-b border-amber-500/20 overflow-hidden">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <Reveal className="mb-14 text-center max-w-2xl mx-auto">
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-black/40 border border-[#FFB800]/40 text-[#FFB800] text-xs font-mono font-bold uppercase tracking-wider mb-3 shadow-md">
+                        <Cpu className="w-3.5 h-3.5" />
+                        <span>ASISTEN ANALITIK PROYEK &amp; KINERJA INFRASTRUKTUR</span>
                     </span>
-                    <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-3xl lg:text-4xl">
-                        AI & Analitik Kinerja yang Akuntabel
+                    <h2 className="text-2xl sm:text-4xl font-extrabold font-serif text-white tracking-tight">
+                        Konsol Analitik Kinerja Pimpinan PUPR
                     </h2>
-                    <p className="mx-auto mt-3 max-w-2xl text-sm sm:text-base text-slate-300">
-                        Pemanfaatan kecerdasan buatan dirancang transparan sebagai alat bantu analisis pimpinan daerah — terhubung dengan portal web dan WhatsApp Gateway resmi dengan nomor terverifikasi.
+                    <p className="mt-2.5 text-xs sm:text-sm text-slate-200 leading-relaxed font-light">
+                        Alat bantu analisis data SAKIP deterministik untuk memantau deviasi penyerapan anggaran dan capaian fisik proyek infrastruktur {orgName} {instansiName}.
                     </p>
                 </Reveal>
 
-                <div className="mt-12 grid gap-8 lg:grid-cols-[300px_1fr]">
-                    <Reveal delay={1}>
-                        <div className="space-y-2.5">
+                <div className="grid gap-8 lg:grid-cols-12 items-stretch">
+                    {/* Left: Mode Selection + WhatsApp Notification Gateway Preview */}
+                    <div className="lg:col-span-4 space-y-4">
+                        <div className="space-y-2">
                             {modes.map((m, i) => {
                                 const Icon = m.icon;
+                                const isCurrent = active === i;
                                 return (
                                     <button
                                         key={m.id}
+                                        type="button"
                                         onClick={() => setActive(i)}
-                                        className={`flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition-all ${
-                                            active === i
-                                                ? 'border-primary bg-primary/20 text-white shadow-md'
-                                                : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-white'
+                                        className={`w-full flex items-center gap-3.5 p-4 rounded-2xl border text-left transition-all ${
+                                            isCurrent
+                                                ? 'bg-gradient-to-r from-emerald-900 to-zinc-900 text-white border-amber-500 shadow-lg scale-[1.02]'
+                                                : 'bg-zinc-900/60 text-zinc-300 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700'
                                         }`}
                                     >
-                                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${active === i ? 'bg-primary text-primary-foreground font-bold' : 'bg-slate-800 text-slate-400'}`}>
-                                            <Icon className="h-4 w-4" />
-                                        </span>
-                                        <span className="text-xs font-bold leading-tight">{m.label}</span>
+                                        <div
+                                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                                                isCurrent
+                                                    ? 'bg-amber-400 text-zinc-950 font-bold'
+                                                    : 'bg-zinc-800 text-zinc-400'
+                                            }`}
+                                        >
+                                            <Icon className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] font-mono font-bold text-amber-400 uppercase">
+                                                {m.badge}
+                                            </div>
+                                            <div className="text-xs font-bold leading-tight font-serif mt-0.5">
+                                                {m.label}
+                                            </div>
+                                        </div>
                                     </button>
                                 );
                             })}
-
-                            <div className="rounded-xl border border-emerald-500/20 bg-emerald-950/30 p-3 text-[11px] text-emerald-300">
-                                <div className="flex items-center gap-1.5 font-bold text-emerald-400">
-                                    <MessageSquareCheck className="h-3.5 w-3.5" />
-                                    <span>WhatsApp Bot Gateway</span>
-                                </div>
-                                <div className="mt-1 text-slate-400 leading-relaxed text-[10px]">
-                                    Khusus nomor HP resmi pimpinan (Gubernur, Wagub, Sekda, Kepala Biro) yang telah terdaftar whitelist.
-                                </div>
-                            </div>
                         </div>
-                    </Reveal>
 
-                    <Reveal delay={2}>
-                        <div
-                            key={mode.id}
-                            className="flex h-full animate-fade-in flex-col rounded-2xl border border-slate-800 bg-slate-950/60 p-7 shadow-xl backdrop-blur"
-                        >
-                            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                        {/* WhatsApp Gateway Integration Card */}
+                        <div className="p-4 rounded-2xl border border-emerald-500/20 bg-emerald-950/30 backdrop-blur-sm">
+                            <div className="flex items-center gap-2 font-bold text-emerald-400 text-xs mb-1.5">
+                                <MessageSquareCheck className="h-4 w-4 text-emerald-300" />
+                                <span>WhatsApp Notifikasi Terdaftar</span>
+                            </div>
+                            <p className="text-[11px] text-zinc-300 leading-relaxed">
+                                Notifikasi ringkasan evaluasi dan peringatan dini (EWS) diteruskan langsung ke kontak resmi pimpinan yang terverifikasi dalam sistem.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Right: Rich Interactive Console Display */}
+                    <div className="lg:col-span-8 rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-zinc-950 p-6 sm:p-8 shadow-2xl flex flex-col justify-between">
+                        <div>
+                            {/* Console Title Bar */}
+                            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-zinc-800">
                                 <div className="flex items-center gap-3">
-                                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/20 text-primary">
-                                        <ActiveIcon className="h-4 w-4" />
-                                    </span>
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-950 border border-amber-500/30 text-amber-400">
+                                        <ActiveIcon className="h-5 w-5" />
+                                    </div>
                                     <div>
-                                        <div className="text-sm font-bold text-white">{mode.label}</div>
-                                        <div className="text-[11px] text-slate-400">
-                                            Asisten Analitik e-KASUARI Papua Barat
+                                        <h3 className="text-base font-bold text-white font-serif">
+                                            {mode.headline}
+                                        </h3>
+                                        <div className="text-[11px] font-mono text-zinc-400">
+                                            Basis Data Sah • {appName} {instansiName}
                                         </div>
                                     </div>
                                 </div>
-                                <span className="rounded-full bg-emerald-950/80 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-800/60">
-                                    Status: Tervalidasi
+
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-950 border border-emerald-500/40 text-[10px] font-mono font-bold text-emerald-300">
+                                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>DATA TERVALIDASI</span>
                                 </span>
                             </div>
 
-                            <p className="mt-5 text-sm sm:text-base leading-relaxed text-slate-200">
-                                {mode.text}
-                            </p>
+                            {/* Main Body Text */}
+                            <div className="p-5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 mb-6">
+                                <p className="text-xs sm:text-sm leading-relaxed text-zinc-200 font-sans">
+                                    {mode.text}
+                                </p>
+                                <div className="mt-3 pt-3 border-t border-zinc-900 flex items-center gap-2 text-[11px] text-amber-300 font-mono">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                    <span>Catatan: {mode.actionNote}</span>
+                                </div>
+                            </div>
 
-                            <div className="mt-4 flex flex-wrap gap-2">
-                                {mode.tags.map((t) => (
+                            {/* Pill Tags */}
+                            <div className="flex flex-wrap gap-2">
+                                {mode.tags.map((tag) => (
                                     <span
-                                        key={t}
-                                        className="rounded-md bg-slate-800/80 border border-slate-700/60 px-2.5 py-1 text-[11px] font-medium text-slate-300"
+                                        key={tag}
+                                        className="rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-1 text-[11px] font-mono text-zinc-300"
                                     >
-                                        {t}
+                                        {tag}
                                     </span>
                                 ))}
                             </div>
-
-                            {mode.id === 'prediction' && (
-                                <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/90 p-4">
-                                    <div className="flex items-center justify-between text-xs text-slate-300">
-                                        <span>Tren Historis vs Estimasi Akhir Tahun</span>
-                                        <span className="font-bold text-emerald-400">
-                                            Proyeksi 86.20 (Predikat A)
-                                        </span>
-                                    </div>
-                                    <div className="mt-3 flex h-20 items-end gap-2">
-                                        {forecast.map((h, i) => (
-                                            <div
-                                                key={i}
-                                                className={`flex-1 origin-bottom animate-bar-grow rounded-t ${
-                                                    i === forecast.length - 1
-                                                        ? 'bg-emerald-500'
-                                                        : 'bg-primary/70'
-                                                }`}
-                                                style={{
-                                                    height: `${h}%`,
-                                                    animationDelay: `${0.1 + i * 0.05}s`,
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-800/80 pt-4 text-[11px] text-slate-400">
-                                <div className="flex items-center gap-2">
-                                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                                    <span>Terekam jejak audit transparansi Pemprov Papua Barat</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                                    <MessageSquareCheck className="h-3.5 w-3.5" />
-                                    <span>Siap Integrasi WhatsApp Gateway</span>
-                                </div>
-                            </div>
                         </div>
-                    </Reveal>
+
+                        {/* Footer Status */}
+                        <div className="mt-8 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-400">
+                            <span className="flex items-center gap-1.5">
+                                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                                <span>Algoritma Deterministik SAKIP</span>
+                            </span>
+                            <span className="text-emerald-400 font-bold">Audit Trail: Aktif</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

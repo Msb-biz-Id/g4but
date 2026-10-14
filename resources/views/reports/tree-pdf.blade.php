@@ -27,7 +27,7 @@
 <body>
 <div class="header">
     <h1>POHON KINERJA — {{ $org ? strtoupper($org->name) : 'SEMUA OPD' }}</h1>
-    <p>e-KASUARI · Dicetak: {{ $generatedAt }}</p>
+    <p>e-SAKIP · Dicetak: {{ $generatedAt }}</p>
 </div>
 
 <table>
@@ -43,20 +43,26 @@
     <tbody>
         @forelse($trees as $tree)
         @php
-            $level   = $tree->level ?? 0;
-            $cls     = "level-{$level}";
-            $status  = $tree->status ?? 'draft';
+            $levelMap = [
+                'outcome' => 0,
+                'csf' => 1,
+                'kondisi_antara' => 2,
+                'kondisi_operasional' => 3,
+            ];
+            $numericLevel = is_numeric($tree->level) ? (int)$tree->level : ($levelMap[$tree->level] ?? 0);
+            $cls     = "level-{$numericLevel}";
+            $status  = $tree->status ?? ($tree->is_active ? 'active' : 'draft');
             $badgeCls = match($status) { 'active', 'approved' => 'badge-active', 'draft' => 'badge-draft', default => 'badge-default' };
-            $indent  = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
+            $indent  = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $numericLevel);
         @endphp
         <tr>
             <td class="{{ $cls }}">{!! $indent !!}
-                @if($level > 0)↳ @endif
+                @if($numericLevel > 0)↳ @endif
                 {{ $tree->name ?? '—' }}
             </td>
-            <td style="font-family: monospace; font-size:9px;">{{ $tree->objective_code ?? '—' }}</td>
+            <td style="font-family: monospace; font-size:9px;">{{ $tree->code ?? '—' }}</td>
             <td>{{ $tree->organization?->code ?? '—' }}</td>
-            <td style="text-align:center;">{{ $level }}</td>
+            <td style="text-align:center;">{{ strtoupper(str_replace('_', ' ', $tree->level ?? '-')) }}</td>
             <td><span class="badge {{ $badgeCls }}">{{ strtoupper($status) }}</span></td>
         </tr>
         @empty
@@ -70,7 +76,7 @@
 </table>
 
 <div class="footer">
-    Total {{ $trees->count() }} node · e-KASUARI — Platform Digital SAKIP Provinsi Papua Barat
+    Total {{ $trees->count() }} node · e-SAKIP — Platform Digital SAKIP Provinsi Papua Barat
 </div>
 </body>
 </html>

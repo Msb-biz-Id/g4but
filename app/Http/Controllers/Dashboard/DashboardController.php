@@ -195,7 +195,7 @@ class DashboardController extends Controller
         $this->authorize('view-dashboard');
 
         $user = $request->user();
-        $isProvincialAdmin = $this->authorization->isProvincialAdmin($user);
+        $isOpdAdmin = $this->authorization->isOpdAdmin($user);
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $availableYears = PlanningPeriod::getAvailableYears();
@@ -211,7 +211,7 @@ class DashboardController extends Controller
         $defaultYear = $activeYear ? (int) $activeYear : ((int) date('Y') >= 2000 ? (int) date('Y') : 2026);
 
         $selectedOrgId = null;
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $requestedOrgId = $request->filled('organization_id') ? (int) $request->get('organization_id') : null;
             if ($requestedOrgId && in_array($requestedOrgId, $accessibleOrgIds, true)) {
                 $selectedOrgId = $requestedOrgId;
@@ -227,7 +227,7 @@ class DashboardController extends Controller
         if ($rawTahun !== null && $rawTahun !== '') {
             $val = (int) $rawTahun;
             if ($val >= 1 && $val <= 10) {
-                // Petakan indeks relatif 1..10 ke tahun kalender RPJMD (misal 1 -> 2025, 2 -> 2026)
+                // Petakan indeks relatif 1..10 ke tahun kalender periode (misal 1 -> 2025, 2 -> 2026)
                 $tahun = $startYear + $val - 1;
             } elseif ($val >= 2000 && $val <= 2100) {
                 $tahun = $val;
@@ -248,16 +248,16 @@ class DashboardController extends Controller
             'status_kinerja' => $request->get('status_kinerja', 'Semua'),
         ];
 
-        $orgScopeKey = $isProvincialAdmin ? 'all' : implode('-', $accessibleOrgIds);
+        $orgScopeKey = $isOpdAdmin ? 'all' : implode('-', $accessibleOrgIds);
         $cacheKey = 'sakip_dashboard_v5_'.md5(json_encode($filters).'_'.$orgScopeKey);
-        $data = Cache::remember($cacheKey, 60, function () use ($filters, $isProvincialAdmin, $accessibleOrgIds) {
-            return $this->computeDashboardData($filters, $isProvincialAdmin, $accessibleOrgIds);
+        $data = Cache::remember($cacheKey, 60, function () use ($filters, $isOpdAdmin, $accessibleOrgIds) {
+            return $this->computeDashboardData($filters, $isOpdAdmin, $accessibleOrgIds);
         });
 
         return Inertia::render('Dashboard', $data);
     }
 
-    private function computeDashboardData(array $filters, bool $isProvincialAdmin = true, array $accessibleOrgIds = []): array
+    private function computeDashboardData(array $filters, bool $isOpdAdmin = true, array $accessibleOrgIds = []): array
     {
         $tahun = $filters['tahun_evaluasi'];
         $triwulan = $filters['triwulan'];
@@ -266,15 +266,13 @@ class DashboardController extends Controller
         $filterSasaranId = $filters['strategic_objective_id'];
         $filterStatus = $filters['status_kinerja'];
 
-        // ── 1. Organisasi ──────────────────────────────────────────────────
         // ── 1. Organisasi & Unit (OPD Induk, Sekretariat, Bidang) ──────────
-        $provinsi = null;
 
         $allOpdQuery = Organization::whereIn('type', ['opd', 'sekretariat', 'bidang'])
             ->where('is_active', true)
             ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
             ->orderBy('name');
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $allOpdQuery->whereIn('id', $accessibleOrgIds);
         }
         if ($filterOpdId) {
@@ -283,7 +281,7 @@ class DashboardController extends Controller
         $allOpd = $allOpdQuery->get();
         $totalOpd = max($allOpd->count(), 1);
 
-        // ── 2. Kelengkapan Dokumen SAKIP Pemda dinonaktifkan (Rumah Besar OPD) ──────────
+        // ── 2. Kelengkapan Dokumen SAKIP OPD Induk dinonaktifkan (Rumah Besar OPD) ──────────
         $pemdaMatrix = [
             'total_required' => 0,
             'available' => 0,
@@ -306,7 +304,7 @@ class DashboardController extends Controller
         $opdLengkap = $opdMatrix['opd_lengkap'];
         $opdLengkapPct = $opdMatrix['pct_lengkap'];
 
-        // ── 4. Capaian Indikator IKU Pemda Dinamis (Reuse OpdAnalyticsService - Single Source of Truth) ───
+        // ── 4. Capaian Indikator IKU OPD Dinamis (Reuse OpdAnalyticsService - Single Source of Truth) ───
         $ikuMatrix = $this->opdAnalytics->getIkuPemdaMatrix($tahun, $filterStatus);
         $rataCapaianIku = (float) ($ikuMatrix['summary']['rata_capaian'] ?? 0);
         $ikuStatusFinal = [
@@ -318,27 +316,6 @@ class DashboardController extends Controller
             'tidak_dinilai' => (int) ($ikuMatrix['summary']['tidak_dinilai'] ?? 0),
         ];
 
-        // ── 5. Capaian Indikator RPJMD dinonaktifkan (Rumah Besar OPD) ─────
-        $rpjmdMatrix = [
-            'summary' => [
-                'rata_capaian' => 0,
-                'total_indikator' => 0,
-                'tercapai' => 0,
-                'breakdown' => ['perlu_perhatian' => 0, 'terlambat' => 0, 'kritis' => 0, 'tidak_dinilai' => 0],
-            ],
-            'rows' => [],
-            'trend' => [],
-            'years' => [],
-        ];
-        $rataCapaianRpjmd = 0;
-        $rpjmdStatusFinal = [
-            'total' => 0,
-            'tercapai' => 0,
-            'perlu_perhatian' => 0,
-            'terlambat' => 0,
-            'kritis' => 0,
-            'tidak_dinilai' => 0,
-        ];
 
         // ── 6. Capaian & Ranking OPD Dinamis (Reuse OpdAnalyticsService - Fix Duplikasi N+1) ───
         $opdRankingMatrix = $this->opdAnalytics->getOpdPerformanceRanking($tahun, $filterOpdId, $filterStatus);
@@ -379,10 +356,6 @@ class DashboardController extends Controller
         // ── 7. Nilai SAKIP OPD Dinamis (Tabel evaluations & evaluation_scores) ─
         $evaluationsQuery = Evaluation::with('scores')
             ->where('status', 'approved');
-
-        if ($provinsi) {
-            $evaluationsQuery->where('organization_id', '!=', $provinsi->id);
-        }
 
         if ($filterOpdId) {
             $evaluationsQuery->where('organization_id', $filterOpdId);
@@ -484,8 +457,7 @@ class DashboardController extends Controller
         $predikatPkoPemda = $predikatRataRataPkoPemda;
 
         // ── 9. Tren 5 Tahun Dinamis ──────────────────────────────────────────
-        $years = $rpjmdMatrix['years'] ?? $this->opdAnalytics->resolveYears($tahun);
-        $rpjmdTrend = $rpjmdMatrix['trend'];
+        $years = $this->opdAnalytics->resolveYears($tahun);
 
         $firstYr = $years[0] ?? $tahun;
         $ikuTrend = array_map(function ($t) {
@@ -578,7 +550,7 @@ class DashboardController extends Controller
             $opdRankingData,
             $sakipDistribusi,
             $pkoOpdData,
-            $rpjmdStatusFinal,
+            $ikuStatusFinal,
             $opdSakipPenurunan
         );
 
@@ -601,7 +573,7 @@ class DashboardController extends Controller
             ->where('is_active', true)
             ->orderByRaw("CASE type WHEN 'opd' THEN 1 WHEN 'sekretariat' THEN 2 WHEN 'bidang' THEN 3 ELSE 4 END")
             ->orderBy('name');
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $orgFilterQuery->whereIn('id', $accessibleOrgIds);
         }
 
@@ -630,10 +602,6 @@ class DashboardController extends Controller
                     'lengkap' => $opdLengkap,
                     'total' => $totalOpd,
                     'pct' => $opdLengkapPct,
-                ],
-                'rata_capaian_rpjmd' => [
-                    'pct' => $rataCapaianRpjmd,
-                    'status' => ($rpjmdStatusFinal['total'] ?? 0) > 0 ? $this->getStatusCapaian($rataCapaianRpjmd) : 'Tidak Dinilai',
                 ],
                 'capaian_iku_pemda' => [
                     'pct' => $rataCapaianIku,
@@ -670,11 +638,9 @@ class DashboardController extends Controller
                 ],
             ],
 
-            'rpjmd_status' => $rpjmdStatusFinal,
             'iku_status' => $ikuStatusFinal,
             'opd_status' => $opdStatusFinal,
 
-            'rpjmd_trend' => $rpjmdTrend,
             'iku_trend' => $ikuTrend,
             'pko_trend' => $pkoTrend,
 
@@ -691,7 +657,6 @@ class DashboardController extends Controller
             'opd_sakip_matrix' => $opdMatrix,
             'sakip_pemda' => $sakipPemda,
             'sakip_pemda_matrix' => $sakipPemda,
-            'rpjmd_matrix' => $rpjmdMatrix,
             'iku_pemda_matrix' => ($ikuPemdaMatrix = $ikuMatrix),
             'opd_ranking_matrix' => $opdRankingMatrix,
             'sakip_eval_matrix' => ($sakipEvalMatrix = $this->opdAnalytics->getSakipEvaluationMatrix($tahun, $filterOpdId)),
@@ -712,7 +677,7 @@ class DashboardController extends Controller
 
     /**
      * Membangun daftar perhatian pimpinan secara dinamis.
-     * GAP 3: Item RPJMD & PKO sekarang dinamis.
+     * GAP 3: Item IKU & PKO sekarang dinamis.
      * GAP 5: Deteksi OPD dengan nilai SAKIP di bawah threshold.
      */
     private function buildAttentionList(
@@ -722,16 +687,16 @@ class DashboardController extends Controller
         array $opdRanking,
         array $sakipDistribusi,
         array $pkoOpdData,
-        array $rpjmdStatusCount,
+        array $ikuStatusCount,
         int $opdSakipPenurunan = 0
     ): array {
         $list = [];
 
-        // 1. Dokumen Pemda belum lengkap
+        // 1. Dokumen SAKIP belum lengkap
         $docsBelum = $docsRequired - $docsAvailable;
         if ($docsBelum > 0) {
             $list[] = [
-                'uraian' => "{$docsBelum} dokumen SAKIP Pemerintah Daerah belum tersedia",
+                'uraian' => "{$docsBelum} dokumen SAKIP belum tersedia",
                 'kategori' => 'Dokumen',
                 'jumlah' => $docsBelum,
                 'status' => $docsBelum >= 3 ? 'Kritis' : 'Perlu Perhatian',
@@ -748,16 +713,16 @@ class DashboardController extends Controller
             ];
         }
 
-        // 3. Kinerja RPJMD — DINAMIS dari rpjmdStatusCount (GAP 3)
-        $rpjmdBelumTercapai = ($rpjmdStatusCount['perlu_perhatian'] ?? 0)
-                            + ($rpjmdStatusCount['terlambat'] ?? 0)
-                            + ($rpjmdStatusCount['kritis'] ?? 0);
-        if ($rpjmdBelumTercapai > 0) {
+        // 3. Kinerja IKU OPD
+        $ikuBelumTercapai = ($ikuStatusCount['perlu_perhatian'] ?? 0)
+                            + ($ikuStatusCount['terlambat'] ?? 0)
+                            + ($ikuStatusCount['kritis'] ?? 0);
+        if ($ikuBelumTercapai > 0) {
             $list[] = [
-                'uraian' => "{$rpjmdBelumTercapai} indikator RPJMD belum mencapai target",
+                'uraian' => "{$ikuBelumTercapai} indikator IKU OPD belum mencapai target",
                 'kategori' => 'Kinerja',
-                'jumlah' => $rpjmdBelumTercapai,
-                'status' => ($rpjmdStatusCount['kritis'] ?? 0) > 0 ? 'Kritis' : 'Perlu Perhatian',
+                'jumlah' => $ikuBelumTercapai,
+                'status' => ($ikuStatusCount['kritis'] ?? 0) > 0 ? 'Kritis' : 'Perlu Perhatian',
             ];
         }
 
@@ -923,7 +888,7 @@ class DashboardController extends Controller
     /**
      * FR-DASH-011: Export data dashboard ke PDF (langsung) atau CSV.
      * Mendukung filter dashboard utama (tahun_evaluasi, triwulan, organization_id, strategic_objective_id, status_kinerja),
-     * serta tipe ekspor: dashboard, sakip_pemda, sakip_opd, rpjmd, drilldown.
+     * serta tipe ekspor: dashboard, sakip_pemda, sakip_opd, drilldown.
      */
     public function export(Request $request): SymfonyResponse
     {
@@ -1071,7 +1036,7 @@ class DashboardController extends Controller
             }
 
             if ($type === 'sakip_pemda') {
-                abort(404, 'Modul SAKIP Pemda telah dinonaktifkan.');
+                abort(404, 'Modul SAKIP Induk telah dinonaktifkan.');
             }
 
             if ($type === 'sakip_opd') {
@@ -1175,9 +1140,9 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Tipe 2: SAKIP Pemda Matrix (dinonaktifkan)
+        // Tipe 2: SAKIP Induk Matrix (dinonaktifkan)
         if ($type === 'sakip_pemda') {
-            abort(404, 'Modul SAKIP Pemda telah dinonaktifkan.');
+            abort(404, 'Modul SAKIP Induk telah dinonaktifkan.');
         }
 
         // Tipe 3: SAKIP OPD Matrix (12 Dokumen)
@@ -1237,8 +1202,8 @@ class DashboardController extends Controller
                 'No',
                 'Tahun Evaluasi',
                 'Triwulan',
-                'Tujuan Pemda',
-                'Sasaran Strategis RPJMD',
+                'Tujuan OPD',
+                'Sasaran Strategis OPD',
                 'Kode Indikator',
                 'Nama Indikator Kinerja',
                 'Satuan',

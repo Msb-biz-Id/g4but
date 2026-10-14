@@ -109,7 +109,7 @@ function formatBytes(bytes: number): string {
 }
 
 function formatDate(iso: string | null): string {
-    if (!iso) return '—';
+    if (!iso) return '-';
     return formatDateTime(iso);
 }
 
@@ -239,17 +239,17 @@ export default function RealizationsEdit({
  <div className="grid gap-4 sm:grid-cols-3">
  <div>
  <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">Indikator</div>
- <div className="mt-1 text-sm font-medium">{realization.indicator_version?.name ?? '—'}</div>
+ <div className="mt-1 text-sm font-medium">{realization.indicator_version?.name ?? '-'}</div>
  <div className="text-xs text-gray-400">v{realization.indicator_version?.version_number} · {realization.indicator_version?.direction}</div>
  </div>
  <div>
  <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">OPD</div>
- <div className="mt-1 text-sm font-medium">{realization.organization?.code ?? '—'}</div>
+ <div className="mt-1 text-sm font-medium">{realization.organization?.code ?? '-'}</div>
  <div className="text-xs text-gray-400">{realization.organization?.name}</div>
  </div>
  <div>
  <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">Periode</div>
- <div className="mt-1 text-sm font-medium">{realization.measurement_period?.name ?? '—'}</div>
+ <div className="mt-1 text-sm font-medium">{realization.measurement_period?.name ?? '-'}</div>
  <div className="text-xs text-gray-400">{realization.measurement_period?.type}</div>
  </div>
  </div>
@@ -268,7 +268,7 @@ export default function RealizationsEdit({
  <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
  <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">Target</div>
  <div className="mt-1 text-2xl font-bold">
- {target ? Number(target.target_value).toLocaleString('id-ID') : '—'}
+ {target ? Number(target.target_value).toLocaleString('id-ID') : '-'}
  {unit && target && <span className="ml-1 text-base font-normal text-gray-400">{unit}</span>}
  </div>
  </div>
@@ -278,7 +278,7 @@ export default function RealizationsEdit({
  <span className="text-2xl font-bold">
  {achievement?.percentage != null
  ? `${achievement.percentage.toLocaleString('id-ID')}%`
- : '—'}
+ : '-'}
  </span>
  <Badge variant={achCfg.variant}>{achCfg.text}</Badge>
  </div>
@@ -288,7 +288,7 @@ export default function RealizationsEdit({
  </Card>
 
  <div className="grid gap-6 lg:grid-cols-5">
- {/* Edit Form — 3/5 */}
+ {/* Edit Form - 3/5 */}
  <div className="space-y-4 lg:col-span-3">
  {/* Value + Narrative Form */}
  <Card>
@@ -438,7 +438,7 @@ export default function RealizationsEdit({
  </Card>
  </div>
 
- {/* Validation History — 2/5 (FR-MSR-013) */}
+ {/* Validation History - 2/5 (FR-MSR-013) */}
  <div className="lg:col-span-2">
  <Card className="h-full">
  <CardHeader>

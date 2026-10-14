@@ -55,7 +55,7 @@ const STATUS_LABEL = {
 };
 
 function parseUA(ua: string) {
-    if (!ua) return '—';
+    if (!ua) return '-';
     if (ua.includes('Firefox'))  return 'Firefox';
     if (ua.includes('Chrome'))   return 'Chrome';
     if (ua.includes('Safari'))   return 'Safari';
@@ -87,7 +87,7 @@ export default function LoginHistory({ history, targetUser, filters, auth }: Pro
 
     return (
         <AuthenticatedLayout header="Riwayat Login">
-            <Head title={targetUser ? `Riwayat Login — ${targetUser.name}` : 'Riwayat Login Saya'} />
+            <Head title={targetUser ? `Riwayat Login - ${targetUser.name}` : 'Riwayat Login Saya'} />
 
             <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">

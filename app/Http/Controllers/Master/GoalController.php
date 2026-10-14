@@ -29,17 +29,17 @@ class GoalController extends Controller
         $this->authorize('view-goals');
 
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
-        if ($request->filled('organization_id') && ! $isProvincialAdmin && ! in_array($request->integer('organization_id'), $accessibleOrgIds, true)) {
+        if ($request->filled('organization_id') && ! $isOpdAdmin && ! in_array($request->integer('organization_id'), $accessibleOrgIds, true)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
         }
 
         $goals = StrategicGoal::query()
             ->withCount('objectives')
             ->with(['objectives', 'planningPeriod:id,code,name,year', 'organization:id,code,name'])
-            ->when(! $isProvincialAdmin, fn ($query) => $query->whereIn('organization_id', $accessibleOrgIds))
+            ->when(! $isOpdAdmin, fn ($query) => $query->whereIn('organization_id', $accessibleOrgIds))
             ->when($request->filled('period_id'), function ($query) use ($request) {
                 $query->where('planning_period_id', $request->integer('period_id'));
             })

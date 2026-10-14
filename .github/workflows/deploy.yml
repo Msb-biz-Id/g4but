@@ -1,0 +1,42 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Frontend Dependencies & Build
+      run: |
+        npm ci
+        npm run build
+
+    - name: Deploy via SSH to cPanel
+      uses: appleboy/ssh-action@v1.0.3
+      if: env.CPANEL_HOST != ''
+      env:
+        CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+      with:
+        host: ${{ secrets.CPANEL_HOST }}
+        username: ${{ secrets.CPANEL_USERNAME }}
+        key: ${{ secrets.CPANEL_SSH_KEY }}
+        port: ${{ secrets.CPANEL_PORT || 22 }}
+        script: |
+          cd ~/ekasuarirepack
+          git pull origin main
+          composer install --no-dev --optimize-autoloader
+          php artisan migrate --force
+          php artisan optimize:clear
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache

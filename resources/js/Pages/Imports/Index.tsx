@@ -15,6 +15,7 @@ import { TableEmptyRow } from '@/Components/EmptyState';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface Batch {
     id: number;
@@ -86,13 +87,21 @@ export default function ImportsIndex({ auth, batches, filters }: Props) {
  </div>
  );
 
- return (
- <AuthenticatedLayout
- header="Import Data"
- >
- <Head title="Impor Data" />
- <div className="py-12">
- <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    return (
+        <AuthenticatedLayout>
+            <Head title="Impor Data" />
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Impor Data Masal (CSV)"
+                    description="Unggah file data CSV untuk mengimpor OPD dan Indikator Kinerja secara massal dengan validasi skema otomatis."
+                    breadcrumbs={[
+                        { label: 'Pengaturan', href: route('settings.index') },
+                        { label: 'Impor Data' },
+                    ]}
+                />
+
+                <div className="mx-auto max-w-5xl space-y-6">
  {(flash?.success || flash?.error) && (
  <div
  className={`mb-4 rounded-md px-4 py-3 text-sm ${

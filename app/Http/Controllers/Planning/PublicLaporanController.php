@@ -22,9 +22,9 @@ class PublicLaporanController extends Controller
         'perencanaan' => [
             'label' => 'Dokumen Perencanaan',
             'icon' => 'FileText',
-            'description' => 'Mencakup RPJMD, Renstra, RKPD, Renja, RKT, Perjanjian Kinerja (PK), DPA, Rencana Aksi, Pohon Kinerja, Cascading, Proses Bisnis, Manajemen Risiko, dan Cross-cutting',
+            'description' => 'Mencakup Renstra, RKPD, Renja, RKT, Perjanjian Kinerja (PK), DPA, Rencana Aksi, Pohon Kinerja, Cascading, Proses Bisnis, Manajemen Risiko, dan Cross-cutting',
             'types' => [
-                'rpjmd', 'renstra', 'rkpd', 'renja', 'rkt',
+                'renstra', 'rkpd', 'renja', 'rkt',
                 'perjanjian_kinerja', 'dpa', 'rencana_aksi',
                 'pohon_kinerja', 'cascading', 'proses_bisnis',
                 'manajemen_risiko', 'crosscutting',
@@ -45,7 +45,7 @@ class PublicLaporanController extends Controller
         'evaluasi' => [
             'label' => 'Evaluasi Kinerja',
             'icon' => 'ClipboardCheck',
-            'description' => 'Mencakup Laporan Hasil Evaluasi (LHE) AKIP Internal Inspektorat & KemenPAN-RB',
+            'description' => 'Mencakup Laporan Hasil Evaluasi (LHE) AKIP oleh Tim Evaluasi Internal',
             'types' => ['evaluasi_sakip'],
         ],
     ];

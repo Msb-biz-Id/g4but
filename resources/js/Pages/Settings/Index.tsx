@@ -16,6 +16,7 @@ import { PageProps } from '@/types';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import { Select2 } from '@/Components/ui/select2';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface AppConfig {
     id: number;
@@ -146,7 +147,7 @@ const PRESET_OPTIONS: Record<string, { label: string; value: string }[]> = {
         { label: 'Mock (Simulasi Lokal)', value: 'mock' },
     ],
     'app.timezone': [
-        { label: 'Asia/Jayapura (WIT - Papua Barat)', value: 'Asia/Jayapura' },
+        { label: 'Asia/Jayapura (WIT)', value: 'Asia/Jayapura' },
         { label: 'Asia/Makassar (WITA)', value: 'Asia/Makassar' },
         { label: 'Asia/Jakarta (WIB)', value: 'Asia/Jakarta' },
     ],
@@ -529,46 +530,44 @@ export default function SettingsIndex({ configs, canManage }: SettingsIndexProps
 
             <div className="space-y-6 max-w-7xl mx-auto pb-16">
                 {/* ── Page Header ──────────────────────────────────────── */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
-                    <div>
-                        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                            <Sliders className="h-5 w-5 text-primary" />
-                            Konfigurasi & Pengaturan Sistem
-                        </h1>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Kelola parameter global aplikasi, keamanan, antarmuka visual, kuota AI, serta integrasi gateway.
-                        </p>
-                    </div>
-
-                    {canManage && (
-                        <div className="flex items-center gap-2">
-                            {dirtyCount > 0 && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleDiscardTabChanges}
-                                    disabled={isSaving}
-                                    className="text-xs"
-                                >
-                                    Batalkan ({dirtyCount})
-                                </Button>
-                            )}
-                            <Button
-                                size="sm"
-                                onClick={handleSaveTab}
-                                disabled={isSaving}
-                                className="bg-primary hover:bg-primary/90 text-white font-medium text-xs shadow-xs"
-                            >
-                                {isSaving ? (
-                                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                                ) : (
-                                    <Save className="w-4 h-4 mr-1.5" />
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Master Data & Pengaturan' },
+                        { label: 'Pengaturan Sistem' },
+                    ]}
+                    title="Konfigurasi & Pengaturan Sistem"
+                    description="Kelola parameter global aplikasi, keamanan, antarmuka visual, kuota AI, serta integrasi gateway."
+                    actions={
+                        canManage ? (
+                            <div className="flex items-center gap-2">
+                                {dirtyCount > 0 && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleDiscardTabChanges}
+                                        disabled={isSaving}
+                                        className="text-xs"
+                                    >
+                                        Batalkan ({dirtyCount})
+                                    </Button>
                                 )}
-                                {isSaving ? 'Menyimpan...' : 'Simpan Pengaturan Tab Ini'}
-                            </Button>
-                        </div>
-                    )}
-                </div>
+                                <Button
+                                    size="sm"
+                                    onClick={handleSaveTab}
+                                    disabled={isSaving}
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs shadow-xs"
+                                >
+                                    {isSaving ? (
+                                        <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                                    ) : (
+                                        <Save className="w-4 h-4 mr-1.5" />
+                                    )}
+                                    {isSaving ? 'Menyimpan...' : 'Simpan Pengaturan Tab Ini'}
+                                </Button>
+                            </div>
+                        ) : undefined
+                    }
+                />
 
                 {/* ── Tab Navigation Bar ───────────────────────────────── */}
                 <div className="flex overflow-x-auto gap-1 rounded-xl border border-border bg-slate-100/70 dark:bg-slate-800/50 p-1.5 shadow-xs scrollbar-thin">

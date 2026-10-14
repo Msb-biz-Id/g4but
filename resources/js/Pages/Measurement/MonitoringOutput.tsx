@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import MeasurementNav from '@/Pages/Measurement/MeasurementNav';
+import PageBreadcrumb from '@/Components/Dashboard/PageBreadcrumb';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import TablePagination from '@/Components/TablePagination';
@@ -98,7 +99,7 @@ interface Props {
     year: number;
     availableYears: number[];
     canManage: boolean;
-    userIsSpBappeda: boolean;
+    userIsSuperAdmin: boolean;
 }
 
 export default function MonitoringOutput({
@@ -108,7 +109,7 @@ export default function MonitoringOutput({
     year,
     availableYears,
     canManage,
-    userIsSpBappeda,
+    userIsSuperAdmin,
 }: Props) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editItem, setEditItem] = useState<OutputItem | null>(null);
@@ -365,8 +366,14 @@ export default function MonitoringOutput({
             <Head title="Monitoring Kinerja Rencana Aksi (Fisik / Output)" />
 
             <div className="py-6 px-4 sm:px-6 lg:px-8 max-w-full print:p-0">
+                <div className="print:hidden mb-4">
+                    <PageBreadcrumb items={[
+                        { label: 'Pengukuran' },
+                        { label: 'Monitoring Fisik / Output' },
+                    ]} />
+                </div>
                 <div className="print:hidden">
-                    <MeasurementNav activeTab="output" userIsSpBappeda={userIsSpBappeda} exportPdfUrl={exportPdfUrl} />
+                    <MeasurementNav activeTab="output" userIsSuperAdmin={userIsSuperAdmin} exportPdfUrl={exportPdfUrl} />
                 </div>
 
                 {/* Triwulan Selection Bar */}

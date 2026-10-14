@@ -2,7 +2,7 @@ import { Toaster } from '@/Components/ui/sonner';
 import { useFlash } from '@/hooks/useFlash';
 
 /**
- * FlashToaster — drop this anywhere inside <AuthenticatedLayout> to enable
+ * FlashToaster - drop this anywhere inside <AuthenticatedLayout> to enable
  * Sonner toast notifications from Laravel flash messages.
  * Renders the <Toaster> portal + fires toasts on flash changes.
  *

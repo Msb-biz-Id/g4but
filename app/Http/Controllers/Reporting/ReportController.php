@@ -15,6 +15,7 @@ use App\Services\AchievementCalculator;
 use App\Services\AuditService;
 use App\Services\AuthorizationService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,11 +57,11 @@ class ReportController extends Controller
         $availableYears = array_values(array_unique(array_filter(array_merge([$defaultYear], $planningYears, $extraYears))));
         rsort($availableYears);
 
-        // Province / Pemda Org
+        // Organisasi Induk
         $provinsi = Organization::where('type', 'province')->first();
         $provId = $provinsi?->id;
 
-        // LKIP Pemda dihapus (Rumah Besar OPD)
+        // Laporan induk OPD (tidak digunakan dalam Rumah Besar OPD)
         $pemdaDocuments = [];
 
         // B. LKIP Perangkat Daerah (Seluruh OPD untuk tahun terpilih)
@@ -114,9 +115,9 @@ class ReportController extends Controller
         ];
 
         $user = $request->user();
-        $isProvincialAdmin = $this->authorization->isProvincialAdmin($user);
+        $isOpdAdmin = $this->authorization->isOpdAdmin($user);
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
-        $canUpload = $isProvincialAdmin
+        $canUpload = $isOpdAdmin
             || $user->hasPermission('report:generate')
             || $user->hasPermission('planning:submit')
             || $user->can('generate-reports')
@@ -129,7 +130,7 @@ class ReportController extends Controller
             'kartu_utama' => $kartuUtama,
             'matriks' => $matriks,
             'can_upload' => $canUpload,
-            'is_provincial_admin' => $isProvincialAdmin,
+            'is_provincial_admin' => $isOpdAdmin,
             'accessible_organization_ids' => $accessibleOrgIds,
             'user_organization_id' => $user->organization_id,
         ]);
@@ -368,7 +369,10 @@ class ReportController extends Controller
         $ext = pathinfo($report->file_path, PATHINFO_EXTENSION);
         $filename = str($report->title)->slug().'.'.$ext;
 
-        return Storage::disk('local')->download($report->file_path, $filename);
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+
+        return $disk->download($report->file_path, $filename);
     }
 
     /**

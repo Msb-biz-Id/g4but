@@ -143,7 +143,7 @@ class AiTest extends TestCase
         // Ringkasan harus mengandung informasi evaluasi kinerja SAKIP
         $this->assertStringContainsString('Laporan Akuntabilitas Kinerja', $result['output_parsed']['ringkasan']);
         // Label AI-generated content tetap ada di output
-        $this->assertStringContainsString('Sumber: analisis otomatis e-KASUARI', $result['output']);
+        $this->assertStringContainsString('Sumber: analisis otomatis e-SAKIP', $result['output']);
 
         $log = AiUseLog::query()->latest('id')->firstOrFail();
         $this->assertSame('executive_summary', $log->feature);

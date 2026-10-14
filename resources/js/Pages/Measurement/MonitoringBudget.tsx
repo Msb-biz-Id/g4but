@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import MeasurementNav from '@/Pages/Measurement/MeasurementNav';
+import PageBreadcrumb from '@/Components/Dashboard/PageBreadcrumb';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import TablePagination from '@/Components/TablePagination';
@@ -99,7 +100,7 @@ interface Props {
     year: number;
     availableYears: number[];
     canManage: boolean;
-    userIsSpBappeda: boolean;
+    userIsSuperAdmin: boolean;
 }
 
 export default function MonitoringBudget({
@@ -109,7 +110,7 @@ export default function MonitoringBudget({
     year,
     availableYears,
     canManage,
-    userIsSpBappeda,
+    userIsSuperAdmin,
 }: Props) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editItem, setEditItem] = useState<BudgetItem | null>(null);
@@ -381,8 +382,14 @@ export default function MonitoringBudget({
             <Head title="Monitoring Kinerja Rencana Aksi (Anggaran)" />
 
             <div className="py-6 px-4 sm:px-6 lg:px-8 max-w-full print:p-0">
+                <div className="print:hidden mb-4">
+                    <PageBreadcrumb items={[
+                        { label: 'Pengukuran' },
+                        { label: 'Monitoring Anggaran' },
+                    ]} />
+                </div>
                 <div className="print:hidden">
-                    <MeasurementNav activeTab="budget" userIsSpBappeda={userIsSpBappeda} exportPdfUrl={exportPdfUrl} />
+                    <MeasurementNav activeTab="budget" userIsSuperAdmin={userIsSuperAdmin} exportPdfUrl={exportPdfUrl} />
                 </div>
 
                 {/* Triwulan Selection Bar */}

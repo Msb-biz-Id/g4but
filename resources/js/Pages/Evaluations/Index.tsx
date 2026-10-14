@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageBreadcrumb from '@/Components/Dashboard/PageBreadcrumb';
 import { PageProps } from '@/types';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
@@ -257,7 +258,8 @@ export default function EvaluationsIndex({
     can_manage,
     can_manage_pemda = false,
 }: Props) {
-    const { flash } = usePage().props as { flash: { success?: string | null; error?: string | null } };
+    const { flash, appConfig } = usePage<PageProps>().props;
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
 
     // Active Top Level Tab
     const [activeTab, setActiveTab] = useState<'sakip' | 'pko'>('sakip');
@@ -267,8 +269,8 @@ export default function EvaluationsIndex({
     const [selectedOpd, setSelectedOpd] = useState<number>(selected_opd_id);
     const [opdSearch, setOpdSearch] = useState('');
 
-    // Sub-tab under PKO (Pemda vs OPD)
-    const [pkoSubTab, setPkoSubTab] = useState<'pemda' | 'opd'>('pemda');
+    // Sub-tab under PKO (Induk vs OPD)
+    const [pkoSubTab, setPkoSubTab] = useState<'pemda' | 'opd'>('opd');
 
     // Show Calculation Info
     const [showGuide, setShowGuide] = useState(false);
@@ -277,8 +279,8 @@ export default function EvaluationsIndex({
     // ─── Modals State ──────────────────────────────────────────────────────────
     // 1. SAKIP Modal (Create / Edit)
     const [sakipModalOpen, setSakipModalOpen] = useState(false);
-    const [editingOrgId, setEditingOrgId] = useState<number>(sakip_pemda?.organization_id || 1);
-    const [editingOrgName, setEditingOrgName] = useState<string>('Pemerintah Provinsi');
+    const [editingOrgId, setEditingOrgId] = useState<number>(selected_opd_id || sakip_opd[0]?.organization_id || 1);
+    const [editingOrgName, setEditingOrgName] = useState<string>(sakip_opd[0]?.organization_name || 'Perangkat Daerah');
     const [sakipPerencanaan, setSakipPerencanaan] = useState<number>(0);
     const [sakipPengukuran, setSakipPengukuran] = useState<number>(0);
     const [sakipPelaporan, setSakipPelaporan] = useState<number>(0);
@@ -293,7 +295,7 @@ export default function EvaluationsIndex({
 
     // 3. PKO Indicator Modal (Create / Edit)
     const [pkoModalOpen, setPkoModalOpen] = useState(false);
-    const [pkoTargetType, setPkoTargetType] = useState<'pemda' | 'opd'>('pemda');
+    const [pkoTargetType, setPkoTargetType] = useState<'pemda' | 'opd'>('opd');
     const [editingPkoIndicator, setEditingPkoIndicator] = useState<PkoIndicatorItem | null>(null);
     const [pkoSasaran, setPkoSasaran] = useState('');
     const [pkoIndikator, setPkoIndikator] = useState('');
@@ -524,10 +526,10 @@ export default function EvaluationsIndex({
 
     const liveKoreksi = useMemo(() => {
         if (pkoKoreksiManual !== '') return Number(pkoKoreksiManual);
-        const targetOrgId = pkoTargetType === 'pemda' ? sakip_pemda.organization_id : selectedOpd;
-        const refSakip = pkoTargetType === 'pemda' ? sakip_pemda : sakip_opd.find((o) => o.organization_id === targetOrgId);
+        const targetOrgId = selectedOpd;
+        const refSakip = sakip_opd.find((o) => o.organization_id === targetOrgId);
         return refSakip ? getKoreksiAkipRate(refSakip.predikat) : 20;
-    }, [pkoKoreksiManual, pkoTargetType, sakip_pemda, sakip_opd, selectedOpd]);
+    }, [pkoKoreksiManual, sakip_opd, selectedOpd]);
 
     const liveNilaiAkhir = useMemo(() => {
         return Number((liveNormalisasi * (1 - liveKoreksi / 100)).toFixed(2));
@@ -536,10 +538,7 @@ export default function EvaluationsIndex({
     // Submit PKO Indicator (Create / Update)
     const submitPkoIndicator = (e: React.FormEvent) => {
         e.preventDefault();
-        if (pkoTargetType === 'pemda' && !can_manage_pemda) {
-            return;
-        }
-        const targetOrgId = pkoTargetType === 'pemda' ? sakip_pemda.organization_id : selectedOpd;
+        const targetOrgId = selectedOpd;
 
         router.post(
             route('evaluations.pko.indicators.save'),
@@ -607,7 +606,12 @@ export default function EvaluationsIndex({
                         </div>
                     )}
 
-                    {/* ─── HEADER BAR & FILTER TAHUN ────────────────────────────── */}
+                    {/* ─── BREADCRUMB & HEADER BAR ────────────────────────────────────────── */}
+                    <PageBreadcrumb items={[
+                        { label: 'Pengukuran & Evaluasi' },
+                        { label: 'Evaluasi Kinerja & SAKIP' },
+                    ]} />
+
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
                         <div>
                             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -691,12 +695,13 @@ export default function EvaluationsIndex({
                     </div>
 
                     {/* ═══════════════════════════════════════════════════════════════
-                        TAB 1: EVALUASI SAKIP (PEMDA & OPD)
+                        TAB 1: EVALUASI SAKIP OPD
                     ═══════════════════════════════════════════════════════════════ */}
                     {activeTab === 'sakip' && (
                         <div className="space-y-6">
 
-                            {/* Card 1: SAKIP Pemerintah Daerah */}
+                            {/* Card 1: SAKIP Pemerintah Daerah (jika tersedia) */}
+                            {sakip_pemda && (
                             <Card className="overflow-hidden border-slate-200 dark:border-slate-800 shadow-xs">
                                 <CardHeader className="bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800 py-3.5 px-4 sm:px-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <div>
@@ -705,7 +710,7 @@ export default function EvaluationsIndex({
                                             <span>SAKIP Pemerintah Daerah</span>
                                         </CardTitle>
                                         <CardDescription className="text-xs mt-0.5">
-                                            Hasil evaluasi akuntabilitas kinerja Pemerintah Provinsi Papua Barat Tahun Anggaran {selectedYear}.
+                                            Hasil evaluasi akuntabilitas kinerja {instansiName} Tahun Anggaran {selectedYear}.
                                         </CardDescription>
                                     </div>
 
@@ -833,6 +838,7 @@ export default function EvaluationsIndex({
                                     </div>
                                 </CardContent>
                             </Card>
+                            )}
 
                             {/* Card 2: SAKIP Perangkat Daerah (OPD) */}
                             <Card className="overflow-hidden border-slate-200 dark:border-slate-800 shadow-xs">
@@ -1067,64 +1073,34 @@ export default function EvaluationsIndex({
                     {activeTab === 'pko' && (
                         <div className="space-y-6">
 
-                            {/* Sub-tab Switcher & OPD Selector */}
-                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
-                                <div className="flex items-center gap-2 w-full sm:w-auto">
-                                    <button
-                                        type="button"
-                                        onClick={() => setPkoSubTab('pemda')}
-                                        className={`flex-1 sm:flex-initial text-center px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer whitespace-nowrap ${
-                                            pkoSubTab === 'pemda'
-                                                ? 'bg-blue-600 text-white shadow-xs'
-                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                                        }`}
-                                    >
-                                        PKO Pemda
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setPkoSubTab('opd')}
-                                        className={`flex-1 sm:flex-initial text-center px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer whitespace-nowrap ${
-                                            pkoSubTab === 'opd'
-                                                ? 'bg-blue-600 text-white shadow-xs'
-                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                                        }`}
-                                    >
-                                        PKO OPD
-                                    </button>
+                            {/* PKO OPD Selector & Export Action */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+                                <div className="w-full sm:w-80">
+                                    <Select2
+                                        value={selectedOpd}
+                                        onChange={(val) => handleOpdChange(Number(val))}
+                                        options={organizations.map((org) => ({
+                                            value: org.id,
+                                            label: `${org.code} - ${org.name}`,
+                                        }))}
+                                        placeholder="Pilih OPD..."
+                                        searchPlaceholder="Cari OPD..."
+                                    />
                                 </div>
 
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 w-full sm:w-auto">
-                                    {pkoSubTab === 'opd' && (
-                                        <div className="w-full sm:w-72">
-                                            <Select2
-                                                value={selectedOpd}
-                                                onChange={(val) => handleOpdChange(Number(val))}
-                                                options={organizations.map((org) => ({
-                                                    value: org.id,
-                                                    label: `${org.code} - ${org.name}`,
-                                                }))}
-                                                placeholder="Pilih OPD..."
-                                                searchPlaceholder="Cari OPD..."
-                                            />
-                                        </div>
-                                    )}
-
-                                    <a
-                                        href={route('evaluations.export-pko-pdf', {
-                                            year: selectedYear,
-                                            target_type: pkoSubTab,
-                                            organization_id: pkoSubTab === 'opd' ? selectedOpd : undefined,
-                                        })}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md border border-border bg-background text-xs font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 w-full sm:w-auto whitespace-nowrap"
-                                    >
-                                        <FileDown className="h-3.5 w-3.5" />
-                                        <span>Download PDF PKO</span>
-                                    </a>
-                                </div>
+                                <a
+                                    href={route('evaluations.export-pko-pdf', {
+                                        year: selectedYear,
+                                        target_type: 'opd',
+                                        organization_id: selectedOpd,
+                                    })}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md border border-border bg-background text-xs font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors shrink-0 w-full sm:w-auto whitespace-nowrap"
+                                >
+                                    <FileDown className="h-3.5 w-3.5" />
+                                    <span>Download PDF PKO</span>
+                                </a>
                             </div>
 
                             {/* Summary Stat Cards */}
@@ -1179,7 +1155,7 @@ export default function EvaluationsIndex({
                                 <CardHeader className="bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800 py-3.5 px-4 sm:px-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <div>
                                         <CardTitle className="text-base font-bold text-slate-800 dark:text-white">
-                                            {pkoSubTab === 'pemda' ? 'Indikator PKO Pemerintah Daerah' : `Indikator PKO — ${selectedOpdObj?.name ?? 'Perangkat Daerah'}`} (Tahun {selectedYear})
+                                            Indikator PKO - {selectedOpdObj?.name ?? 'Perangkat Daerah'} (Tahun {selectedYear})
                                         </CardTitle>
                                         <CardDescription className="text-xs mt-0.5">
                                             10 Kolom hasil perhitungan: Target, Realisasi, Capaian PK, Batas Normalisasi 110%, dan Koreksi Predikat AKIP.
@@ -1189,7 +1165,7 @@ export default function EvaluationsIndex({
                                     {canManagePko && (
                                         <Button
                                             size="sm"
-                                            onClick={() => openPkoModal(pkoSubTab)}
+                                            onClick={() => openPkoModal('opd')}
                                             className="h-8 text-xs font-semibold gap-1.5 bg-blue-700 hover:bg-blue-800 text-white w-full sm:w-auto justify-center whitespace-nowrap"
                                         >
                                             <Plus className="h-3.5 w-3.5" />
@@ -1229,13 +1205,13 @@ export default function EvaluationsIndex({
                                                                         Belum Ada Indikator PKO
                                                                     </p>
                                                                     <p className="text-xs text-slate-500">
-                                                                        Belum ada indikator Penilaian Kinerja Organisasi (PKO) untuk {pkoSubTab === 'pemda' ? 'Pemerintah Daerah' : selectedOpdObj?.name} tahun {selectedYear}.
+                                                                        Belum ada indikator Penilaian Kinerja Organisasi (PKO) untuk {selectedOpdObj?.name ?? 'Perangkat Daerah'} tahun {selectedYear}.
                                                                     </p>
                                                                 </div>
                                                                 {canManagePko && (
                                                                     <Button
                                                                         size="sm"
-                                                                        onClick={() => openPkoModal(pkoSubTab)}
+                                                                        onClick={() => openPkoModal('opd')}
                                                                         className="h-8 text-xs font-semibold gap-1.5 bg-blue-700 hover:bg-blue-800 text-white mt-1"
                                                                     >
                                                                         <Plus className="h-3.5 w-3.5" />
@@ -1505,7 +1481,7 @@ export default function EvaluationsIndex({
                     <DialogHeader>
                         <DialogTitle className="text-base font-bold flex items-center gap-2">
                             <Award className="h-5 w-5 text-primary" />
-                            Input / Edit Nilai SAKIP — Tahun {selectedYear}
+                            Input / Edit Nilai SAKIP - Tahun {selectedYear}
                         </DialogTitle>
                         <DialogDescription className="text-xs">
                             Isi nilai 4 komponen akuntabilitas kinerja untuk instansi terpilih. Nilai dan predikat dihitung otomatis.
@@ -1537,13 +1513,10 @@ export default function EvaluationsIndex({
                                         setSakipStatus(opdItem?.status_evaluasi || 'Final');
                                     }
                                 }}
-                                options={[
-                                    ...(can_manage_pemda ? [{ value: sakip_pemda.organization_id, label: 'Pemerintah Provinsi (Pemda)' }] : []),
-                                    ...organizations.map((org) => ({
-                                        value: org.id,
-                                        label: `${org.code} - ${org.name}`,
-                                    })),
-                                ]}
+                                options={organizations.map((org) => ({
+                                    value: org.id,
+                                    label: `${org.code} - ${org.name}`,
+                                }))}
                                 placeholder="Pilih Instansi..."
                                 searchPlaceholder="Cari instansi / OPD..."
                             />
@@ -1704,7 +1677,7 @@ export default function EvaluationsIndex({
                             {editingPkoIndicator ? 'Edit' : 'Tambah'} Indikator Kinerja Organisasi (PKO)
                         </DialogTitle>
                         <DialogDescription className="text-xs">
-                            Instansi: <strong>{pkoTargetType === 'pemda' ? 'Pemerintah Daerah' : selectedOpdObj?.name}</strong> (Tahun {selectedYear}).
+                            Instansi: <strong>{selectedOpdObj?.name ?? 'Perangkat Daerah'}</strong> (Tahun {selectedYear}).
                         </DialogDescription>
                     </DialogHeader>
 

@@ -10,7 +10,7 @@ return new class extends Migration
         // 1. Sinkronkan nilai app_name dan hapus app.name duplicate
         $appName = DB::table('app_configs')->where('key', 'app_name')->value('value')
             ?: DB::table('app_configs')->where('key', 'app.name')->value('value')
-            ?: 'e-KASUARI';
+            ?: 'e-SAKIP';
 
         DB::table('app_configs')->where('key', 'app_name')->update(['value' => $appName]);
         DB::table('app_configs')->where('key', 'app.name')->delete();

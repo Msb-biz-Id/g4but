@@ -144,7 +144,7 @@ class OrganizationController extends Controller
                 ->where('id', '!=', $organization->id)
                 ->orderBy('name')
                 ->get(['id', 'code', 'name', 'short_name']),
-            'isProvincialAdmin' => $isManager,
+            'isOpdAdmin' => $isManager,
         ]);
     }
 

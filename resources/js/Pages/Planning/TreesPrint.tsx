@@ -1,5 +1,6 @@
 import React from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { PageProps } from '@/types';
 import { formatDate } from '@/lib/utils';
 import { getNodeChildren, SURABAYA_LEVELS, getSurabayaLevelConfig, normalizeLevel, KinerjaNode } from '@/types/kinerjaTree';
 
@@ -252,6 +253,9 @@ export default function TreesPrint({
     org,
     period,
 }: TreesPrintProps) {
+    const { appConfig } = usePage<PageProps>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
     const today = formatDate(new Date().toISOString());
 
     return (
@@ -316,7 +320,7 @@ export default function TreesPrint({
                         ← Kembali
                     </button>
                     <span style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>
-                        Pohon Kinerja e-KASUARI (PermenPAN-RB 89/2021)
+                        Pohon Kinerja {appName} (PermenPAN-RB 89/2021)
                     </span>
                 </div>
 
@@ -356,7 +360,7 @@ export default function TreesPrint({
                     POHON KINERJA (CASCADING KINERJA)
                 </h1>
                 <p style={{ margin: '4px 0 0', fontSize: 12, color: '#475569', fontWeight: 600 }}>
-                    PEMERINTAH PROVINSI PAPUA BARAT {period ? `• PERIODE TAHUN ${period.year}` : ''}
+                    {instansiName.toUpperCase()} {period ? `• PERIODE TAHUN ${period.year}` : ''}
                 </p>
                 {org && (
                     <p style={{ margin: '2px 0 0', fontSize: 11, color: '#0284c7', fontWeight: 700 }}>
@@ -404,7 +408,7 @@ export default function TreesPrint({
                         </div>
                     ))}
                 </div>
-                <span>e-KASUARI LITE • Sistem Akuntabilitas Kinerja Instansi Pemerintah Terpadu</span>
+                <span>e-SAKIP LITE • Sistem Akuntabilitas Kinerja Instansi Pemerintah Terpadu</span>
             </div>
         </div>
     );

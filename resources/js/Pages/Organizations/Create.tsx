@@ -138,7 +138,7 @@ export default function OrganizationsCreate({ parents }: Props) {
  <TextInput
  id="email"
  type="email"
- placeholder="cth: diskominfo@papuabaratprov.go.id"
+ placeholder="cth: diskominfo@pemda.go.id"
  value={data.email}
  onChange={(e) =>
  setData('email', e.target.value)

@@ -21,7 +21,7 @@ class PlanningDocumentController extends Controller
 {
     // ── BR-004: Whitelist tipe dokumen (baseline MOD-001 & MOD-003) ─────────
     private const ALLOWED_TYPES = [
-        'rpjmd', 'renstra', 'rkpd', 'renja', 'rkt',
+        'renstra', 'rkpd', 'renja', 'rkt',
         'perjanjian_kinerja', 'pk',
         'dpa', 'rencana_aksi',
         'pohon_kinerja', 'cascading', 'proses_bisnis',
@@ -32,9 +32,6 @@ class PlanningDocumentController extends Controller
         'pedoman_teknis',
     ];
 
-    // BR-003: Tipe yang hanya boleh diupload oleh Bappeda Provinsi
-    private const BAPPEDA_ONLY_TYPES = ['rpjmd', 'rkpd'];
-
     // BR-004: Format file dan ukuran maksimum
     private const ALLOWED_MIMES = 'pdf,xlsx,xls,docx,doc,pptx,ppt,zip';
 
@@ -42,7 +39,6 @@ class PlanningDocumentController extends Controller
 
     // Label tampilan frontend
     public const TYPE_LABELS = [
-        'rpjmd' => 'RPJMD',
         'renstra' => 'Renstra',
         'rkpd' => 'RKPD',
         'renja' => 'Renja',
@@ -120,9 +116,8 @@ class PlanningDocumentController extends Controller
             ],
             // G-17: Super Admin bisa ubah periode_type
             'canManage' => $request->user()->hasRole('Super Admin'),
-            'isProvincialAdmin' => $request->user()->hasRole('Super Admin')
-                || $request->user()->hasRole('Admin Provinsi')
-                || $request->user()->hasRole('Evaluator Provinsi')
+            'isOpdAdmin' => $request->user()->isOpdAdmin()
+                || $request->user()->isLeadership()
                 || $request->user()->hasPermission('planning:review')
                 || $request->user()->hasPermission('planning:approve')
                 || $request->user()->hasPermission('agreement:approve'),
@@ -139,16 +134,13 @@ class PlanningDocumentController extends Controller
             abort(403, 'Di luar lingkup organisasi Anda.');
         }
 
-        // BR-003: Hanya org type=bappeda yang boleh upload RPJMD / RKPD
-        $this->checkBappedaRestriction($request, $validated['type'], $validated['organization_id'] ?? null);
-
         // Upload file (BR-004)
         $filePath = $this->handleFileUpload($request);
 
         $perfPeriod = PerformancePeriod::where('year', $validated['year'])->first()
             ?? PerformancePeriod::orderByDesc('year')->first();
 
-        $isLimaTahunan = in_array($validated['type'], ['rpjmd', 'renstra'], true)
+        $isLimaTahunan = $validated['type'] === 'renstra'
             || ($validated['periode_type'] ?? '') === '5_tahunan'
             || ($validated['periode_type'] ?? '') === 'lima_tahunan';
 
@@ -194,9 +186,6 @@ class PlanningDocumentController extends Controller
             abort(403, 'Di luar lingkup organisasi Anda.');
         }
 
-        // BR-003: Cek Bappeda saat update
-        $this->checkBappedaRestriction($request, $validated['type'], $validated['organization_id'] ?? null);
-
         // Ganti file jika ada upload baru (BR-004)
         if ($request->hasFile('file')) {
             if ($document->file_path) {
@@ -205,7 +194,7 @@ class PlanningDocumentController extends Controller
             $validated['file_path'] = $this->handleFileUpload($request);
         }
 
-        $isLimaTahunan = in_array($validated['type'], ['rpjmd', 'renstra'], true)
+        $isLimaTahunan = $validated['type'] === 'renstra'
             || ($validated['periode_type'] ?? '') === '5_tahunan'
             || ($validated['periode_type'] ?? '') === 'lima_tahunan';
 
@@ -232,10 +221,9 @@ class PlanningDocumentController extends Controller
         $this->authorize('manage-planning-docs');
 
         $reviewer = request()->user();
+        $isOpdAuthority = $reviewer && ($reviewer->isOpdAdmin() || $reviewer->isLeadership());
         $canApprove = $reviewer && (
-            $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi')
+            $isOpdAuthority
             || $reviewer->hasPermission('planning:review')
             || $reviewer->hasPermission('planning:approve')
             || $reviewer->hasPermission('agreement:approve')
@@ -245,11 +233,7 @@ class PlanningDocumentController extends Controller
             abort(403, 'Anda tidak memiliki hak akses untuk menyetujui dokumen perencanaan.');
         }
 
-        $isProvincial = $reviewer->hasRole('Super Admin')
-            || $reviewer->hasRole('Admin Provinsi')
-            || $reviewer->hasRole('Evaluator Provinsi');
-
-        if (! $isProvincial && ! $this->authorization->canAccessOrganization($reviewer, (int) $document->organization_id)) {
+        if (! $isOpdAuthority && ! $this->authorization->canAccessOrganization($reviewer, (int) $document->organization_id)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
         }
 
@@ -327,44 +311,12 @@ class PlanningDocumentController extends Controller
 
         // G-17: Otomatis set periode_type berdasarkan tipe dokumen (jika tidak diisi manual)
         if (empty($validated['periode_type'])) {
-            $validated['periode_type'] = in_array($validated['type'], ['rpjmd', 'renstra'], true)
+            $validated['periode_type'] = $validated['type'] === 'renstra'
                 ? '5_tahunan'
                 : 'tahunan';
         }
 
         return $validated;
-    }
-
-    /**
-     * BR-003: RPJMD & RKPD hanya boleh diupload oleh org bertipe 'bappeda'.
-     * Super Admin dikecualikan dari pembatasan ini.
-     */
-    private function checkBappedaRestriction(Request $request, string $type, ?int $organizationId): void
-    {
-        if (! in_array($type, self::BAPPEDA_ONLY_TYPES, true)) {
-            return;
-        }
-
-        if ($request->user()->hasRole('Super Admin')) {
-            return;
-        }
-
-        if (! $organizationId) {
-            abort(403, 'RPJMD dan RKPD hanya dapat diunggah oleh Bappeda Provinsi.');
-        }
-
-        $org = Organization::select('id', 'type', 'is_bappeda', 'name', 'code')->find($organizationId);
-
-        $isBappeda = $org && (
-            $org->is_bappeda ||
-            strtolower($org->type ?? '') === 'bappeda' ||
-            str_contains(strtolower($org->name), 'bappeda') ||
-            str_contains(strtoupper($org->code), 'BAPPEDA')
-        );
-
-        if (! $isBappeda) {
-            abort(403, 'RPJMD dan RKPD hanya dapat diunggah oleh Bappeda Provinsi (BR-003).');
-        }
     }
 
     /**

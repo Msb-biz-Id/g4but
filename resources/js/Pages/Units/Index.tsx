@@ -15,6 +15,7 @@ import {
 } from '@/Components/ui/table';
 import { TableEmptyRow } from '@/Components/EmptyState';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 import { Search } from 'lucide-react';
 import { PageProps } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
@@ -116,15 +117,23 @@ export default function UnitsIndex({ auth, units, filters }: Props) {
  });
  };
 
- return (
- <AuthenticatedLayout
- header="Satuan"
- >
- <Head title="Satuan Ukuran" />
- <div className="py-12">
- <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
- {canManage && (
- <Card className="mb-6">
+    return (
+        <AuthenticatedLayout>
+            <Head title="Satuan Ukuran" />
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Satuan Pengukuran"
+                    description="Kelola master satuan ukuran untuk target dan realisasi indikator kinerja (persen, rupiah, dokumen, orang, dll)."
+                    breadcrumbs={[
+                        { label: 'Pengaturan', href: route('settings.index') },
+                        { label: 'Satuan Pengukuran' },
+                    ]}
+                />
+
+                <div className="space-y-6">
+                    {canManage && (
+                        <Card className="rounded-xl border border-slate-200/80 shadow-sm dark:border-slate-800">
  <CardHeader className="p-6 pb-0">
  <CardTitle className="text-lg">
  {editing === null
@@ -251,7 +260,7 @@ export default function UnitsIndex({ auth, units, filters }: Props) {
  {unit.name}
  </TableCell>
  <TableCell>
- {unit.symbol ?? '—'}
+ {unit.symbol ?? '-'}
  </TableCell>
  <TableCell className="text-center">
  {unit.indicators_count}

@@ -14,14 +14,10 @@ import {
 } from '@/Components/ui/table';
 import { TableEmptyRow } from '@/Components/EmptyState';
 import TablePagination from '@/Components/TablePagination';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
-import { Filter, MoreVertical, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
+import ActionMenuDropdown from '@/Components/Dashboard/ActionMenuDropdown';
+import { Building2, Filter, MoreVertical, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { PageProps } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
@@ -113,26 +109,24 @@ export default function OrganizationsIndex({ auth, organizations, filters }: Pro
             header="Organisasi"
         >
             <Head title="Organisasi" />
-            <div className="space-y-4">
-                {/* Header Bar */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                            Perangkat Daerah & Organisasi
-                        </h1>
-                        <p className="text-xs text-muted-foreground sm:text-sm">
-                            Kelola struktur perangkat daerah, dinas, badan, dan unit kerja.
-                        </p>
-                    </div>
-                    {canCreate && (
-                        <Button asChild className="w-full sm:w-auto justify-center">
+            <div className="space-y-6">
+                {/* Standard Page Header */}
+                <PageHeader
+                    title="Perangkat Daerah & Organisasi"
+                    description="Kelola struktur perangkat daerah, dinas, badan, dan unit kerja Pemerintah Provinsi Papua Barat."
+                    breadcrumbs={[
+                        { label: 'Master Data' },
+                        { label: 'Organisasi' },
+                    ]}
+                    action={canCreate ? (
+                        <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
                             <Link href={route('organizations.create')}>
                                 <Plus className="mr-2 h-4 w-4" />
                                 Tambah Organisasi
                             </Link>
                         </Button>
-                    )}
-                </div>
+                    ) : undefined}
+                />
 
                 {/* Filter Bar */}
                 <Card>
@@ -250,58 +244,31 @@ export default function OrganizationsIndex({ auth, organizations, filters }: Pro
                                                     {org.users_count}
                                                 </TableCell>
                                                 <TableCell>
-                                                    {org.is_active ? (
-                                                        <Badge variant="success">
-                                                            Aktif
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge variant="destructive">
-                                                            Nonaktif
-                                                        </Badge>
-                                                    )}
+                                                    <StatusBadge status={org.is_active ? 'aktif' : 'nonaktif'} />
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     {!canEdit(org.id) && !isOpdAdmin ? (
-                                                        <span className="text-gray-300 dark:text-gray-600 text-xs select-none">
-                                                            —
+                                                        <span className="text-muted-foreground text-xs select-none">
+                                                            -
                                                         </span>
                                                     ) : (
-                                                        <div className="flex items-center justify-end">
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-8 w-8 p-0 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                                                                    >
-                                                                        <span className="sr-only">Buka menu aksi</span>
-                                                                        <MoreVertical className="h-4 w-4" />
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end" className="w-40">
-                                                                    {canEdit(org.id) && (
-                                                                        <DropdownMenuItem asChild className="cursor-pointer">
-                                                                            <Link href={route('organizations.edit', org.id)}>
-                                                                                <Pencil className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                                                                <span>Edit</span>
-                                                                            </Link>
-                                                                        </DropdownMenuItem>
-                                                                    )}
-                                                                    {isOpdAdmin && (
-                                                                        <>
-                                                                            {canEdit(org.id) && <DropdownMenuSeparator />}
-                                                                            <DropdownMenuItem
-                                                                                onClick={() => setDeleteOrgTarget({ id: org.id, name: org.name })}
-                                                                                className="cursor-pointer text-destructive focus:text-destructive"
-                                                                            >
-                                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                                <span>Hapus</span>
-                                                                            </DropdownMenuItem>
-                                                                        </>
-                                                                    )}
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                        </div>
+                                                        <ActionMenuDropdown
+                                                            align="end"
+                                                            items={[
+                                                                ...(canEdit(org.id) ? [{
+                                                                    label: 'Edit',
+                                                                    href: route('organizations.edit', org.id),
+                                                                    icon: <Pencil className="h-3.5 w-3.5 text-primary" />,
+                                                                }] : []),
+                                                                ...(isOpdAdmin ? [{
+                                                                    label: 'Hapus',
+                                                                    onClick: () => setDeleteOrgTarget({ id: org.id, name: org.name }),
+                                                                    icon: <Trash2 className="h-3.5 w-3.5 text-destructive" />,
+                                                                    variant: 'destructive' as const,
+                                                                    separator: canEdit(org.id),
+                                                                }] : []),
+                                                            ]}
+                                                        />
                                                     )}
                                                 </TableCell>
                                             </TableRow>

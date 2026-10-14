@@ -165,14 +165,6 @@ class AuthorizationService
         return $user->isOpdAdmin();
     }
 
-    /**
-     * Backward-compatible alias for isOpdAdmin.
-     */
-    public function isProvincialAdmin(?User $user): bool
-    {
-        return $this->isOpdAdmin($user);
-    }
-
     public function accessibleOrganizationIds(?User $user): array
     {
         if (! $user) {

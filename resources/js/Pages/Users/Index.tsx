@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -10,13 +11,14 @@ import {
 } from '@/Components/ui/table';
 import { TableEmptyRow } from '@/Components/EmptyState';
 import TablePagination from '@/Components/TablePagination';
-import {Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { PageProps } from '@/types';
-import { useEffect, useRef, useState } from 'react';
 import {
     CheckCircle2, Download, Filter, Plus, Search, ShieldOff, Users, UserX, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
 
 interface UserRow {
     id: number;
@@ -53,15 +55,10 @@ export default function UsersIndex({ auth, users, filters, organizations, roles 
     const [selected, setSelected]         = useState<number[]>([]);
     const [bulkAction, setBulkAction]     = useState('');
 
-    const rolesList = auth.user?.roles ?? [];
-    const isSuperOrProvincial = rolesList.some((r: any) => {
-        const name = typeof r === 'string' ? r : r?.name;
-        return name === 'Super Admin' || name === 'Admin Provinsi';
-    });
     const permissions = auth.user?.permissions ?? [];
-    const canManage   = isSuperOrProvincial || permissions.includes('*') || permissions.includes('user:create') || permissions.includes('manage-users');
+    const canManage   = permissions.includes('*') || permissions.includes('user:create') || permissions.includes('manage-users');
 
-    // Debounce filter — skip first render to prevent double HTTP request on mount
+    // Debounce filter - skip first render to prevent double HTTP request on mount
     const isMounted = useRef(false);
     useEffect(() => {
         if (!isMounted.current) { isMounted.current = true; return; }
@@ -108,59 +105,60 @@ export default function UsersIndex({ auth, users, filters, organizations, roles 
         >
             <Head title="Manajemen Pengguna" />
             <div className="space-y-6">
-                {/* Header Bar */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                            Manajemen Pengguna
-                        </h1>
-                        <p className="text-xs text-muted-foreground sm:text-sm">
-                            Kelola data akun pengguna, peran hak akses, dan penugasan perangkat daerah.
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Button
-                            variant="outline"
-                            asChild
-                            className="w-full sm:w-auto justify-center bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-                        >
-                            <a href={route('users.export')} download>
-                                <Download className="mr-2 h-4 w-4 text-emerald-600" />
-                                Unduh Akun (Excel)
-                            </a>
-                        </Button>
-                        {canManage && (
-                            <Button asChild className="w-full sm:w-auto justify-center">
-                                <Link href={route('users.create')}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Tambah Pengguna
-                                </Link>
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Master Data & Pengaturan' },
+                        { label: 'Pengguna' },
+                    ]}
+                    title="Manajemen Pengguna"
+                    description="Kelola akun aparatur, peran hak akses, dan penugasan organisasi perangkat daerah."
+                    actions={
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                                variant="outline"
+                                asChild
+                                className="w-full sm:w-auto justify-center bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                            >
+                                <a href={route('users.export')} download>
+                                    <Download className="mr-2 h-4 w-4 text-emerald-600" />
+                                    Unduh Akun (Excel)
+                                </a>
                             </Button>
-                        )}
-                    </div>
-                </div>
+                            {canManage && (
+                                <Button asChild className="w-full sm:w-auto justify-center bg-primary text-primary-foreground hover:bg-primary/90">
+                                    <Link href={route('users.create')}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Tambah Pengguna
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
+                    }
+                />
 
                 {/* Stat cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {[
-                            { label: 'Total Pengguna', value: stats?.total ?? users.total, icon: Users, color: 'text-indigo-600' },
-                            { label: 'Aktif',          value: stats?.active ?? '—',        icon: CheckCircle2, color: 'text-green-600' },
-                            { label: 'Nonaktif',       value: stats?.inactive ?? '—',      icon: UserX, color: 'text-red-500' },
-                        ].map((s) => {
-                            const Icon = s.icon;
-                            return (
-                                <Card key={s.label}>
-                                    <CardContent className="flex items-center gap-3 p-4 sm:p-5">
-                                        <Icon className={cn('h-8 w-8 shrink-0', s.color)} />
-                                        <div>
-                                            <div className="text-xs text-gray-400">{s.label}</div>
-                                            <div className="text-xl sm:text-2xl font-bold">{s.value}</div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[
+                        { label: 'Total Pengguna', value: stats?.total ?? users.total, icon: Users, color: 'text-primary' },
+                        { label: 'Aktif',          value: stats?.active ?? '-',        icon: CheckCircle2, color: 'text-emerald-600' },
+                        { label: 'Nonaktif',       value: stats?.inactive ?? '-',      icon: UserX, color: 'text-rose-500' },
+                    ].map((s) => {
+                        const Icon = s.icon;
+                        return (
+                            <Card key={s.label} className="border-border shadow-xs hover:shadow-sm transition-shadow">
+                                <CardContent className="flex items-center gap-3 p-4 sm:p-5">
+                                    <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+                                        <Icon className={cn('h-6 w-6 shrink-0', s.color)} />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-muted-foreground font-medium">{s.label}</div>
+                                        <div className="text-xl sm:text-2xl font-bold tracking-tight">{s.value}</div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </div>
 
                     <Card>
                         <CardContent className="p-4 sm:p-6 space-y-4">
@@ -303,16 +301,14 @@ export default function UsersIndex({ auth, users, filters, organizations, roles 
                                                         {user.roles.map((r) => (
                                                             <Badge key={r.id} variant="info" className="text-xs">{r.name}</Badge>
                                                         ))}
-                                                        {user.roles.length === 0 && <span className="text-xs text-gray-300">—</span>}
+                                                        {user.roles.length === 0 && <span className="text-xs text-muted-foreground">-</span>}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-sm text-gray-500">
-                                                    {user.organizations.map((o) => o.code).join(', ') || '—'}
+                                                    {user.organizations.map((o) => o.code).join(', ') || '-'}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant={user.is_active ? 'success' : 'destructive'}>
-                                                        {user.is_active ? 'Aktif' : 'Nonaktif'}
-                                                    </Badge>
+                                                    <StatusBadge status={user.is_active ? 'active' : 'inactive'} />
                                                 </TableCell>
                                                 {canManage && (
                                                     <TableCell className="whitespace-nowrap text-right">

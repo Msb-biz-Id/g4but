@@ -2,193 +2,178 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { cn } from '@/lib/utils';
+import { X, HardHat, CheckCircle2 } from 'lucide-react';
+import { PuprEmblemSvg } from './PuprOrnaments';
+import { PuprCitySkylinePattern, PuprBlueprintGrid } from './PuprCityPattern';
 
-interface Step {
-    threshold: number;
-    label: string;
-}
-
-const LOCAL_JOURNEY_STEPS: Step[] = [
-    { threshold: 28, label: 'Menyapa Fajar Tanah Papua Barat' },
-    { threshold: 62, label: 'Harmonisasi Kinerja & Akuntabilitas Daerah' },
-    { threshold: 88, label: 'Menyiapkan Portal Bumi Kasuari' },
-    { threshold: 100, label: 'Selamat Datang di e-KASUARI' },
-];
-
+/**
+ * LandingPreloader: PUPR Mimika Spirit
+ * Animasi loading progress interaktif (0% -> 100%), siluet skyline jembatan/crane PUPR,
+ * dismissible via Esc / klik tombol 'Lewati'.
+ */
 export default function LandingPreloader() {
     const { appConfig } = usePage<PageProps>().props;
     const [progress, setProgress] = useState(0);
-    const [isFading, setIsFading] = useState(false);
-    const [isMounted, setIsMounted] = useState(true);
+    const [isDismissed, setIsDismissed] = useState(false);
+    const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
-    // Dynamic brand elements from System Settings
-    const appName = appConfig?.appName || 'e-KASUARI';
-    const appDescription = appConfig?.appDescription || 'Sistem Informasi Akuntabilitas Kinerja Terintegrasi';
-    const logoUrl = appConfig?.logoUrl || '/logo.webp';
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
+    const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
 
-    const finishPreloader = useCallback(() => {
-        setProgress(100);
-        setIsFading(true);
+    const triggerDismiss = useCallback(() => {
+        setIsAnimatingOut(true);
         const timer = setTimeout(() => {
-            setIsMounted(false);
-        }, 600); // 600ms smooth minimalist fade-out
+            setIsDismissed(true);
+        }, 350);
         return () => clearTimeout(timer);
     }, []);
 
+    // Jalankan progress bar dari 0 ke 100%
     useEffect(() => {
-        // Calm, elegant progress animation (~2.2 seconds total duration)
-        let current = 0;
         const interval = setInterval(() => {
-            // Smooth pacing that decelerates slightly near the end for luxury feel
-            let step = 1.4;
-            if (current < 35) step = 1.8;
-            else if (current < 70) step = 1.4;
-            else if (current < 92) step = 1.1;
-            else step = 2.0;
+            setProgress((prev) => {
+                if (prev >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        triggerDismiss();
+                    }, 250);
+                    return 100;
+                }
+                // Step acak halus agar terasa organik
+                const increment = Math.floor(Math.random() * 8) + 4;
+                return Math.min(prev + increment, 100);
+            });
+        }, 40);
 
-            current = Math.min(current + step, 100);
-            setProgress(Math.round(current));
+        return () => clearInterval(interval);
+    }, [triggerDismiss]);
 
-            if (current >= 100) {
-                clearInterval(interval);
-                finishPreloader();
-            }
-        }, 32); // Smooth 30fps update
-
-        // Fallback safety timeout
-        const maxSafetyTimeout = setTimeout(() => {
-            clearInterval(interval);
-            finishPreloader();
-        }, 3600);
-
-        return () => {
-            clearInterval(interval);
-            clearTimeout(maxSafetyTimeout);
-        };
-    }, [finishPreloader]);
-
-    // Keyboard shortcut (Escape to skip immediately)
+    // Keyboard shortcut Escape / Enter untuk skip
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') finishPreloader();
+            if (e.key === 'Escape' || e.key === 'Enter') {
+                triggerDismiss();
+            }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [finishPreloader]);
+    }, [triggerDismiss]);
 
-    if (!isMounted) return null;
+    if (isDismissed) return null;
 
-    // Current local milestone status
-    const currentStep = LOCAL_JOURNEY_STEPS.find((s) => progress <= s.threshold) || LOCAL_JOURNEY_STEPS[LOCAL_JOURNEY_STEPS.length - 1];
+    const getStatusText = (val: number) => {
+        if (val < 30) return 'Menginisialisasi Konfigurasi PUPR Mimika...';
+        if (val < 65) return 'Sinkronisasi 5 Matra Pembangunan Daerah...';
+        if (val < 95) return 'Verifikasi Akuntabilitas Kinerja & SAKIP...';
+        return 'Sistem Siap Digunakan';
+    };
 
     return (
         <aside
-            aria-label="Memuat portal akuntabilitas"
+            aria-label="Portal Preloader PUPR Mimika"
+            role="status"
             className={cn(
-                'fixed inset-0 z-[9999] flex flex-col items-center justify-between py-12 px-6 sm:px-8',
-                'bg-[#090d16] text-slate-100', // Solid deep canvas without transparent photo blotches
-                'transition-all duration-700 ease-out select-none cursor-pointer',
-                isFading ? 'opacity-0 scale-[1.01] pointer-events-none' : 'opacity-100 scale-100'
+                'fixed inset-0 z-[9999] flex flex-col justify-between p-6 sm:p-10 select-none overflow-hidden',
+                'bg-gradient-to-b from-[#002B49] via-[#051c2f] to-[#020e17] text-white transition-opacity duration-300 ease-out',
+                isAnimatingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
             )}
-            onClick={finishPreloader}
-            title="Ketuk layar untuk langsung masuk"
         >
-            {/* Top Local Accent: Minimalist Ethnic Border Motif (Papua Geometric Lines) */}
-            <header className="w-full max-w-xl flex flex-col items-center gap-2 pointer-events-none">
-                <div className="flex items-center gap-3 w-full justify-center">
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-amber-500/20 to-emerald-500/30" />
-                    {/* Minimalist stylized chevron diamond inspired by Papuan woodcarving patterns */}
-                    <svg className="w-4 h-4 text-amber-400/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <polygon points="12 2 22 12 12 22 2 12" />
-                        <circle cx="12" cy="12" r="2.5" fill="currentColor" fillOpacity="0.8" />
-                    </svg>
-                    <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-amber-500/20 to-emerald-500/30" />
-                </div>
-                <span className="text-[10px] sm:text-[11px] tracking-[0.3em] uppercase text-amber-300/80 font-medium">
-                    Pemerintah Provinsi Papua Barat
-                </span>
-            </header>
+            {/* Latar Belakang Blueprint Grid & City Skyline PUPR */}
+            <PuprBlueprintGrid className="opacity-[0.08]" />
+            <PuprCitySkylinePattern className="text-[#FFB800] z-0" opacity="0.18" />
 
-            {/* Ambient Deep Glow (Soft, Integrated, Non-distracting) */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] rounded-full bg-emerald-950/20 blur-[140px] pointer-events-none" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] rounded-full bg-amber-950/15 blur-[100px] pointer-events-none" />
-            </div>
+            {/* Architectural radial glow */}
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-[#FFB800]/10 rounded-full blur-[120px] pointer-events-none" />
 
-            {/* Centerpiece: Dynamic Logo, Local Identity & Clean Typography */}
-            <main className="relative flex flex-col items-center text-center max-w-md my-auto">
-                {/* Minimalist Emblem Container */}
-                <div className="relative mb-7 flex items-center justify-center">
-                    {/* Soft ambient ring */}
-                    <div className="absolute -inset-2.5 rounded-2xl bg-gradient-to-b from-amber-500/10 via-emerald-500/10 to-transparent blur-sm opacity-60" />
-
-                    {/* Logo Plate */}
-                    <div className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl flex items-center justify-center p-3.5">
-                        <img
-                            src={logoUrl}
-                            alt={appName}
-                            className="h-full w-full object-contain drop-shadow-md transition-transform duration-500"
-                            onError={(e) => {
-                                (e.target as HTMLElement).style.display = 'none';
-                                const parent = (e.target as HTMLElement).parentElement;
-                                if (parent && !parent.querySelector('.fallback-emblem')) {
-                                    const fallback = document.createElement('div');
-                                    fallback.className = 'fallback-emblem text-amber-400 font-serif font-bold text-2xl tracking-wider';
-                                    fallback.innerText = 'PB';
-                                    parent.appendChild(fallback);
-                                }
-                            }}
-                        />
+            {/* Top Bar Header */}
+            <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                    <span className="flex h-2.5 w-2.5 rounded-full bg-[#FFB800] animate-pulse" />
+                    <div>
+                        <span className="text-[10px] font-mono tracking-widest text-[#FFB800] uppercase font-bold block">
+                            {orgName}
+                        </span>
+                        <span className="text-[9px] font-mono text-slate-300 tracking-wider">
+                            KABUPATEN MIMIKA • TIMIKA
+                        </span>
                     </div>
                 </div>
 
-                {/* Cultural Badge */}
-                <div className="mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/20 text-emerald-300/90 text-[11px] font-medium tracking-wide">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80 animate-ping" />
-                    <span>Bumi Kasuari • Tanah Keberkahan</span>
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        triggerDismiss();
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-black/40 hover:bg-black/60 border border-[#FFB800]/30 hover:border-[#FFB800] text-[11px] font-mono text-slate-200 hover:text-white transition-all shadow-md cursor-pointer"
+                    title="Tekan Escape untuk langsung masuk"
+                >
+                    <span>LEWATI</span>
+                    <span className="text-[9px] px-1 py-0.2 rounded bg-white/10 text-[#FFB800]">Esc</span>
+                    <X className="w-3.5 h-3.5 text-[#FFB800]" />
+                </button>
+            </div>
+
+            {/* Center Monogram & Progress Indicator */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto max-w-lg mx-auto w-full px-4">
+                {/* Emblem PUPR */}
+                <div className="relative mb-6">
+                    <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-3xl bg-gradient-to-br from-[#FFB800] via-amber-500 to-amber-700 border-2 border-amber-300/50 p-5 flex items-center justify-center shadow-[0_0_50px_rgba(255,184,0,0.35)] relative">
+                        <PuprEmblemSvg className="h-full w-full object-contain drop-shadow" color="#002B49" />
+                    </div>
+                    {/* Ring Denyut Konstruksi */}
+                    <div className="absolute -inset-2 rounded-3xl border border-[#FFB800]/30 animate-ping pointer-events-none opacity-40" />
                 </div>
 
-                {/* Dynamic System Name */}
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2 font-sans">
-                    {appName}
-                </h1>
+                {/* Judul Sistem */}
+                <div className="flex items-center gap-2 mb-1.5">
+                    <h1 className="text-3xl sm:text-4xl font-black font-serif text-white tracking-tight">
+                        {appName}
+                    </h1>
+                    <span className="rounded-md bg-[#FFB800] text-slate-950 px-2.5 py-0.5 text-xs font-mono font-black shadow">
+                        PUPR
+                    </span>
+                </div>
 
-                {/* Dynamic Description / Tagline */}
-                <p className="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed max-w-xs sm:max-w-sm line-clamp-2 mb-8">
-                    {appDescription}
+                <p className="text-xs sm:text-sm text-amber-200 font-semibold tracking-wide">
+                    Sistem Akuntabilitas Kinerja Terintegrasi
                 </p>
 
-                {/* Ultra-Minimalist Progress Line & Milestone Label */}
-                <div className="w-64 sm:w-72 space-y-2.5">
-                    {/* Progress Bar Track: Thin 2px Luxury Line */}
-                    <div className="h-[2px] w-full bg-slate-800/80 rounded-full overflow-hidden">
+                {/* Slogan Resmi PUPR */}
+                <div className="mt-4 px-4 py-1.5 rounded-full bg-black/50 border border-[#FFB800]/40 text-[#FFB800] text-xs font-mono font-bold tracking-wider inline-flex items-center gap-2 shadow-inner">
+                    <HardHat className="w-3.5 h-3.5" />
+                    <span>Bekerja Keras • Bergerak Cepat • Bertindak Tepat</span>
+                </div>
+
+                {/* Progress Bar Dinamis */}
+                <div className="w-full mt-8 max-w-xs space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-mono">
+                        <span className="text-slate-300 truncate pr-2">{getStatusText(progress)}</span>
+                        <span className="text-[#FFB800] font-bold tabular-nums">{progress}%</span>
+                    </div>
+
+                    <div className="h-2 w-full rounded-full bg-black/60 border border-white/10 overflow-hidden p-0.5">
                         <div
-                            className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400 rounded-full transition-all duration-100 ease-out"
+                            className="h-full rounded-full bg-gradient-to-r from-amber-500 via-[#FFB800] to-yellow-300 transition-all duration-75 ease-out shadow-sm"
                             style={{ width: `${progress}%` }}
                         />
                     </div>
-
-                    {/* Step Label & Percentage */}
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-normal">
-                        <span className="truncate pr-2 text-slate-300 font-sans">
-                            {currentStep.label}
-                        </span>
-                        <span className="font-mono text-amber-400/90 font-medium tabular-nums shrink-0">
-                            {progress}%
-                        </span>
-                    </div>
                 </div>
-            </main>
+            </div>
 
-            {/* Bottom Footer: Philosophical Papuan Quote & Subtle Skip Hint */}
-            <footer className="w-full max-w-xl flex flex-col items-center gap-2 text-center pointer-events-none">
-                <p className="text-[11px] text-slate-400/80 italic tracking-wide font-serif">
-                    &ldquo;Membangun dengan Hati, Melayani dengan Akuntabilitas&rdquo;
-                </p>
-                <span className="text-[10px] text-slate-500 tracking-wider uppercase font-medium">
-                    Ketuk layar untuk melewati
-                </span>
-            </footer>
+            {/* Bottom Territorial Footprint & Hint */}
+            <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] font-mono text-slate-400 border-t border-white/10 pt-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-white font-medium">Bumi Amungme &amp; Kamoro</span>
+                    <span>•</span>
+                    <span className="text-[#FFB800]">Kabupaten Mimika, Papua Tengah</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-amber-300/80">
+                    <CheckCircle2 className="w-3 h-3 text-[#FFB800]" />
+                    <span>Standar SAKIP PermenPAN-RB No. 88/2021</span>
+                </div>
+            </div>
         </aside>
     );
 }

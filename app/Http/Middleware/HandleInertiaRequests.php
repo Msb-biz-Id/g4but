@@ -164,14 +164,40 @@ class HandleInertiaRequests extends Middleware
         try {
             return Cache::remember('app_general_config', 300, function () {
                 $configs = AppConfig::whereIn('key', [
-                    'app_name', 'app_description', 'app_logo', 'app_favicon',
+                    'app_name', 'app.name', 'app_description', 'app_logo', 'app_favicon',
                     'ui_headline_image', 'ui_login_image',
                     'ui_headline_title', 'ui_headline_subtitle',
+                    'instansi_name', 'organization_name',
                 ])->pluck('value', 'key')->toArray();
 
+                $activePeriod = \App\Models\PlanningPeriod::where('status', 'active')
+                    ->orWhere('status', 'open')
+                    ->latest('id')
+                    ->first();
+
+                $currYear = (int) date('Y');
+                $startYear = $activePeriod ? (int) $activePeriod->start_year : $currYear;
+                $endYear = $activePeriod ? (int) $activePeriod->end_year : ($currYear + 4);
+                if ($endYear < $startYear) {
+                    $endYear = $startYear + 4;
+                }
+
+                $availableYears = \App\Models\PlanningPeriod::getAvailableYears();
+                if (empty($availableYears)) {
+                    $availableYears = range($startYear, $endYear);
+                }
+
                 return [
-                    'appName' => $configs['app_name'] ?? 'e-KASUARI',
-                    'appDescription' => $configs['app_description'] ?? 'Sistem Akuntabilitas Kinerja',
+                    'appName' => $configs['app_name'] ?? $configs['app.name'] ?? config('app.name', 'SIM Kinerja'),
+                    'appDescription' => $configs['app_description'] ?? 'Sistem Informasi Akuntabilitas Kinerja Terintegrasi',
+                    'instansiName' => $configs['instansi_name'] ?? config('app.instansi_name', 'Pemerintah Daerah'),
+                    'organizationName' => $configs['organization_name'] ?? config('app.organization_name', 'Organisasi Perangkat Daerah'),
+                    'currentYear' => $currYear,
+                    'activePeriodName' => $activePeriod?->name ?? ('Periode ' . $startYear . '–' . $endYear),
+                    'activePeriodStartYear' => $startYear,
+                    'activePeriodEndYear' => $endYear,
+                    'activePeriodRange' => "{$startYear}–{$endYear}",
+                    'activePeriodYears' => array_values(array_unique($availableYears)),
                     'logoUrl' => $configs['app_logo'] ?? '/logo.webp',
                     'faviconUrl' => $configs['app_favicon'] ?? '/favicon.ico',
                     'headlineImageUrl' => $configs['ui_headline_image'] ?? '/images/hero-banner.webp',
@@ -181,9 +207,18 @@ class HandleInertiaRequests extends Middleware
                 ];
             });
         } catch (\Throwable) {
+            $currYear = (int) date('Y');
             return [
-                'appName' => 'e-KASUARI',
-                'appDescription' => 'Sistem Akuntabilitas Kinerja',
+                'appName' => config('app.name', 'SIM Kinerja'),
+                'appDescription' => 'Sistem Informasi Akuntabilitas Kinerja Terintegrasi',
+                'instansiName' => config('app.instansi_name', 'Pemerintah Daerah'),
+                'organizationName' => config('app.organization_name', 'Organisasi Perangkat Daerah'),
+                'currentYear' => $currYear,
+                'activePeriodName' => 'Periode ' . $currYear . '–' . ($currYear + 4),
+                'activePeriodStartYear' => $currYear,
+                'activePeriodEndYear' => $currYear + 4,
+                'activePeriodRange' => "{$currYear}–" . ($currYear + 4),
+                'activePeriodYears' => range($currYear, $currYear + 4),
                 'logoUrl' => '/logo.webp',
                 'faviconUrl' => '/favicon.ico',
                 'headlineImageUrl' => '/images/hero-banner.webp',

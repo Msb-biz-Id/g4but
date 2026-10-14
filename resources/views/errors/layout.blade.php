@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('code') - @yield('title') | e-KASUARI</title>
+    <title>@yield('code') - @yield('title') | e-SAKIP</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
@@ -196,7 +196,7 @@
     <div class="card">
         <div class="brand">
             <img src="{{ file_exists(public_path('logo.webp')) ? asset('logo.webp') : asset('logo.png') }}" alt="Logo Papua Barat">
-            <span class="brand-title">e-KASUARI</span>
+            <span class="brand-title">e-SAKIP</span>
             <span class="brand-badge">Pemprov Papua Barat</span>
         </div>
 

@@ -147,7 +147,7 @@ export default function IndicatorsCreate({ units, organizations }: Props) {
  }
  className="mt-1 block w-full"
  >
- <option value="">—</option>
+ <option value="">-</option>
  {units.map((unit) => (
  <option key={unit.id} value={unit.id}>
  {unit.code} - {unit.name}
@@ -189,7 +189,7 @@ export default function IndicatorsCreate({ units, organizations }: Props) {
  }
  className="mt-1 block w-full"
  >
- <option value="">—</option>
+ <option value="">-</option>
  {organizations.map((org) => (
  <option key={org.id} value={org.id}>
  {org.code} - {org.name}

@@ -185,7 +185,8 @@ class WhatsappMessageProcessor
 
     private function reject(WhatsappMessage $message, string $reason): WhatsappMessage
     {
-        $reply = 'Maaf, Anda tidak dapat mengakses layanan ini. Silakan hubungi admin e-KASUARI apabila Anda merasa pesan ini keliru.';
+        $appName = AppConfig::value('app_name') ?: config('app.name', 'e-SAKIP');
+        $reply = "Maaf, Anda tidak dapat mengakses layanan ini. Silakan hubungi admin {$appName} apabila Anda merasa pesan ini keliru.";
         $message->update(['status' => 'blocked']);
 
         WhatsappMessage::create([

@@ -27,16 +27,16 @@ class DocumentRevisionController extends Controller
     ) {}
 
     /**
-     * Kirim catatan revisi ke OPD (hanya Super Admin / Admin Provinsi / Evaluator Provinsi).
-     * BR-006: Biro kirim catatan → Admin OPD wajib revisi.
+     * Kirim catatan revisi dokumen perencanaan.
      */
     public function store(Request $request, PlanningDocument $document): RedirectResponse
     {
         $this->authorize('manage-planning-docs');
 
         $user = $request->user();
+        $isOpdAuthority = $user && ($user->isOpdAdmin() || $user->isLeadership());
         $canSendRevision = $user && (
-            $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi', 'Evaluator Provinsi'])->exists()
+            $isOpdAuthority
             || $user->hasPermission('planning:review')
             || $user->hasPermission('planning:approve')
             || $user->hasPermission('agreement:approve')
@@ -45,8 +45,7 @@ class DocumentRevisionController extends Controller
             abort(403, 'Anda tidak memiliki hak akses untuk mengirim catatan revisi dokumen.');
         }
 
-        $isProvincial = $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi', 'Evaluator Provinsi'])->exists();
-        if (! $isProvincial && ! $this->authorization->canAccessOrganization($user, (int) $document->organization_id)) {
+        if (! $isOpdAuthority && ! $this->authorization->canAccessOrganization($user, (int) $document->organization_id)) {
             abort(403, 'Di luar lingkup organisasi Anda.');
         }
 

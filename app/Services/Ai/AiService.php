@@ -28,7 +28,7 @@ class AiService
         'recommendation' => 'Rekomendasi Tindak Lanjut',
         'unit_status' => 'Status Kinerja per Unit Kerja',
         'opd_status' => 'Status Kinerja per Unit Kerja',
-        'chat' => 'AI Asisten e-KASUARI',
+        'chat' => 'AI Asisten Analitik & Kinerja',
     ];
 
     /**
@@ -39,10 +39,10 @@ class AiService
             'name' => 'Executive Summary',
             'content' => <<<'PROMPT'
 Anda adalah Analis SAKIP Eksekutif Perangkat Daerah.
-Tugas Anda adalah menyusun Laporan Ringkasan Eksekutif Akuntabilitas Kinerja yang 100% berbasis DATA RESMI SISTEM e-KASUARI berikut.
+Tugas Anda adalah menyusun Laporan Ringkasan Eksekutif Akuntabilitas Kinerja yang 100% berbasis DATA RESMI SISTEM berikut.
 
 ==================================================
-DATA RESMI SISTEM e-KASUARI:
+DATA RESMI SISTEM:
 - Lingkup Evaluasi: {scope}
 - Periode Evaluasi: {period}
 - Total Unit Kerja: {total_opd} Unit (OPD Induk, Sekretariat, dan Bidang)
@@ -176,7 +176,7 @@ PROMPT,
         'chat' => [
             'name' => 'Chat Assistant',
             'content' => <<<'PROMPT'
-Anda adalah AI Asisten SAKIP & Kinerja Perangkat Daerah (e-KASUARI).
+Anda adalah AI Asisten SAKIP & Kinerja Perangkat Daerah.
 Tugas Anda: Menjawab pertanyaan pengguna secara formal, profesional, objektif, dan faktual berdasarkan DATA RESMI TERVERIFIKASI berikut.
 
 <konteks_data_terverifikasi>
@@ -186,7 +186,7 @@ Tugas Anda: Menjawab pertanyaan pengguna secara formal, profesional, objektif, d
 ATURAN KETAT:
 1. Jawab HANYA berdasarkan fakta di dalam <konteks_data_terverifikasi>.
 2. DILARANG KERAS MENGARANG angka, data, persentase, atau program yang tidak tercantum.
-3. Jika data yang ditanyakan belum tersedia di sistem atau bernilai 0, nyatakan secara transparan dan sopan bahwa data belum dilaporkan ke e-KASUARI pada periode ini.
+3. Jika data yang ditanyakan belum tersedia di sistem atau bernilai 0, nyatakan secara transparan dan sopan bahwa data belum dilaporkan ke sistem pada periode ini.
 4. DILARANG KERAS MENGGUNAKAN EMOJI APAPUN dalam seluruh respon.
 5. DILARANG menampilkan format teks JSON mentah atau kurung kurawal kode kepada pengguna. Sajikan selalu dalam paragraf narasi, poin terstruktur, atau tabel teks Markdown yang rapi.
 6. Patuhi prinsip RBAC: hanya sajikan data yang berada dalam lingkup izin pengguna.
@@ -239,7 +239,7 @@ PROMPT,
         $error = null;
 
         $latency = (int) round((microtime(true) - $started) * 1000);
-        $userId = auth()->id() ?? request()?->user()?->id ?? User::first()?->id ?? 1;
+        $userId = \Illuminate\Support\Facades\Auth::id() ?? request()?->user()?->id ?? User::first()?->id ?? 1;
 
         // ── Output Guardrail (FR-PG-007, RULE-019) ────────────────────────────
         $outputCheck = $this->guardrail->inspectOutput($result['output'], ['feature' => $feature]);
@@ -414,8 +414,14 @@ PROMPT,
             }
 
             if (! empty($ringkasanText) || ! empty($perhatianList) || ! empty($rekomendasiList)) {
+                try {
+                    $instansi = AppConfig::where('key', 'instansi_name')->value('value') ?: 'Pemerintah Daerah';
+                } catch (\Throwable) {
+                    $instansi = 'Pemerintah Daerah';
+                }
+
                 return [
-                    'ringkasan' => trim($ringkasanText) ?: 'Ringkasan eksekutif akuntabilitas kinerja Pemerintah Provinsi Papua Barat.',
+                    'ringkasan' => trim($ringkasanText) ?: "Ringkasan eksekutif akuntabilitas kinerja {$instansi}.",
                     'perhatian' => $perhatianList,
                     'rekomendasi' => $rekomendasiList,
                 ];

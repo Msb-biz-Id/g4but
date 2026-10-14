@@ -2,11 +2,12 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
  * FIX KOMPREHENSIF: Tambah semua kolom yang hilang berdasarkan audit menyeluruh
- * kode controller vs struktur tabel aktual di PostgreSQL.
+ * kode controller vs struktur tabel aktual di database produksi (MySQL).
  *
  * Temuan audit (2026-09-04):
  *

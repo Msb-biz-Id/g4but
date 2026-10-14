@@ -19,6 +19,7 @@ use App\Services\IkuWorkflowService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -98,7 +99,6 @@ class IkuController extends Controller
             'statusOptions' => $this->statusOptions(),
             'isAdminOpd' => $isAdminOpd,
             'isOpdAdmin' => $isOpdAdmin,
-            'isProvincialAdmin' => $isOpdAdmin,
             'accessibleOrgIds' => $accessibleOrgIds,
             'userOpdId' => $userOpdId,
         ]);
@@ -132,7 +132,6 @@ class IkuController extends Controller
             'frequencyOptions' => $this->frequencyOptions(),
             'isAdminOpd' => $isAdminOpd,
             'isOpdAdmin' => $isOpdAdmin,
-            'isProvincialAdmin' => $isOpdAdmin,
             'accessibleOrgIds' => $accessibleOrgIds,
             'userOpdId' => $userOpdId,
         ]);
@@ -204,10 +203,13 @@ class IkuController extends Controller
             'ikuHistories.user:id,name',
         ]);
 
+        $canVerify = $user ? ($user->isSuperAdmin() || $user->isOpdAdmin() || $user->hasRole('Kepala OPD')) : false;
+
         return Inertia::render('Planning/Iku/Show', [
             'iku' => $iku,
             'canEdit' => $canEdit,
-            'isBappeda' => $user ? ($user->isOpdAdmin() || $user->hasRole('Kepala OPD')) : false,
+            'canVerify' => $canVerify,
+            'isReviewer' => $canVerify,
         ]);
     }
 
@@ -246,7 +248,6 @@ class IkuController extends Controller
             'frequencyOptions' => $this->frequencyOptions(),
             'isAdminOpd' => $isAdminOpd,
             'isOpdAdmin' => $isOpdAdmin,
-            'isProvincialAdmin' => $isOpdAdmin,
             'accessibleOrgIds' => $accessibleOrgIds,
             'userOpdId' => $userOpdId,
         ]);
@@ -623,7 +624,7 @@ class IkuController extends Controller
                 'formula_notes' => $iku->formula_notes,
                 'frequency' => $iku->frequency ?? 'annual',
                 'data_source' => $iku->data_source,
-                'created_by' => auth()->id() ?? $iku->responsible_officer_id,
+                'created_by' => Auth::id() ?? $iku->responsible_officer_id,
             ]
         );
 

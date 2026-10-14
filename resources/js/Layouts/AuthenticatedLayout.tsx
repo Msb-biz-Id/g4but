@@ -77,6 +77,7 @@ import {
     Users,
     Video,
     Sparkles,
+    Search,
 } from 'lucide-react';
 
 type SidebarItemProps = {
@@ -97,6 +98,7 @@ type SidebarGroupProps = {
     collapsed?: boolean;
     onExpand?: (title: string) => void;
     onItemClick?: () => void;
+    sectionHeading?: string;
 };
 
 function SidebarItem({
@@ -123,16 +125,21 @@ function SidebarItem({
             title={collapsed ? label : undefined}
             data-active={active ? 'true' : undefined}
             className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                collapsed && 'justify-center px-0',
+                'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
+                collapsed && 'justify-center px-0 h-10 w-10 mx-auto',
                 active
                     ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800/80',
                 mobile && 'text-base',
             )}
         >
-            <Icon className="h-4 w-4 shrink-0" />
-            {!collapsed && label}
+            <Icon
+                className={cn(
+                    'h-4 w-4 shrink-0 transition-colors',
+                    active ? 'text-primary-foreground' : 'text-slate-400 group-hover:text-white',
+                )}
+            />
+            {!collapsed && <span className="truncate">{label}</span>}
         </Link>
     );
 }
@@ -169,7 +176,7 @@ function SidebarGroup({
                     type="button"
                     title={title}
                     onClick={() => onExpand?.(title)}
-                    className="h-9 w-9"
+                    className="h-10 w-10 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-lg"
                 >
                     <Icon className="h-4 w-4 shrink-0" />
                 </Button>
@@ -193,14 +200,14 @@ function SidebarGroup({
 
     return (
         <AccordionItem value={title} className="border-b-0">
-            <AccordionTrigger className="gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:no-underline hover:text-accent-foreground data-[state=open]:bg-accent/60 data-[state=open]:text-foreground">
+            <AccordionTrigger className="gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800/80 hover:no-underline hover:text-white data-[state=open]:bg-slate-800/50 data-[state=open]:text-white">
                 <span className="flex items-center gap-3">
-                    <Icon className="h-4 w-4 shrink-0" />
-                    {title}
+                    <Icon className="h-4 w-4 shrink-0 text-slate-400" />
+                    <span className="truncate">{title}</span>
                 </span>
             </AccordionTrigger>
             <AccordionContent className="pb-0">
-                <div className="mt-1 space-y-1 border-l pl-3">
+                <div className="mt-1 space-y-1 border-l border-slate-800/80 pl-3 ml-4">
                     {items.map((item) => (
                         <SidebarItem
                             key={item.href}
@@ -223,9 +230,10 @@ export default function Authenticated({
     noPadding = false,
     children,
 }: PropsWithChildren<{ header?: ReactNode; noPadding?: boolean }>) {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, appConfig } = usePage<PageProps>().props;
     const { url: currentUrl } = usePage();
     const user = auth?.user;
+    const appName = appConfig?.appName || 'e-SAKIP';
 
     const permissions = user?.permissions ?? [];
     const canViewUsers = permissions.includes('user:view');
@@ -259,27 +267,38 @@ export default function Authenticated({
     // ─── FLAG FASE MVP ─────────────────────────────────────────────────────────
     // true  = tampilkan hanya menu yang disepakati di meeting baseline client
     // false = tampilkan semua menu (aktifkan saat Phase 2 disetujui client)
-    const MVP_PHASE_1 = true;
+    const MVP_PHASE_1 = false;
 
     const menuGroups = [
-        // ─── 1. Dashboard Eksekutif ── TAMPIL (MVP) ───────────────────────────
+        // ─── 1. Beranda ────────────────────────────────────────────────────────
         {
-            title: 'Dashboard Eksekutif',
+            title: 'Beranda',
             icon: LayoutDashboard,
             items: [
                 {
                     href: route('dashboard'),
-                    label: 'Ringkasan Kinerja',
+                    label: 'Beranda',
                     icon: LayoutDashboard,
                     active: route().current('dashboard'),
                     show: true,
                 },
             ],
         },
+        {
+            title: 'Ringkasan Kinerja',
+            icon: BarChart3,
+            items: [
+                {
+                    href: route('analytics.index'),
+                    label: 'Ringkasan Kinerja',
+                    icon: BarChart3,
+                    active: route().current('analytics*'),
+                    show: canViewAnalytics || true,
+                },
+            ],
+        },
 
         // ─── 2. Master Data ───────────────────────────────────────────────────
-        // Tampil: Organisasi, Periode
-        // Hide:   Indikator Kinerja, Satuan, Import Data, Migrasi Data (Phase 2)
         {
             title: 'Master Data',
             icon: Database,
@@ -289,131 +308,142 @@ export default function Authenticated({
                     label: 'Organisasi',
                     icon: Building2,
                     active: route().current('organizations*'),
-                    show: canViewOrganizations, // ✅ TAMPIL — manajemen daftar OPD
+                    show: canViewOrganizations,
                 },
                 {
                     href: route('indicators.index'),
                     label: 'Indikator Kinerja',
                     icon: Target,
                     active: route().current('indicators*'),
-                    show: canViewIndicators && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: canViewIndicators,
                 },
                 {
                     href: route('units.index'),
                     label: 'Satuan',
                     icon: Ruler,
                     active: route().current('units*'),
-                    show: canViewUnits && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: canViewUnits,
                 },
                 {
                     href: route('periods.index'),
                     label: 'Periode',
                     icon: CalendarRange,
                     active: route().current('periods*'),
-                    show: canViewPeriods, // ✅ TAMPIL — setup periode 5 tahunan/tahunan
+                    show: canViewPeriods,
                 },
                 {
                     href: route('imports.index'),
                     label: 'Import Data',
                     icon: Upload,
                     active: route().current('imports*'),
-                    show: canRunImports && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: canRunImports,
                 },
                 {
                     href: route('migrations.index'),
                     label: 'Migrasi Data',
                     icon: Database,
                     active: route().current('migrations*'),
-                    show: canRunMigrations && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: canRunMigrations,
                 },
             ],
         },
 
         // ─── 3. Perencanaan Kinerja ───────────────────────────────────────────
-        // Tampil: Dokumen Perencanaan, Monitoring OPD
-        // Hide:   RPJMD/Goals, Target Indikator, Indikator Kinerja Utama,
-        //         Pohon Kinerja, Cascading, Crosscutting, Manajemen Risiko,
-        //         Perjanjian Kinerja, Rencana Aksi (Phase 2)
         {
             title: 'Perencanaan Kinerja',
+            sectionHeading: 'PERENCANAAN KINERJA',
             icon: Goal,
             items: [
                 {
-                    href: route('goals.index'),
-                    label: 'Tujuan & Sasaran',
-                    icon: Goal,
-                    active: route().current('goals*'),
-                    show: (canViewGoals || canViewPlanning) && !MVP_PHASE_1, // 🔒 HIDE Phase 2
-                },
-                {
-                    href: route('targets.index'),
-                    label: 'Target Indikator',
-                    icon: Target,
-                    active: route().current('targets*'),
-                    show: canViewTargets && !MVP_PHASE_1, // 🔒 HIDE Phase 2
-                },
-                {
                     href: route('planning.index'),
-                    label: 'Dokumen Perencanaan',
+                    label: 'RPJMD / RENSTRA',
                     icon: FileText,
                     active: route().current('planning.index') || route().current('planning.documents*') || route().current('planning.docs*'),
-                    show: canViewPlanning, // ✅ TAMPIL — upload 12 dokumen perencanaan
-                },
-                {
-                    href: route('planning.iku.index'),
-                    label: 'Indikator Kinerja Utama',
-                    icon: Target,
-                    active: route().current('planning.iku*'),
-                    show: canViewPlanning && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: canViewPlanning,
                 },
                 {
                     href: route('planning.trees.index'),
                     label: 'Pohon Kinerja',
                     icon: TreePine,
                     active: route().current('planning.trees*'),
-                    show: canViewPlanning && !MVP_PHASE_1, // 🔒 HIDE Phase 2
-                },
-                {
-                    href: route('planning.monitoring-matrix'),
-                    label: 'Monitoring OPD',
-                    icon: BarChart3,
-                    active: route().current('planning.monitoring-matrix*'),
-                    show: canViewMonitoring, // ✅ TAMPIL — matriks status unggahan dokumen seluruh OPD (§6.C req)
+                    show: canViewPlanning,
                 },
                 {
                     href: route('planning.cascading.index'),
-                    label: 'Cascading',
-                    icon: Share2,
+                    label: 'Proses Bisnis',
+                    icon: Network,
                     active: route().current('planning.cascading*'),
-                    show: canViewPlanning && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: canViewPlanning,
                 },
                 {
                     href: route('planning.crosscutting.index'),
-                    label: 'Crosscutting',
-                    icon: Network,
+                    label: 'Crosscutting Kinerja',
+                    icon: Share2,
                     active: route().current('planning.crosscutting*'),
-                    show: canViewPlanning && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: canViewPlanning,
                 },
                 {
-                    href: route('planning.risks.index'),
-                    label: 'Manajemen Risiko',
-                    icon: ShieldAlert,
-                    active: route().current('planning.risks*'),
-                    show: canViewPlanning && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    href: route('planning.cascading.index'),
+                    label: 'Cascading Kinerja',
+                    icon: Network,
+                    active: route().current('planning.cascading*'),
+                    show: canViewPlanning,
+                },
+                {
+                    href: route('planning.iku.index'),
+                    label: 'Indikator Kinerja Utama',
+                    icon: Target,
+                    active: route().current('planning.iku*'),
+                    show: canViewPlanning,
+                },
+                {
+                    href: route('planning.documents.index'),
+                    label: 'RKPD / RENJA',
+                    icon: ScrollText,
+                    active: route().current('planning.documents*'),
+                    show: canViewPlanning,
+                },
+                {
+                    href: route('planning.documents.index'),
+                    label: 'DPA',
+                    icon: FileSpreadsheet,
+                    active: false,
+                    show: canViewPlanning,
                 },
                 {
                     href: route('planning.agreements.index'),
                     label: 'Perjanjian Kinerja',
                     icon: Goal,
                     active: route().current('planning.agreements*'),
-                    show: canViewPlanning && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: canViewPlanning,
+                },
+                {
+                    href: route('planning.risks.index'),
+                    label: 'Manajemen Risiko',
+                    icon: ShieldAlert,
+                    active: route().current('planning.risks*'),
+                    show: canViewPlanning,
                 },
                 {
                     href: route('planning.action-plans.index'),
-                    label: 'Rencana Aksi',
+                    label: 'Rencana Aksi Kinerja',
                     icon: TrendingUp,
                     active: route().current('planning.action-plans*'),
-                    show: canViewPlanning && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: canViewPlanning,
+                },
+                {
+                    href: route('knowledge.index'),
+                    label: 'Pedoman Teknis Perencanaan',
+                    icon: BookOpen,
+                    active: route().current('knowledge*'),
+                    show: true,
+                },
+                {
+                    href: route('planning.monitoring-matrix'),
+                    label: 'Monitoring OPD',
+                    icon: BarChart3,
+                    active: route().current('planning.monitoring-matrix*'),
+                    show: canViewMonitoring,
                 },
             ],
         },
@@ -457,7 +487,7 @@ export default function Authenticated({
                     label: 'Pelaporan Kinerja',
                     icon: FileText,
                     active: route().current('reports*'),
-                    show: canViewReports, // ✅ TAMPIL — LKIP Pemda & LKIP OPD
+                    show: canViewReports, // ✅ TAMPIL - Pelaporan Kinerja OPD
                 },
             ],
         },
@@ -472,7 +502,7 @@ export default function Authenticated({
                     label: 'Evaluasi Kinerja',
                     icon: NotebookPen,
                     active: route().current('evaluations*'),
-                    show: canViewEvaluations, // ✅ TAMPIL — Nilai 4 komponen SAKIP, predikat & LHE
+                    show: canViewEvaluations, // ✅ TAMPIL - Nilai 4 komponen SAKIP, predikat & LHE
                 },
             ],
         },
@@ -487,7 +517,7 @@ export default function Authenticated({
                     label: 'Dashboard Analitik',
                     icon: BarChart3,
                     active: route().current('analytics*'),
-                    show: canViewAnalytics, // ✅ TAMPIL — Data real tabular, salin & unduh
+                    show: canViewAnalytics, // ✅ TAMPIL - Data real tabular, salin & unduh
                 },
             ],
         },
@@ -504,14 +534,14 @@ export default function Authenticated({
                     label: 'AI Asisten',
                     icon: Bot,
                     active: route().current('ai.*'),
-                    show: canUseAi, // ✅ TAMPIL — AI Asisten untuk pimpinan & aparatur
+                    show: canUseAi, // ✅ TAMPIL - AI Asisten untuk pimpinan & aparatur
                 },
                 {
                     href: route('ai.templates'),
                     label: 'Template Prompt',
                     icon: Bot,
                     active: route().current('ai.templates*'),
-                    show: canManageAiTemplates && !MVP_PHASE_1, // 🔒 HIDE Phase 2 — internal developer tool
+                    show: canManageAiTemplates && !MVP_PHASE_1, // 🔒 HIDE Phase 2 - internal developer tool
                 },
                 {
                     href: route('predictions.index'),
@@ -525,7 +555,7 @@ export default function Authenticated({
 
         // ─── 9. Early Warning System ──────────────────────────────────────────
         // Tampil: Peringatan Kinerja, Notifikasi
-        // Hide:   Aturan Peringatan (Phase 2 — konfigurasi teknis)
+        // Hide:   Aturan Peringatan (Phase 2 - konfigurasi teknis)
         {
             title: 'Early Warning System',
             icon: Bell,
@@ -535,21 +565,21 @@ export default function Authenticated({
                     label: 'Peringatan Kinerja',
                     icon: AlertTriangle,
                     active: route().current('alerts*'),
-                    show: canViewAlerts, // ✅ TAMPIL — monitoring keterlambatan OPD
+                    show: canViewAlerts, // ✅ TAMPIL - monitoring keterlambatan OPD
                 },
                 {
                     href: route('alert-rules.index'),
                     label: 'Aturan Peringatan',
                     icon: BarChart3,
                     active: route().current('alert-rules*'),
-                    show: canViewAlertRules && !MVP_PHASE_1, // 🔒 HIDE Phase 2 — konfigurasi teknis
+                    show: canViewAlertRules && !MVP_PHASE_1, // 🔒 HIDE Phase 2 - konfigurasi teknis
                 },
                 {
                     href: route('notifications.index'),
                     label: 'Notifikasi',
                     icon: Bell,
                     active: route().current('notifications*'),
-                    show: canViewNotifications, // ✅ TAMPIL — notifikasi peringatan
+                    show: canViewNotifications, // ✅ TAMPIL - notifikasi peringatan
                 },
             ],
         },
@@ -637,14 +667,14 @@ export default function Authenticated({
                     label: 'Pengguna',
                     icon: Users,
                     active: route().current('users*'),
-                    show: canViewUsers, // ✅ TAMPIL — registrasi akun OPD + whitelist WA
+                    show: canViewUsers, // ✅ TAMPIL - registrasi akun OPD + whitelist WA
                 },
                 {
                     href: route('roles.index'),
                     label: 'Hak Akses & Peran',
                     icon: Shield,
                     active: route().current('roles*'),
-                    show: canViewRoles, // ✅ TAMPIL — manajemen role
+                    show: canViewRoles, // ✅ TAMPIL - manajemen role
                 },
                 {
                     href: route('integrations.index'),
@@ -658,7 +688,7 @@ export default function Authenticated({
                     label: 'Go-Live Readiness',
                     icon: Rocket,
                     active: route().current('readiness*'),
-                    show: canViewReadiness && !MVP_PHASE_1, // 🔒 HIDE — internal ops tool
+                    show: canViewReadiness && !MVP_PHASE_1, // 🔒 HIDE - internal ops tool
                 },
             ],
         },
@@ -688,7 +718,7 @@ export default function Authenticated({
                     label: 'WhatsApp AI',
                     icon: MessageCircle,
                     active: route().current('whatsapp*'),
-                    show: canViewWhatsapp, // ✅ TAMPIL — integrasi chatbot pimpinan
+                    show: canViewWhatsapp, // ✅ TAMPIL - integrasi chatbot pimpinan
                 },
             ],
         },
@@ -703,7 +733,7 @@ export default function Authenticated({
                     label: 'Konfigurasi Sistem',
                     icon: Settings,
                     active: route().current('settings*'),
-                    show: canManageSettings, // ✅ TAMPIL — konfigurasi dasar sistem
+                    show: canManageSettings, // ✅ TAMPIL - konfigurasi dasar sistem
                 },
             ],
         },
@@ -813,7 +843,7 @@ export default function Authenticated({
         <nav
             ref={mobile ? mobileNavRef : desktopNavRef}
             onScroll={mobile ? undefined : handleNavScroll}
-            className="flex-1 min-h-0 space-y-1 overflow-y-auto px-2 py-4 scrollbar-thin"
+            className="flex-1 min-h-0 space-y-1 overflow-y-auto px-2.5 py-3 scrollbar-thin scrollbar-thumb-slate-700"
         >
             <Accordion
                 type="multiple"
@@ -822,16 +852,25 @@ export default function Authenticated({
                 className="w-full space-y-1"
             >
                 {visibleGroups.map((group) => (
-                    <SidebarGroup
-                        key={group.title}
-                        title={group.title}
-                        icon={group.icon}
-                        items={group.items}
-                        mobile={mobile}
-                        collapsed={!mobile && collapsed}
-                        onExpand={expandAndOpen}
-                        onItemClick={mobile ? () => setMobileOpen(false) : undefined}
-                    />
+                    <div key={group.title} className="space-y-1">
+                        {!collapsed && group.sectionHeading && (
+                            <div className="px-3 pt-4 pb-1 text-[10px] font-bold tracking-wider text-slate-400/90 uppercase select-none">
+                                {group.sectionHeading}
+                            </div>
+                        )}
+                        {collapsed && group.sectionHeading && (
+                            <div className="my-2 border-t border-slate-800/60" />
+                        )}
+                        <SidebarGroup
+                            title={group.title}
+                            icon={group.icon}
+                            items={group.items}
+                            mobile={mobile}
+                            collapsed={!mobile && collapsed}
+                            onExpand={expandAndOpen}
+                            onItemClick={mobile ? () => setMobileOpen(false) : undefined}
+                        />
+                    </div>
                 ))}
             </Accordion>
         </nav>
@@ -902,28 +941,43 @@ export default function Authenticated({
     };
 
     const initial = (user?.name ?? '?').charAt(0).toUpperCase();
+    const roleName =
+        (Array.isArray(user?.roles) && user.roles.length > 0
+            ? (typeof user.roles[0] === 'string' ? user.roles[0] : (user.roles[0] as any)?.name)
+            : null) ||
+        user?.job_title ||
+        'Administrator';
 
     return (
         <div className="min-h-screen bg-background">
             <aside
                 className={cn(
-                    'fixed inset-y-0 left-0 z-30 hidden flex-col overflow-hidden border-r bg-card transition-[width] duration-200 lg:flex',
+                    'fixed inset-y-0 left-0 z-30 hidden flex-col overflow-hidden border-r border-slate-800 bg-[#0F172A] text-slate-200 transition-[width] duration-200 lg:flex',
                     collapsed ? 'w-16' : 'w-64',
                 )}
             >
                 <div
                     className={cn(
-                        'flex h-14 items-center gap-2 border-b transition-[padding] duration-200',
-                        collapsed ? 'justify-center px-0' : 'px-4',
+                        'flex h-16 items-center border-b border-slate-800 bg-[#0B132B]/60 transition-[padding] duration-200',
+                        collapsed ? 'justify-center px-0' : 'gap-3 px-4',
                     )}
                 >
-                    <ApplicationLogo className="h-7 w-7 shrink-0" />
+                    <ApplicationLogo className="h-8 w-8 shrink-0 object-contain drop-shadow" />
                     {!collapsed && (
-                        <span className="text-base font-bold tracking-tight">e-KASUARI</span>
+                        <div className="min-w-0 flex-1">
+                            <span className="block text-base font-bold tracking-tight text-white leading-tight">
+                                {appName}
+                            </span>
+                            <span className="block text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
+                                {appConfig?.instansiName || 'Pemerintah Provinsi Papua Barat'}
+                            </span>
+                        </div>
                     )}
                 </div>
+
                 {renderSidebar()}
-                <div className="border-t p-2 space-y-1.5">
+
+                <div className="border-t border-slate-800 p-2 space-y-1.5 bg-[#0B132B]/40">
                     {/* AI Asisten Floating Chat Trigger */}
                     <button
                         type="button"
@@ -935,9 +989,9 @@ export default function Authenticated({
                                 : 'w-full gap-2.5 px-3 py-2',
                             isChatOpen
                                 ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary/40'
-                                : 'bg-gradient-to-r from-primary/10 via-teal-500/10 to-emerald-500/10 border border-primary/25 hover:border-primary/50 hover:bg-primary/15 text-foreground'
+                                : 'bg-slate-800/80 border border-slate-700/60 hover:bg-slate-800 hover:border-slate-600 text-slate-200'
                         )}
-                        title={collapsed ? 'AI Asisten e-KASUARI' : undefined}
+                        title={collapsed ? `AI Asisten ${appName}` : undefined}
                     >
                         <div
                             className={cn(
@@ -961,24 +1015,24 @@ export default function Authenticated({
                                     <span
                                         className={cn(
                                             'text-xs font-bold truncate',
-                                            isChatOpen ? 'text-white' : 'text-foreground group-hover:text-primary'
+                                            isChatOpen ? 'text-white' : 'text-white group-hover:text-primary'
                                         )}
                                     >
-                                        AI Asisten e-KASUARI
+                                        AI Asisten {appName}
                                     </span>
                                     <Sparkles
                                         className={cn(
                                             'h-3 w-3 shrink-0',
                                             isChatOpen
                                                 ? 'text-amber-300 fill-amber-300'
-                                                : 'text-amber-500 fill-amber-500 animate-pulse'
+                                                : 'text-amber-400 fill-amber-400 animate-pulse'
                                         )}
                                     />
                                 </div>
                                 <p
                                     className={cn(
                                         'text-[10px] truncate mt-0.5',
-                                        isChatOpen ? 'text-white/80' : 'text-muted-foreground'
+                                        isChatOpen ? 'text-white/80' : 'text-slate-400'
                                     )}
                                 >
                                     Tanya SAKIP & Kinerja
@@ -992,7 +1046,7 @@ export default function Authenticated({
                         method="post"
                         as="button"
                         className={cn(
-                            'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive',
+                            'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-rose-400 transition-colors hover:bg-rose-500/10 hover:text-rose-300',
                             collapsed && 'justify-center px-0',
                         )}
                         title={collapsed ? 'Keluar' : undefined}
@@ -1009,20 +1063,20 @@ export default function Authenticated({
                     collapsed ? 'lg:pl-16' : 'lg:pl-64',
                 )}
             >
-                <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 border-b bg-background px-3 sm:px-4">
-                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-4 lg:px-6">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
                         <Button
                             variant="ghost"
                             size="icon"
                             type="button"
                             onClick={toggleCollapsed}
-                            className="hidden shrink-0 lg:inline-flex"
+                            className="hidden shrink-0 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white lg:inline-flex"
                             aria-label="Lipat sidebar"
                         >
                             {collapsed ? (
-                                <PanelLeftOpen className="h-4 w-4" />
+                                <PanelLeftOpen className="h-5 w-5" />
                             ) : (
-                                <PanelLeftClose className="h-4 w-4" />
+                                <PanelLeftClose className="h-5 w-5" />
                             )}
                         </Button>
                         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -1033,27 +1087,32 @@ export default function Authenticated({
                                     className="shrink-0 lg:hidden"
                                     aria-label="Menu"
                                 >
-                                    <Menu className="h-4 w-4" />
+                                    <Menu className="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent side="left" className="flex flex-col w-72 p-0">
-                                <div className="flex h-14 items-center gap-2 border-b px-4">
-                                    <ApplicationLogo className="h-7 w-7 shrink-0" />
-                                    <span className="text-base font-bold tracking-tight">
-                                        e-KASUARI
-                                    </span>
+                            <SheetContent side="left" className="flex flex-col w-72 p-0 bg-[#0F172A] border-slate-800 text-slate-200">
+                                <div className="flex h-16 items-center gap-3 border-b border-slate-800 bg-[#0B132B]/60 px-4">
+                                    <ApplicationLogo className="h-8 w-8 shrink-0 object-contain drop-shadow" />
+                                    <div className="min-w-0 flex-1">
+                                        <span className="block text-base font-bold tracking-tight text-white leading-tight">
+                                            {appName}
+                                        </span>
+                                        <span className="block text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
+                                            {appConfig?.instansiName || 'Pemerintah Provinsi Papua Barat'}
+                                        </span>
+                                    </div>
                                 </div>
                                 {renderSidebar(true)}
-                                <div className="border-t p-3 space-y-2">
+                                <div className="border-t border-slate-800 p-3 space-y-2 bg-[#0B132B]/40">
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setMobileOpen(false);
                                             openChat();
                                         }}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gradient-to-r from-primary/10 via-teal-500/10 to-emerald-500/10 border border-primary/25 hover:border-primary/50 text-left cursor-pointer"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-800/80 border border-slate-700/60 hover:bg-slate-800 text-left cursor-pointer transition-colors"
                                     >
-                                        <div className="relative flex items-center justify-center h-8 w-8 rounded-md bg-primary text-primary-foreground shrink-0">
+                                        <div className="relative flex items-center justify-center h-8 w-8 rounded-md bg-primary text-primary-foreground shrink-0 shadow-xs">
                                             <Bot className="h-4 w-4" />
                                             <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -1062,12 +1121,12 @@ export default function Authenticated({
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-1.5 leading-tight">
-                                                <span className="text-sm font-bold text-foreground truncate">
-                                                    AI Asisten e-KASUARI
+                                                <span className="text-xs font-bold text-white truncate">
+                                                    AI Asisten {appName}
                                                 </span>
-                                                <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                                                <Sparkles className="h-3 w-3 text-amber-400 fill-amber-400 shrink-0" />
                                             </div>
-                                            <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                            <p className="text-[10px] text-slate-400 truncate mt-0.5">
                                                 Tanya SAKIP & Kinerja
                                             </p>
                                         </div>
@@ -1078,22 +1137,27 @@ export default function Authenticated({
                                         method="post"
                                         as="button"
                                         onClick={() => setMobileOpen(false)}
-                                        className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-base font-medium text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
+                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
                                     >
-                                        <LogOut className="h-5 w-5 shrink-0" />
+                                        <LogOut className="h-4 w-4 shrink-0" />
                                         <span>Keluar</span>
                                     </Link>
                                 </div>
                             </SheetContent>
                         </Sheet>
-                        {header && (
-                            <h1 className="min-w-0 truncate text-sm font-semibold leading-tight text-foreground sm:text-base">
-                                {header}
-                            </h1>
-                        )}
+
+                        {/* Global Search Bar (Center/Left) */}
+                        <div className="relative hidden max-w-sm w-full md:block lg:max-w-md">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                            <input
+                                type="search"
+                                placeholder="Cari menu, data, atau informasi..."
+                                className="w-full h-9 pl-9 pr-4 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all"
+                            />
+                        </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div className="flex shrink-0 items-center gap-2">
                         {/* Quick AI Assistant Trigger in Mobile Header */}
                         <Button
                             variant="ghost"
@@ -1106,8 +1170,8 @@ export default function Authenticated({
                                     ? 'bg-primary/15 text-primary'
                                     : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
                             )}
-                            aria-label="AI Asisten e-KASUARI"
-                            title="Tanya AI Asisten e-KASUARI"
+                            aria-label={`AI Asisten ${appName}`}
+                            title={`Tanya AI Asisten ${appName}`}
                         >
                             <Bot className="h-4 w-4" />
                             <span className="absolute top-2 right-2 flex h-2 w-2">
@@ -1117,43 +1181,56 @@ export default function Authenticated({
                         </Button>
 
                         <ThemePanel />
+                        <ThemeToggle />
                         {canViewNotifications && (
                             <NotificationDropdown />
                         )}
 
+                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    className="flex items-center gap-1.5 px-1.5"
+                                <button
+                                    type="button"
+                                    className="flex items-center gap-2.5 rounded-lg p-1 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
                                 >
-                                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-xs">
                                         {initial}
                                     </span>
-                                    <span className="hidden text-sm font-medium sm:inline">
-                                        {user?.name}
-                                    </span>
-                                    <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground sm:inline" />
-                                </Button>
+                                    <div className="hidden min-w-0 text-left sm:block">
+                                        <div className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight truncate max-w-[170px]">
+                                            {user?.name}
+                                        </div>
+                                        <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight truncate max-w-[170px]">
+                                            {roleName}
+                                        </div>
+                                    </div>
+                                    <ChevronDown className="hidden h-4 w-4 text-slate-400 shrink-0 sm:inline" />
+                                </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="w-56 shadow-lg">
                                 <DropdownMenuLabel>
-                                    <div className="text-sm font-medium">{user?.name}</div>
-                                    <div className="text-xs font-normal text-muted-foreground">
+                                    <div className="text-sm font-semibold text-foreground">{user?.name}</div>
+                                    <div className="text-xs font-normal text-muted-foreground truncate">
                                         {user?.email}
+                                    </div>
+                                    <div className="text-[11px] text-primary font-medium mt-1">
+                                        {roleName}
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
-                                    <Link href={route('profile.edit')}>Profile</Link>
+                                    <Link href={route('profile.edit')} className="cursor-pointer">
+                                        Pengaturan Profil
+                                    </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
+                                    className="text-destructive focus:text-destructive cursor-pointer"
                                     asChild
                                 >
-                                    <Link href={route('logout')} method="post" as="button">
-                                        Log Out
+                                    <Link href={route('logout')} method="post" as="button" className="w-full text-left">
+                                        Keluar
                                     </Link>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -1161,9 +1238,7 @@ export default function Authenticated({
                     </div>
                 </header>
 
-                <Separator />
-
-                <main className={cn('flex-1 min-w-0 w-full', noPadding ? 'p-0' : 'p-3 sm:p-4 lg:p-6')}>{children}</main>
+                <main className={cn('flex-1 min-w-0 w-full bg-slate-50/70 dark:bg-slate-950/70', noPadding ? 'p-0' : 'p-3 sm:p-5 lg:p-7')}>{children}</main>
             </div>
 
             <ScrollToTop />

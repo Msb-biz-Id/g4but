@@ -73,8 +73,8 @@ class AiQuotaService
      */
     public static function resolveOrganizationId(User $user, ?int $selectedOrgId = null): ?int
     {
-        // Super Admin atau Admin Provinsi memilih OPD dari frontend
-        if ($selectedOrgId !== null && ($user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi'))) {
+        // Super Admin atau Admin OPD memilih OPD dari frontend
+        if ($selectedOrgId !== null && ($user->isOpdAdmin())) {
             return $selectedOrgId;
         }
 

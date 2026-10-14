@@ -1,26 +1,72 @@
-*.log
-.DS_Store
+# ==============================================================================
+# e-SAKIP - Git Ignore Rules
+# ==============================================================================
+
+# ── Environment & Secrets ──
 .env
 .env.backup
 .env.production
-.phpactor.json
+.env.local
+.env.*.local
+auth.json
+
+# ── Dependencies ──
+/node_modules
+/vendor
+
+# ── Laravel Storage, Sessions & Framework Cache ──
+*.log
+/public/storage
+/public/hot
+/storage/*.key
+/storage/pail
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+!/storage/framework/cache/.gitignore
+!/storage/framework/sessions/.gitignore
+!/storage/framework/views/.gitignore
+
+# ── Local SQLite Databases ──
+database/*.sqlite
+database/*.sqlite-journal
+
+# ── Testing & Code Quality Cache ──
 .phpunit.result.cache
+/.phpunit.cache
+
+# ── IDEs, Editors & Tools ──
 /.fleet
 /.idea
 /.nova
-/.phpunit.cache
 /.vscode
 /.zed
-/auth.json
-/node_modules
-/public/storage
-/storage/*.key
-/storage/pail
-/vendor
+.phpactor.json
 Homestead.json
 Homestead.yaml
+
+# ── OS Generated Files ──
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+[Dd]esktop.ini
+
+# ── Scratch, Backup & Temporary Files ──
+scratch/
+scratch_*
+temp_*
+*.tmp
+*.bak
+*.zip
+*.tar.gz
+storage_backup_baseline/
 /docs
 /guide
-*.zip
-storage_backup_baseline/
+
+# ── Production Build Assets (Wajib Masuk ke GitHub untuk cPanel) ──
+!/public/build
+!/public/build/**

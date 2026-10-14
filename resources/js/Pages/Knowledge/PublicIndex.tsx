@@ -1,6 +1,7 @@
 import Reveal from '@/Components/Landing/Reveal';
 import PublicLayout from '@/Layouts/PublicLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { PuprBlueprintGrid, PuprCitySkylinePattern } from '@/Components/Landing/PuprCityPattern';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowRight,
     BookOpen,
@@ -105,6 +106,11 @@ export default function PublicIndex({
     filters,
     categories,
 }: Props) {
+    const { appConfig } = usePage<any>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
+    const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
+
     const [searchTerm, setSearchTerm] = useState(filters.search ?? '');
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -175,63 +181,56 @@ export default function PublicIndex({
         ? `Menampilkan dokumen kategori jenis ${activeSubItem.label}`
         : activeKategori
         ? activeKategori.description
-        : 'Akses seluruh regulasi daerah, pedoman evaluasi SAKIP, petunjuk teknis penilaian IKU, SOP, dan publikasi kinerja Papua Barat';
+        : `Akses seluruh regulasi daerah, pedoman evaluasi SAKIP, petunjuk teknis penilaian IKU, SOP, dan publikasi kinerja ${instansiName}`;
 
     const hasActiveFilter = Boolean(filters.search || filters.category || filters.document_type || (kategori && kategori !== 'semua'));
 
     return (
         <PublicLayout active="info">
             <Head>
-                <title>Pusat Informasi & Regulasi Kinerja Daerah • e-KASUARI Papua Barat</title>
+                <title>{`Pusat Informasi & Regulasi Kinerja Daerah • ${appName} ${instansiName}`}</title>
                 <meta
                     name="description"
-                    content="Pusat Informasi & Regulasi Kinerja Daerah Pemerintah Provinsi Papua Barat. Akses regulasi SAKIP, pedoman teknis, SOP, FAQ, pengumuman, dan video tutorial."
+                    content={`Pusat Informasi & Regulasi Kinerja Daerah ${instansiName}. Akses regulasi SAKIP, pedoman teknis, SOP, FAQ, pengumuman, dan video tutorial.`}
                 />
                 <meta
                     name="keywords"
-                    content="informasi publik papua barat, regulasi sakip, pedoman kinerja daerah, sop akuntabilitas, berita pemprov papua barat, tutorial sakip"
+                    content={`informasi publik, regulasi sakip, pedoman kinerja daerah, sop akuntabilitas, berita, tutorial sakip, ${instansiName.toLowerCase()}`}
                 />
-                <meta property="og:title" content="Pusat Informasi & Regulasi Kinerja Daerah • e-KASUARI Papua Barat" />
+                <meta property="og:title" content={`Pusat Informasi & Regulasi Kinerja Daerah • ${appName} ${instansiName}`} />
                 <meta
                     property="og:description"
-                    content="Akses regulasi daerah, pedoman SAKIP, petunjuk teknis penilaian IKU, dan pengumuman kinerja Pemerintah Provinsi Papua Barat secara transparan."
+                    content={`Akses regulasi daerah, pedoman SAKIP, petunjuk teknis penilaian IKU, dan pengumuman kinerja ${instansiName} secara transparan.`}
                 />
                 <meta property="og:type" content="website" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="Pusat Informasi & Regulasi Kinerja Daerah • e-KASUARI Papua Barat" />
+                <meta name="twitter:title" content={`Pusat Informasi & Regulasi Kinerja Daerah • ${appName} ${instansiName}`} />
                 <meta
                     name="twitter:description"
-                    content="Akses regulasi daerah, pedoman SAKIP, petunjuk teknis penilaian IKU, dan pengumuman kinerja Pemerintah Provinsi Papua Barat secara transparan."
+                    content={`Akses regulasi daerah, pedoman SAKIP, petunjuk teknis penilaian IKU, dan pengumuman kinerja ${instansiName} secara transparan.`}
                 />
             </Head>
 
-            {/* Header Banner */}
-            <section className="relative overflow-hidden bg-gradient-to-b from-slate-50/90 via-white to-slate-50/50 pt-8 pb-10 sm:pt-12 sm:pb-14 border-b border-slate-200/80 dark:from-background dark:via-background dark:to-background dark:border-border">
-                {/* Subtle Papua Diamond Motif Watermark */}
-                <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.02]"
-                    style={{
-                        backgroundImage:
-                            "url(\"data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23475569' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M24 0l24 24-24 24L0 24zM24 8l16 16-16 16-16-16zM24 16l8 8-8 8-8-8z'/%3E%3C/g%3E%3C/svg%3E\")",
-                        backgroundSize: '40px 40px',
-                    }}
-                />
-                <div className="relative mx-auto max-w-5xl px-4 text-center sm:px-6">
-                    <Reveal>
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-800 shadow-2xs backdrop-blur dark:border-border dark:bg-muted/60 dark:text-foreground">
-                            <BookOpen className="h-3.5 w-3.5 stroke-[2.5] text-primary" />
-                            <span>Keterbukaan Informasi Kinerja Pemprov Papua Barat</span>
-                        </span>
+            {/* Header Banner - PUPR Mimika Spirit */}
+            <section className="relative overflow-hidden bg-gradient-to-b from-[#002B49] via-[#07243c] to-[#041624] pt-10 pb-12 sm:pt-14 sm:pb-16 border-b border-amber-500/20 text-white">
+                <PuprBlueprintGrid className="opacity-[0.06]" />
+                <PuprCitySkylinePattern className="text-[#FFB800] z-0" opacity="0.22" />
 
-                        <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-4xl dark:text-foreground leading-tight">
-                            Pusat Informasi & Regulasi{' '}
-                            <span className="bg-gradient-to-r from-primary via-primary/80 to-amber-600 bg-clip-text text-transparent">
-                                e-KASUARI
+                <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6">
+                    <Reveal>
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 border border-[#FFB800]/40 text-[#FFB800] text-xs font-mono font-bold tracking-wider mb-4 shadow-md">
+                            <span>Bekerja Keras • Bergerak Cepat • Bertindak Tepat</span>
+                        </div>
+
+                        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight font-serif text-white leading-tight">
+                            Bank Regulasi &amp; Standar Mutu{' '}
+                            <span className="text-[#FFB800]">
+                                PUPR Mimika
                             </span>
                         </h1>
 
-                        <p className="mx-auto mt-3 max-w-2xl text-xs sm:text-sm leading-relaxed text-gray-600 dark:text-muted-foreground">
-                            Akses regulasi daerah, pedoman evaluasi SAKIP, petunjuk teknis penilaian IKU, SOP, dan publikasi kinerja Pemerintah Provinsi Papua Barat secara transparan.
+                        <p className="mx-auto mt-3.5 max-w-2xl text-xs sm:text-sm leading-relaxed text-slate-200 font-light">
+                            {`Akses resmi peraturan perundang-undangan SAKIP, petunjuk teknis penilaian capaian IKU, PermenPUPR, SOP verifikasi fisik lapangan, dan pedoman mutu konstruksi ${orgName} ${instansiName}.`}
                         </p>
                     </Reveal>
                 </div>
@@ -366,7 +365,7 @@ export default function PublicIndex({
                             <div className="mt-4 flex items-start gap-2 rounded-xl border border-slate-200/80 bg-slate-50 p-3.5 dark:border-border dark:bg-card/60">
                                 <ShieldCheck className="h-4 w-4 shrink-0 text-primary mt-0.5" />
                                 <p className="text-[11px] leading-relaxed text-slate-500 dark:text-muted-foreground">
-                                    Dokumen regulasi dan pedoman teknis telah divalidasi resmi Pemerintah Provinsi Papua Barat.
+                                    {`Dokumen regulasi dan pedoman teknis telah divalidasi resmi ${instansiName}.`}
                                 </p>
                             </div>
                         </div>

@@ -20,6 +20,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
+import ActionMenuDropdown from '@/Components/Dashboard/ActionMenuDropdown';
 import { FileText, Plus, Pencil, Trash2, Upload, CheckCircle2, LockKeyhole, Download, MoreVertical, Eye } from 'lucide-react';
 import { PageProps } from '@/types';
 import ConfirmDialog from '@/Components/ConfirmDialog';
@@ -267,9 +270,10 @@ export default function Documents({
 
  const getTypeBadgeVariant = (type: string) => {
  switch (type) {
- case 'rpjmd': return 'default';
- case 'renstra': return 'secondary';
+ case 'renstra': return 'default';
  case 'renja': return 'info';
+ case 'perjanjian_kinerja':
+ case 'pk': return 'secondary';
  case 'proses_bisnis': return 'outline';
  default: return 'outline';
  }
@@ -282,23 +286,23 @@ export default function Documents({
  <Head title="Dokumen Perencanaan Kinerja" />
 
  <div className="space-y-6">
- <Card>
-                    <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between p-4 sm:p-6">
-                        <div className="space-y-1.5 max-w-4xl">
-                            <div className="flex items-center gap-2">
-                                <FileText className="size-6 text-primary shrink-0" />
-                                <CardTitle>Daftar Dokumen</CardTitle>
-                            </div>
-                            <CardDescription className="text-sm text-muted-foreground leading-relaxed">
-                                Modul Kelola Dokumen Satu Pintu adalah pusat integrasi tata kelola perencanaan dan kinerja instansi. Kelola seluruh dokumen strategis hingga operasional—mulai dari RPJMD, Renstra, Pohon Kinerja, hingga Manajemen Risiko dan Cross-cutting—secara praktis, selaras, dan terpusat dalam satu platform.
-                            </CardDescription>
-                        </div>
-                        <Button onClick={openCreate} className="w-full sm:w-auto shrink-0 justify-center">
-                            <Plus className="mr-2 size-4" />
-                            Tambah Dokumen
-                        </Button>
-                    </CardHeader>
- <CardContent className="p-4 sm:p-6 pt-0">
+    <PageHeader
+        title="Dokumen Perencanaan Kinerja"
+        description="Pusat integrasi tata kelola dokumen perencanaan: Renstra, Renja, Pohon Kinerja, Manajemen Risiko, dan Perjanjian Kinerja terpadu Pemerintah Provinsi Papua Barat."
+        breadcrumbs={[
+            { label: 'Perencanaan' },
+            { label: 'Dokumen Perencanaan' },
+        ]}
+        action={(
+            <Button onClick={openCreate} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm w-full sm:w-auto shrink-0 justify-center">
+                <Plus className="mr-2 size-4" />
+                Tambah Dokumen
+            </Button>
+        )}
+    />
+
+    <Card className="border border-border/80 shadow-sm bg-card rounded-xl">
+        <CardContent className="p-4 sm:p-6">
  <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
  <SelectNative
  value={filters.type || ''}
@@ -419,9 +423,7 @@ export default function Documents({
  )}
  </TableCell>
  <TableCell>
- <Badge variant={getStatusBadgeVariant(doc.status) as any}>
- {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
- </Badge>
+     <StatusBadge status={doc.status} />
  </TableCell>
  <TableCell className="text-right">
  {(doc.file_path || !doc.is_locked) ? (
@@ -487,7 +489,7 @@ export default function Documents({
  </DropdownMenuContent>
  </DropdownMenu>
  ) : (
- <span className="text-muted-foreground text-xs">—</span>
+ <span className="text-muted-foreground text-xs">-</span>
  )}
  </TableCell>
  </TableRow>
@@ -496,7 +498,7 @@ export default function Documents({
  <TableEmptyRow
  colSpan={9}
  title="Belum Ada Dokumen Perencanaan"
- description="Belum ada dokumen perencanaan (RPJMD / Renstra / Renja) untuk filter yang dipilih."
+ description="Belum ada dokumen perencanaan (Renstra / Renja / Perjanjian Kinerja) untuk filter yang dipilih."
  />
  )}
  </TableBody>

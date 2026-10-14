@@ -80,7 +80,7 @@ const STATUS_COLOR: Record<string, string> = {
 export default function EvaluationHistory({ evaluation, auditLogs, auth }: Props) {
     return (
         <AuthenticatedLayout header="Histori Evaluasi">
-            <Head title={`Histori — ${evaluation.title}`} />
+            <Head title={`Histori - ${evaluation.title}`} />
 
             <div className="space-y-4">
                 {/* Breadcrumb + header */}

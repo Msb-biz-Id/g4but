@@ -12,6 +12,7 @@ import { SelectNative } from '@/Components/ui/select-native';
 import {Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 import { AlertTriangle, CheckCircle2, Info, TrendingUp } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -81,7 +82,7 @@ function PredictionChart({ result }: { result: Prediction }) {
  const toX = (i: number) => PAD.l + i * xStep;
  const toY = (v: number) => PAD.t + iH - ((v - minY) / rangeY) * iH;
 
- // Regression line — extend across full chart
+ // Regression line - extend across full chart
  const slope = result.slope ?? 0;
  const intercept = result.intercept ?? 0;
  const regY = (x: number) => intercept + slope * (x + 1); // x+1 since BRD uses 1-based index
@@ -168,7 +169,7 @@ function PredictionChart({ result }: { result: Prediction }) {
  )}
  </svg>
  <p className="mt-1 text-center text-xs text-gray-400">
- — Historis &nbsp;·&nbsp; <span className="text-amber-500">● Proyeksi</span> &nbsp;·&nbsp; <span className="text-amber-300">░ Confidence band</span>
+ - Historis &nbsp;·&nbsp; <span className="text-amber-500">�-� Proyeksi</span> &nbsp;·&nbsp; <span className="text-amber-300">░ Confidence band</span>
  </p>
  </div>
  );
@@ -182,7 +183,7 @@ function R2Interpretation({ r2, slope }: { r2: number | null; slope: number | nu
  const quality = r2 >= 0.85 ? { text: 'Sangat Baik', color: 'text-green-600' }
  : r2 >= 0.65 ? { text: 'Baik', color: 'text-blue-600' }
  : r2 >= 0.40 ? { text: 'Cukup', color: 'text-amber-600' }
- : { text: 'Lemah — gunakan dengan hati-hati', color: 'text-red-600' };
+ : { text: 'Lemah - gunakan dengan hati-hati', color: 'text-red-600' };
 
  const trend = slope === null ? null
  : slope > 0.5 ? 'Tren naik signifikan'
@@ -195,7 +196,7 @@ function R2Interpretation({ r2, slope }: { r2: number | null; slope: number | nu
  <div className="flex flex-wrap gap-4">
  <div>
  <span className="text-gray-400">R² (goodness of fit): </span>
- <span className={`font-semibold ${quality.color}`}>{r2.toFixed(3)} — {quality.text}</span>
+ <span className={`font-semibold ${quality.color}`}>{r2.toFixed(3)} - {quality.text}</span>
  </div>
  {slope !== null && (
  <div>
@@ -218,7 +219,7 @@ function R2Interpretation({ r2, slope }: { r2: number | null; slope: number | nu
 // ─── Mini Progress Bar (summary table) ───────────────────────────────────────
 
 function MiniBar({ value, max = 120 }: { value: number | null; max?: number }) {
- if (value === null) return <span className="text-xs text-gray-300">—</span>;
+ if (value === null) return <span className="text-xs text-gray-300">-</span>;
  const pct = Math.min(Math.max(value, 0), max) / max * 100;
  const color = value >= 80 ? 'bg-green-500' : value >= 60 ? 'bg-amber-400' : 'bg-red-400';
  return (
@@ -262,12 +263,20 @@ export default function PredictionsIndex({ auth, indicators, organizations, pred
  };
 
  return (
- <AuthenticatedLayout
- header="Prediksi Kinerja AI"
- >
- <Head title="Prediksi AI" />
- <div className="py-8">
- <div className="mx-auto max-w-5xl space-y-5 px-4 sm:px-6 lg:px-8">
+ <AuthenticatedLayout>
+            <Head title="Prediksi Kinerja AI" />
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Prediksi Kinerja AI"
+                    description="Proyeksi capaian indikator periode berikutnya berbasis regresi linier data realisasi tervalidasi."
+                    breadcrumbs={[
+                        { label: 'Kecerdasan Buatan' },
+                        { label: 'Prediksi Kinerja' },
+                    ]}
+                />
+
+                <div className="mx-auto max-w-5xl space-y-6">
 
  {/* Info card */}
  <Card className="border-blue-100 bg-blue-50/50 dark:border-blue-900/40 dark:bg-blue-950/20">
@@ -275,7 +284,7 @@ export default function PredictionsIndex({ auth, indicators, organizations, pred
  <Info className="mt-0.5 h-4 w-4 shrink-0" />
  <span>
  Prediksi menggunakan <strong>regresi linier</strong> atas data realisasi tervalidasi (approved).
- Minimal <strong>4 titik data</strong> diperlukan. R² mengukur kesesuaian model — semakin mendekati 1, semakin akurat.
+ Minimal <strong>4 titik data</strong> diperlukan. R² mengukur kesesuaian model - semakin mendekati 1, semakin akurat.
  </span>
  </CardContent>
  </Card>
@@ -299,7 +308,7 @@ export default function PredictionsIndex({ auth, indicators, organizations, pred
  <option value="">Pilih Indikator</option>
  {indicators.map((ind) => (
  <option key={ind.id} value={ind.id}>
- {ind.code}{ind.is_iku ? ' ⭐' : ''} — {ind.name}
+ {ind.code}{ind.is_iku ? ' ⭐' : ''} - {ind.name}
  </option>
  ))}
  </SelectNative>
@@ -311,7 +320,7 @@ export default function PredictionsIndex({ auth, indicators, organizations, pred
  className="mt-0.5 w-52">
  <option value="">Otomatis (data terbaru)</option>
  {organizations.map((org) => (
- <option key={org.id} value={org.id}>{org.code} — {org.name}</option>
+ <option key={org.id} value={org.id}>{org.code} - {org.name}</option>
  ))}
  </SelectNative>
  </div>
@@ -354,10 +363,10 @@ export default function PredictionsIndex({ auth, indicators, organizations, pred
  {/* Metric summary */}
  <div className="grid gap-3 sm:grid-cols-5">
  {[
- { label: 'Proyeksi Nilai', value: result.forecast?.toLocaleString('id-ID') ?? '—', highlight: true },
- { label: 'Target', value: result.target?.toLocaleString('id-ID') ?? '—', highlight: false },
- { label: 'Capaian Proyeksi', value: result.projected_achievement != null ? `${result.projected_achievement}%` : '—', highlight: false },
- { label: 'R²', value: result.r2?.toFixed(3) ?? '—', highlight: false },
+ { label: 'Proyeksi Nilai', value: result.forecast?.toLocaleString('id-ID') ?? '-', highlight: true },
+ { label: 'Target', value: result.target?.toLocaleString('id-ID') ?? '-', highlight: false },
+ { label: 'Capaian Proyeksi', value: result.projected_achievement != null ? `${result.projected_achievement}%` : '-', highlight: false },
+ { label: 'R²', value: result.r2?.toFixed(3) ?? '-', highlight: false },
  { label: 'Data Points', value: `${result.n} titik`, highlight: false },
  ].map((m) => (
  <div key={m.label} className={`rounded-lg p-3 ${m.highlight ? 'bg-indigo-50 dark:bg-indigo-950/30' : 'bg-gray-50 dark:bg-gray-900/30'}`}>
@@ -382,7 +391,7 @@ export default function PredictionsIndex({ auth, indicators, organizations, pred
  <CardHeader>
  <CardTitle className="flex items-center gap-2 text-sm">
  <CheckCircle2 className="h-4 w-4 text-green-500" />
- Ringkasan Prediksi — Semua Indikator Aktif
+ Ringkasan Prediksi - Semua Indikator Aktif
  <Badge variant="secondary">{predictions.length}</Badge>
  </CardTitle>
  <CardDescription>1 periode ke depan · data realisasi approved terbaru per OPD</CardDescription>
@@ -408,16 +417,16 @@ export default function PredictionsIndex({ auth, indicators, organizations, pred
  {p.indicator.is_iku && <span className="ml-1 text-amber-500">⭐</span>}
  <div className="truncate text-xs text-gray-400 max-w-[160px]">{p.indicator.name}</div>
  </TableCell>
- <TableCell className="text-sm text-gray-500">{p.organization?.code ?? '—'}</TableCell>
+ <TableCell className="text-sm text-gray-500">{p.organization?.code ?? '-'}</TableCell>
  <TableCell className="text-sm text-gray-500">{p.n}</TableCell>
  <TableCell className="text-sm">
  {p.r2 !== null ? (
  <span className={p.r2 >= 0.65 ? 'text-green-600' : p.r2 >= 0.40 ? 'text-amber-600' : 'text-red-600'}>
  {p.r2.toFixed(2)}
  </span>
- ) : '—'}
+ ) : '-'}
  </TableCell>
- <TableCell className="text-sm">{p.forecast?.toLocaleString('id-ID') ?? '—'}</TableCell>
+ <TableCell className="text-sm">{p.forecast?.toLocaleString('id-ID') ?? '-'}</TableCell>
  <TableCell><MiniBar value={p.projected_achievement} /></TableCell>
  <TableCell><StatusBadge status={p.status} /></TableCell>
  </TableRow>

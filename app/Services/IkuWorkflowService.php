@@ -67,7 +67,7 @@ class IkuWorkflowService
     }
 
     /**
-     * Diajukan → Review (Bappeda mulai meninjau)
+     * Diajukan → Review (Verifikator / Admin OPD mulai meninjau)
      */
     public function startReview(Indicator $iku, User $user): Indicator
     {
@@ -107,7 +107,7 @@ class IkuWorkflowService
     }
 
     /**
-     * Review → Final (Bappeda finalisasi)
+     * Review → Final (Verifikator / Admin OPD finalisasi)
      */
     public function finalize(Indicator $iku, User $user): Indicator
     {

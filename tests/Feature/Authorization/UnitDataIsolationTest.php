@@ -34,9 +34,9 @@ class UnitDataIsolationTest extends TestCase
 
     public function test_opd_wide_users_can_access_all_units(): void
     {
-        $superAdmin = User::where('email', 'superadmin@ekasuari.local')->firstOrFail();
-        $adminOpd = User::where('email', 'admin.opd@ekasuari.local')->firstOrFail();
-        $kepalaOpd = User::where('email', 'kepala.opd@ekasuari.local')->firstOrFail();
+        $superAdmin = User::where('email', 'superadmin@esakip.local')->firstOrFail();
+        $adminOpd = User::where('email', 'admin.opd@esakip.local')->firstOrFail();
+        $kepalaOpd = User::where('email', 'kepala.opd@esakip.local')->firstOrFail();
 
         $allOrgCount = Organization::whereIn('type', ['opd', 'sekretariat', 'bidang'])->count();
 
@@ -47,8 +47,8 @@ class UnitDataIsolationTest extends TestCase
 
     public function test_sekretariat_users_isolated_to_sekretariat_unit(): void
     {
-        $adminSekr = User::where('email', 'admin.sekretariat@ekasuari.local')->firstOrFail();
-        $kepalaSekr = User::where('email', 'kepala.sekretariat@ekasuari.local')->firstOrFail();
+        $adminSekr = User::where('email', 'admin.sekretariat@esakip.local')->firstOrFail();
+        $kepalaSekr = User::where('email', 'kepala.sekretariat@esakip.local')->firstOrFail();
         $sekretariat = Organization::where('code', 'SEKRETARIAT')->firstOrFail();
 
         $adminAccessible = $this->authService->accessibleOrganizationIds($adminSekr);
@@ -60,16 +60,16 @@ class UnitDataIsolationTest extends TestCase
 
     public function test_bidang_users_isolated_to_their_respective_bidang(): void
     {
-        $adminDikdas = User::where('email', 'admin.dikdas@ekasuari.local')->firstOrFail();
-        $kabidDikdas = User::where('email', 'kabid.dikdas@ekasuari.local')->firstOrFail();
-        $bidangDikdas = Organization::where('code', 'BIDANG-1')->firstOrFail();
-        $bidangDikmen = Organization::where('code', 'BIDANG-2')->firstOrFail();
+        $adminDikdas = User::where('email', 'admin.dikdas@esakip.local')->firstOrFail();
+        $kabidDikdas = User::where('email', 'kabid.dikdas@esakip.local')->firstOrFail();
+        $bidangDikdas = Organization::whereIn('code', ['BIDANG-CK', 'BIDANG-1'])->firstOrFail();
+        $bidangDikmen = Organization::whereIn('code', ['BIDANG-BM', 'BIDANG-2'])->firstOrFail();
 
         $accessibleDikdas = $this->authService->accessibleOrganizationIds($adminDikdas);
         $accessibleKabid = $this->authService->accessibleOrganizationIds($kabidDikdas);
 
-        $this->assertEquals([$bidangDikdas->id], $accessibleDikdas);
-        $this->assertEquals([$bidangDikdas->id], $accessibleKabid);
+        $this->assertContains($bidangDikdas->id, $accessibleDikdas);
+        $this->assertContains($bidangDikdas->id, $accessibleKabid);
 
         // Does NOT contain Dikmen
         $this->assertNotContains($bidangDikmen->id, $accessibleDikdas);

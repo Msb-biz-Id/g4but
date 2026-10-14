@@ -12,9 +12,20 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { Label } from '@/Components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/Components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/Components/ui/alert-dialog';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from '@/Components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
 
 
 interface Organization { id: number; code: string; name: string; short_name?: string; }
@@ -107,22 +118,21 @@ export default function Risks({ risks, organizations, periods, indicators, filte
  <AuthenticatedLayout header="Manajemen Risiko">
  <Head title="Manajemen Risiko" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-4">
-                    {/* Header Bar */}
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                                Manajemen Risiko
-                            </h1>
-                            <p className="text-xs text-muted-foreground sm:text-sm">
-                                Pemetaan, mitigasi, dan pengendalian risiko pencapaian kinerja organisasi.
-                            </p>
-                        </div>
-                        <Button onClick={() => openModal()} className="w-full sm:w-auto justify-center">
-                            <Plus className="mr-2 h-4 w-4" /> Catat Risiko
-                        </Button>
-                    </div>
+            <div className="py-6">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
+                    <PageHeader
+                        title="Manajemen Risiko Kinerja"
+                        description="Pemetaan, penilaian dampak, mitigasi, dan pengendalian risiko strategis pencapaian kinerja organisasi Pemerintah Provinsi Papua Barat."
+                        breadcrumbs={[
+                            { label: 'Perencanaan' },
+                            { label: 'Manajemen Risiko' },
+                        ]}
+                        actions={(
+                            <Button onClick={() => openModal()} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm w-full sm:w-auto justify-center">
+                                <Plus className="mr-2 h-4 w-4" /> Catat Risiko Baru
+                            </Button>
+                        )}
+                    />
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -247,7 +257,7 @@ export default function Risks({ risks, organizations, periods, indicators, filte
  <p className="text-sm text-muted-foreground">{r.indicator ? `${r.indicator.code} · ${r.indicator.name}` : 'Tanpa indikator'}</p>
  </TableCell>
  <TableCell>{r.organization?.short_name}</TableCell>
- <TableCell><p className="truncate max-w-[200px]">{r.cause || '—'}</p></TableCell>
+ <TableCell><p className="truncate max-w-[200px]">{r.cause || '-'}</p></TableCell>
  <TableCell className="font-bold">{r.likelihood} &times; {r.impact_level} = {r.likelihood * r.impact_level}</TableCell>
  <TableCell>
  <Badge variant={getBadgeVariant(r.risk_level) as any} className="capitalize">
@@ -297,7 +307,7 @@ export default function Risks({ risks, organizations, periods, indicators, filte
  </div>
  </div>
 
- <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+ <AlertDialog open={deleteTarget !== null} onOpenChange={(open: boolean) => !open && setDeleteTarget(null)}>
  <AlertDialogContent>
  <AlertDialogHeader>
  <AlertDialogTitle>Hapus Risiko?</AlertDialogTitle>

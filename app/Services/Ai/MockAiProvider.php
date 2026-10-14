@@ -3,6 +3,7 @@
 namespace App\Services\Ai;
 
 use App\Contracts\AiProvider;
+use App\Models\AppConfig;
 use App\Services\AchievementCalculator;
 use App\Services\AuthorizationService;
 use App\Services\OpdAnalyticsService;
@@ -17,6 +18,15 @@ class MockAiProvider implements AiProvider
     public function name(): string
     {
         return 'mock';
+    }
+
+    private function getAppName(): string
+    {
+        try {
+            return AppConfig::where('key', 'app_name')->value('value') ?: config('app.name', 'e-SAKIP');
+        } catch (\Throwable) {
+            return config('app.name', 'e-SAKIP');
+        }
     }
 
     public function generate(string $feature, string $prompt, array $context): array
@@ -117,11 +127,12 @@ class MockAiProvider implements AiProvider
     {
         $scope = $context['scope'] ?? 'Perangkat Daerah';
         $insights = $context['insights'] ?? [];
+        $appName = $this->getAppName();
 
         $lines = [];
         $lines[] = "Analisis Insight Kinerja — {$scope}";
         $lines[] = '--------------------------------------------------';
-        $lines[] = 'Berdasarkan audit data komparatif pada database sistem e-KASUARI:';
+        $lines[] = "Berdasarkan audit data komparatif pada database sistem {$appName}:";
         $lines[] = '';
 
         if (! empty($insights)) {
@@ -191,7 +202,7 @@ class MockAiProvider implements AiProvider
         $lines[] = '';
         $lines[] = '3. Pilar Evaluasi Akuntabilitas (PermenPANRB No. 88/2021):';
         $lines[] = '   - Susun Laporan Kinerja Instansi Pemerintah (LKjIP) secara tepat waktu.';
-        $lines[] = '   - Tindak lanjuti Lembar Hasil Evaluasi (LHE) Inspektorat dan KemenPANRB tahun sebelumnya.';
+        $lines[] = '   - Tindak lanjuti Lembar Hasil Evaluasi (LHE) dari Tim Evaluasi Internal tahun sebelumnya.';
 
         return implode("\n", $lines);
     }
@@ -315,7 +326,7 @@ class MockAiProvider implements AiProvider
         }
 
         // 6. Dokumen SAKIP / Perencanaan
-        if (str_contains($norm, 'dokumen') || str_contains($norm, 'rpjmd') || str_contains($norm, 'renstra') || str_contains($norm, 'renja') || str_contains($norm, 'berkas')) {
+        if (str_contains($norm, 'dokumen') || str_contains($norm, 'renstra') || str_contains($norm, 'renja') || str_contains($norm, 'berkas')) {
             $total = $fact['total_docs'] ?? 0;
             $avail = $fact['available_docs'] ?? 0;
             $appr = $fact['approved_docs'] ?? 0;
@@ -355,8 +366,9 @@ class MockAiProvider implements AiProvider
 
         // 8. Sapaan / Greeting
         if (preg_match('/\b(halo|hai|selamat pagi|selamat siang|selamat sore|selamat malam|assalamu|siapa anda)\b/i', $norm)) {
+            $appName = $this->getAppName();
             return "Selamat datang {$userName}.\n\n"
-                ."Saya adalah AI Asisten SAKIP e-KASUARI Perangkat Daerah.\n"
+                ."Saya adalah AI Asisten SAKIP {$appName} Perangkat Daerah.\n"
                 ."Lingkup Akses: {$scope}\n"
                 ."Periode: Tahun {$year} - {$triwulan}\n\n"
                 ."Layanan Informasi Eksekutif yang Dapat Diakses:\n"
@@ -369,8 +381,9 @@ class MockAiProvider implements AiProvider
         }
 
         // Default response: Ringkasan Faktual
+        $appName = $this->getAppName();
         return "Informasi Kinerja SAKIP — {$scope}\n\n"
-            ."Data Resmi Sistem e-KASUARI (Tahun {$year} - {$triwulan}):\n"
+            ."Data Resmi Sistem {$appName} (Tahun {$year} - {$triwulan}):\n"
             .'- Perangkat Daerah Aktif: '.($fact['total_opd'] ?? 10)." OPD\n"
             .'- Realisasi Anggaran APBD: '.($fact['budget_summary']['serapan_persen'] ?? 0)."%\n"
             .'- Status Dokumen SAKIP: '.($fact['available_docs'] ?? 0).' dari '.($fact['total_docs'] ?? 0)." berkas fisik terunggah\n"

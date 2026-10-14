@@ -56,7 +56,7 @@ const errorDetails: Record<number, ErrorDetail> = {
         bgBadge: 'bg-rose-500/10 dark:bg-rose-500/20',
         textBadge: 'text-rose-600 dark:text-rose-400',
         borderBadge: 'border-rose-500/20 dark:border-rose-500/30',
-        actionHint: 'Jika Anda merasa ini sebuah kekeliruan, silakan hubungi Administrator sistem e-KASUARI.',
+        actionHint: 'Jika Anda merasa ini sebuah kekeliruan, silakan hubungi Administrator sistem e-SAKIP.',
     },
     419: {
         title: 'Sesi Telah Berakhir',
@@ -94,7 +94,7 @@ const errorDetails: Record<number, ErrorDetail> = {
     503: {
         title: 'Layanan Sedang Pemeliharaan',
         description:
-            'Sistem e-KASUARI sedang dalam proses pemeliharaan rutin atau peningkatan performa server.',
+            'Sistem e-SAKIP sedang dalam proses pemeliharaan rutin atau peningkatan performa server.',
         icon: Wrench,
         color: 'text-primary',
         bgBadge: 'bg-primary/10 dark:bg-primary/20',
@@ -105,7 +105,11 @@ const errorDetails: Record<number, ErrorDetail> = {
 };
 
 export default function Error({ status, message }: ErrorProps) {
-    const { theme } = usePage<PageProps>().props;
+    const { theme, appConfig } = usePage<PageProps>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+    const orgName = appConfig?.organizationName || 'Biro Organisasi Sekretariat Daerah';
+    const currentYear = appConfig?.currentYear || new Date().getFullYear();
 
     // Terapkan tema kustom dari database
     useEffect(() => {
@@ -143,7 +147,7 @@ export default function Error({ status, message }: ErrorProps) {
 
     return (
         <>
-            <Head title={`${status} - ${error.title} | e-KASUARI`} />
+            <Head title={`${status} - ${error.title} | e-SAKIP`} />
 
             <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-50 p-4 selection:bg-primary selection:text-primary-foreground dark:bg-slate-950">
                 {/* Background Ambient Glows */}
@@ -157,10 +161,10 @@ export default function Error({ status, message }: ErrorProps) {
                         <ApplicationLogo className="h-10 w-10 drop-shadow-sm" />
                         <div>
                             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                                e-KASUARI
+                                {appName}
                             </span>
                             <span className="ml-2 rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary border border-primary/20">
-                                Pemprov Papua Barat
+                                {instansiName}
                             </span>
                         </div>
                     </div>
@@ -241,7 +245,7 @@ export default function Error({ status, message }: ErrorProps) {
 
                     {/* Footer System Info */}
                     <div className="mt-6 text-center text-xs text-slate-400 dark:text-slate-500">
-                        &copy; {new Date().getFullYear()} Biro Organisasi Sekretariat Daerah Provinsi Papua Barat. Hak Cipta Dilindungi.
+                        &copy; {currentYear} {orgName} {instansiName}. Hak Cipta Dilindungi.
                     </div>
                 </div>
             </div>

@@ -1,5 +1,6 @@
 import PublicLayout from '@/Layouts/PublicLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { PuprBlueprintGrid, PuprCitySkylinePattern } from '@/Components/Landing/PuprCityPattern';
 import {
     BarChart2,
     Building2,
@@ -116,7 +117,7 @@ function DokumenCard({ doc }: { doc: Dokumen }) {
                         Tahun {doc.year}
                     </span>
                     {doc.approved_at && (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-400/30">
                             ✓ Terverifikasi {formatDate(doc.approved_at)}
                         </span>
                     )}
@@ -193,6 +194,10 @@ export default function LaporanPublik({
     years,
     filters,
 }: Props) {
+    const { appConfig } = usePage<any>().props;
+    const appName = appConfig?.appName || 'SIM Kinerja';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+
     const [searchTerm, setSearchTerm] = useState(filters.search ?? '');
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -249,43 +254,46 @@ export default function LaporanPublik({
     return (
         <PublicLayout active="laporan">
             <Head>
-                <title>Laporan Akuntabilitas Kinerja Publik — e-KASUARI Papua Barat</title>
+                <title>{`Laporan Akuntabilitas Kinerja Publik - ${appName} ${instansiName}`}</title>
                 <meta
                     name="description"
-                    content="Portal Laporan Akuntabilitas Kinerja Publik Pemerintah Provinsi Papua Barat. Akses dokumen perencanaan, pengukuran kinerja, pelaporan, dan evaluasi SAKIP seluruh OPD."
+                    content={`Portal Laporan Akuntabilitas Kinerja Publik ${instansiName}. Akses dokumen perencanaan, pengukuran kinerja, pelaporan, dan evaluasi SAKIP seluruh unit kerja.`}
                 />
                 <meta
                     name="keywords"
-                    content="laporan kinerja papua barat, dokumen sakip, lkip opd, iku pemprov papua barat, transparansi kinerja"
+                    content={`laporan kinerja, dokumen sakip, lkip, iku, transparansi kinerja, ${instansiName.toLowerCase()}`}
                 />
-                <meta property="og:title" content="Laporan Akuntabilitas Kinerja Publik — e-KASUARI Papua Barat" />
+                <meta property="og:title" content={`Laporan Akuntabilitas Kinerja Publik - ${appName} ${instansiName}`} />
                 <meta
                     property="og:description"
-                    content="Portal Laporan Akuntabilitas Kinerja Publik Pemerintah Provinsi Papua Barat. Akses dokumen perencanaan, pengukuran kinerja, pelaporan, dan evaluasi SAKIP seluruh OPD."
+                    content={`Portal Laporan Akuntabilitas Kinerja Publik ${instansiName}. Akses dokumen perencanaan, pengukuran kinerja, pelaporan, dan evaluasi SAKIP seluruh unit kerja.`}
                 />
                 <meta property="og:type" content="website" />
                 <meta name="twitter:card" content="summary_large_image" />
             </Head>
 
-            {/* ── Hero Section ───────────────────────────────────────────── */}
-            <section className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white py-6 dark:border-border dark:from-muted/40 dark:to-background">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20 dark:bg-primary/20">
-                            <FileText className="h-5 w-5" />
+            {/* ── Hero Section - PUPR Mimika Spirit ───────────────────────────── */}
+            <section className="relative overflow-hidden bg-gradient-to-b from-[#002B49] via-[#07243c] to-[#041624] py-10 sm:py-14 border-b border-amber-500/20 text-white">
+                <PuprBlueprintGrid className="opacity-[0.06]" />
+                <PuprCitySkylinePattern className="text-[#FFB800] z-0" opacity="0.22" />
+
+                <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
+                    <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 border border-amber-300/40 text-[#002B49] shadow-xl font-bold">
+                            <FileText className="h-7 w-7" />
                         </div>
                         <div>
-                            <div className="flex items-center gap-2">
-                                <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary dark:bg-primary/20">
-                                    Portal Transparansi Publik
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-[#FFB800] border border-[#FFB800]/40">
+                                    TRANSPARANSI KINERJA INFRASTRUKTUR
                                 </span>
-                                <span className="text-[11px] font-semibold text-slate-400">E-SAKIP Papua Barat</span>
+                                <span className="text-xs font-mono text-amber-300 font-bold">{`PUPR MIMIKA • ${instansiName}`}</span>
                             </div>
-                            <h1 className="mt-0.5 text-xl font-extrabold tracking-tight text-gray-900 dark:text-foreground sm:text-2xl">
-                                Laporan Kinerja Publik
+                            <h1 className="mt-1.5 text-2xl font-black tracking-tight font-serif text-white sm:text-3xl lg:text-4xl">
+                                Laporan Akuntabilitas Kinerja Bidang Teknis
                             </h1>
-                            <p className="mt-0.5 max-w-2xl text-xs leading-relaxed text-gray-500 dark:text-muted-foreground">
-                                Akses dokumen resmi perencanaan, pengukuran, pelaporan, dan evaluasi akuntabilitas kinerja perangkat daerah Pemerintah Provinsi Papua Barat secara terbuka.
+                            <p className="mt-1.5 max-w-2xl text-xs sm:text-sm leading-relaxed text-slate-200 font-light">
+                                {`Akses berkas perencanaan (Renstra/Renja), pengukuran IKU, pelaporan LKjIP, dan Lembar Hasil Evaluasi (LHE) pada 5 bidang teknis Dinas PUPR ${instansiName} secara transparan.`}
                             </p>
                         </div>
                     </div>

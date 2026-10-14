@@ -41,24 +41,25 @@ class PeriodController extends Controller
         $type = $input['type'] ?? 'annual';
         $year = ! empty($input['year']) ? (int) $input['year'] : (int) date('Y');
 
+        $isLimaTahunan = in_array($type, ['renstra', 'rpjmd'], true);
         if (empty($input['start_date'])) {
             $input['start_date'] = "{$year}-01-01";
         }
         if (empty($input['end_date'])) {
-            $input['end_date'] = $type === 'rpjmd' ? ($year + 4).'-12-31' : "{$year}-12-31";
+            $input['end_date'] = $isLimaTahunan ? ($year + 4).'-12-31' : "{$year}-12-31";
         }
         if (empty($input['code'])) {
-            $input['code'] = $type === 'rpjmd' ? "RPJMD-{$year}-".($year + 4) : "PP-{$year}";
+            $input['code'] = $isLimaTahunan ? "RENSTRA-{$year}-".($year + 4) : "PP-{$year}";
         }
         if (empty($input['name'])) {
-            $input['name'] = $type === 'rpjmd' ? "RPJMD Provinsi Papua Barat {$year}-".($year + 4) : "Tahun Anggaran {$year}";
+            $input['name'] = $isLimaTahunan ? "Renstra {$year}-".($year + 4) : "Tahun Anggaran {$year}";
         }
 
         $validated = validator($input, [
             'code' => ['required', 'string', 'max:50', Rule::unique('planning_periods', 'code')],
             'name' => ['required', 'string', 'max:200'],
             'year' => ['required', 'integer', 'min:2000', 'max:2100'],
-            'type' => ['required', 'string', 'max:20', Rule::in(['annual', 'rpjmd'])],
+            'type' => ['required', 'string', 'max:20', Rule::in(['annual', 'renstra', 'rpjmd'])],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'status' => ['required', 'string', 'max:20', Rule::in(['draft', 'active', 'closed', 'archived'])],
@@ -72,7 +73,7 @@ class PeriodController extends Controller
 
         $period = DB::transaction(function () use ($validated) {
             // Jika mengaktifkan periode, tutup periode aktif lain yang bertipe sama agar tidak ada konflik data
-            if ($validated['status'] === 'active' && in_array($validated['type'], ['annual', 'rpjmd'])) {
+            if ($validated['status'] === 'active' && in_array($validated['type'], ['annual', 'renstra', 'rpjmd'])) {
                 PlanningPeriod::where('type', $validated['type'])
                     ->where('status', 'active')
                     ->update(['status' => 'closed']);
@@ -95,7 +96,7 @@ class PeriodController extends Controller
             'code' => ['required', 'string', 'max:50', Rule::unique('planning_periods', 'code')->ignore($period->id)],
             'name' => ['required', 'string', 'max:200'],
             'year' => ['required', 'integer', 'min:2000', 'max:2100'],
-            'type' => ['required', 'string', 'max:20', Rule::in(['annual', 'rpjmd'])],
+            'type' => ['required', 'string', 'max:20', Rule::in(['annual', 'renstra', 'rpjmd'])],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'status' => ['required', 'string', 'max:20', Rule::in(['draft', 'active', 'closed', 'archived'])],
@@ -109,7 +110,7 @@ class PeriodController extends Controller
 
         DB::transaction(function () use ($validated, $period) {
             // Jika mengaktifkan periode, tutup periode aktif lain bertipe sama
-            if ($validated['status'] === 'active' && in_array($validated['type'], ['annual', 'rpjmd'])) {
+            if ($validated['status'] === 'active' && in_array($validated['type'], ['annual', 'renstra', 'rpjmd'])) {
                 PlanningPeriod::where('type', $validated['type'])
                     ->where('status', 'active')
                     ->where('id', '!=', $period->id)

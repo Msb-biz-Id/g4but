@@ -49,7 +49,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
   @endif
   <div class="instansi">PEMERINTAH {{ strtoupper($provinceName ?? 'PROVINSI PAPUA BARAT') }}</div>
   <div class="doc-title">MATRIKS KELENGKAPAN DOKUMEN SAKIP SELURUH PERANGKAT DAERAH</div>
-  <div class="doc-sub">12 Dokumen Baku SAKIP &nbsp;|&nbsp; Tahun Evaluasi: {{ $year }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-KASUARI' }}</div>
+  <div class="doc-sub">12 Dokumen Baku SAKIP &nbsp;|&nbsp; Tahun Evaluasi: {{ $year }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-SAKIP' }}</div>
 </div>
 
 <div class="meta">
@@ -114,7 +114,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 </table>
 
 <div class="footer">
-  <div class="fl">Sistem Informasi Akuntabilitas Kinerja Terintegrasi (e-KASUARI) &bull; Provinsi Papua Barat</div>
+  <div class="fl">Sistem Informasi Akuntabilitas Kinerja Terintegrasi (e-SAKIP) &bull; Provinsi Papua Barat</div>
   <div class="fr">Laporan Resmi SAKIP &bull; Dicetak: {{ $generatedAt }} WIT</div>
 </div>
 

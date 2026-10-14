@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Network, Plus, Trash2 } from 'lucide-react';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface Organization {
  id: number;
@@ -103,30 +104,34 @@ export default function Crosscutting({ relations, organizations, periods, indica
  <Head title="Crosscutting Kinerja" />
 
  <div className="space-y-6">
- <Card className="shadow-sm">
- <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
- <CardTitle className="flex items-center gap-2">
- <Network className="h-5 w-5" />
- Daftar Relasi Crosscutting
- </CardTitle>
- <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
- <SelectNative
- value={filters.period || ''}
- onChange={handleFilterChange}
- className="w-full sm:w-auto"
- >
- <option value="">Semua Periode</option>
- {periods.map(p => (
- <option key={p.id} value={p.id}>{p.year}</option>
- ))}
- </SelectNative>
- <Button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto justify-center">
- <Plus className="mr-2 h-4 w-4" />
- Tambah
- </Button>
- </div>
- </CardHeader>
- <CardContent>
+    <PageHeader
+        title="Crosscutting Kinerja Antar-Perangkat Daerah"
+        description="Pemetaan keterkaitan, kolaborasi, dan pembagian peran lintas sektor dalam pencapaian target kinerja daerah Pemerintah Provinsi Papua Barat."
+        breadcrumbs={[
+            { label: 'Perencanaan' },
+            { label: 'Crosscutting Kinerja' },
+        ]}
+        actions={(
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+                <SelectNative
+                    value={filters.period || ''}
+                    onChange={handleFilterChange}
+                    className="w-full sm:w-44"
+                >
+                    <option value="">Semua Periode</option>
+                    {periods.map(p => (
+                        <option key={p.id} value={p.id}>{p.year}</option>
+                    ))}
+                </SelectNative>
+                <Button onClick={() => setIsModalOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm w-full sm:w-auto justify-center">
+                    <Plus className="mr-2 h-4 w-4" /> Tambah Relasi
+                </Button>
+            </div>
+        )}
+    />
+
+    <Card className="border border-border/80 shadow-sm bg-card rounded-xl">
+        <CardContent className="p-4 sm:p-6">
  <Table>
  <TableHeader>
  <TableRow>
@@ -147,7 +152,7 @@ export default function Crosscutting({ relations, organizations, periods, indica
  {((relations as any).from ?? relations.meta?.from ?? 1) + index}
  </TableCell>
  <TableCell>
- <div className="font-medium">{r.indicator?.name || '—'}</div>
+ <div className="font-medium">{r.indicator?.name || '-'}</div>
  <div className="text-xs text-muted-foreground">{r.indicator?.code}</div>
  </TableCell>
  <TableCell>{r.organization?.short_name || r.organization?.name}</TableCell>
@@ -160,7 +165,7 @@ export default function Crosscutting({ relations, organizations, periods, indica
  {relationTypes[r.relation_type] || r.relation_type}
  </Badge>
  </TableCell>
- <TableCell>{r.description || '—'}</TableCell>
+ <TableCell>{r.description || '-'}</TableCell>
  <TableCell className="text-right">
  <Button
  variant="ghost"

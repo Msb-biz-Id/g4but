@@ -37,7 +37,7 @@ export default function Chatbot({ auth, initialQuery }: Props) {
         {
             id: 'welcome',
             sender: 'assistant',
-            text: 'Halo! Saya AI Asisten e-KASUARI. Saya siap membantu Anda menganalisis data SAKIP, capaian IKU, dokumen perencanaan, pengukuran kinerja, dan evaluasi akuntabilitas unit kerja secara faktual dan terpercaya.',
+            text: 'Halo! Saya AI Asisten e-SAKIP. Saya siap membantu Anda menganalisis data SAKIP, capaian IKU, dokumen perencanaan, pengukuran kinerja, dan evaluasi akuntabilitas unit kerja secara faktual dan terpercaya.',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             suggestedActions: QUICK_PROMPTS,
         },
@@ -148,7 +148,7 @@ export default function Chatbot({ auth, initialQuery }: Props) {
                 </div>
             }
         >
-            <Head title="Chatbot AI SAKIP - e-KASUARI" />
+            <Head title="Chatbot AI SAKIP - e-SAKIP" />
 
             <div className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-4">
                 <Card className="flex flex-col h-[calc(100vh-230px)] min-h-[500px] border shadow-xs bg-card">

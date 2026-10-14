@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { usePage } from '@inertiajs/react';
+import { PageProps } from '@/types';
 import {
     Layers,
     CheckCircle2,
@@ -58,15 +60,15 @@ const modules: Module[] = [
         label: 'Perencanaan',
         icon: Layers,
         gradient: 'from-amber-500 to-amber-600',
-        title: 'Modul Perencanaan Kinerja Papua Barat',
-        subtitle: 'Fungsi Tata Kelola SAKIP Papua Barat',
+        title: 'Modul Perencanaan Kinerja Terpadu',
+        subtitle: 'Fungsi Tata Kelola SAKIP Berkelanjutan',
         description:
-            'Pengelolaan cascading sasaran strategis dari RPJMD Provinsi Papua Barat hingga Renstra OPD, penetapan Indikator Kinerja Utama (IKU), target tahunan, serta pohon kinerja daerah.',
+            'Pengelolaan cascading sasaran strategis dari Renstra & Renja OPD, penetapan Indikator Kinerja Utama (IKU), target tahunan, serta pohon kinerja daerah.',
         subModules: [
             {
                 icon: FileText,
                 label: 'Dokumen Perencanaan',
-                desc: 'Kelola 12 jenis dokumen: RPJMD, Renstra, Renja, RKPD, DPA, Rencana Aksi & PK',
+                desc: 'Kelola 12 jenis dokumen: Renstra & Renja, Renstra, Renja, RKPD, DPA, Rencana Aksi & PK',
             },
             {
                 icon: TreePine,
@@ -76,7 +78,7 @@ const modules: Module[] = [
             {
                 icon: Goal,
                 label: 'Perjanjian Kinerja',
-                desc: 'Manajemen PKT Gubernur, Kepala OPD, dan pejabat eselon di lingkungan Pemprov',
+                desc: 'Manajemen PK pimpinan, Kepala OPD, dan pejabat unit kerja di lingkungan organisasi',
             },
             {
                 icon: BarChart3,
@@ -113,7 +115,7 @@ const modules: Module[] = [
         title: 'Modul Pengukuran & Realisasi OPD',
         subtitle: 'Pencatatan Capaian Kinerja Terverifikasi',
         description:
-            'Pencatatan realisasi capaian kinerja dan penyerapan anggaran OPD Pemprov Papua Barat dengan verifikasi data dukung (evidence) berjenjang dan mekanisme jejak audit permanen.',
+            'Pencatatan realisasi capaian kinerja dan penyerapan anggaran OPD dengan verifikasi data dukung (evidence) berjenjang dan mekanisme jejak audit permanen.',
         subModules: [
             {
                 icon: Gauge,
@@ -138,7 +140,7 @@ const modules: Module[] = [
             {
                 icon: Database,
                 label: 'Migrasi Data',
-                desc: 'Fasilitas migrasi data historis kinerja dari sistem lama ke e-KASUARI secara terstruktur',
+                desc: 'Fasilitas migrasi data historis kinerja dari sistem lama ke e-SAKIP secara terstruktur',
             },
         ],
     },
@@ -150,12 +152,12 @@ const modules: Module[] = [
         title: 'Modul Evaluasi & Early Warning System',
         subtitle: 'Deteksi Dini & Penjaminan Akuntabilitas',
         description:
-            'Evaluasi mandiri OPD, penilaian Inspektorat/Bappeda Papua Barat, penerbitan rekomendasi LHE SAKIP, dan deteksi dini indikator yang meleset dari target.',
+            'Evaluasi mandiri OPD, reviu oleh Tim Evaluasi Internal, penerbitan rekomendasi LHE SAKIP, dan deteksi dini indikator yang meleset dari target.',
         subModules: [
             {
                 icon: NotebookPen,
                 label: 'Evaluasi SAKIP',
-                desc: 'Penilaian mandiri & evaluasi akuntabilitas kinerja OPD oleh Inspektorat / Bappeda',
+                desc: 'Penilaian mandiri & evaluasi akuntabilitas kinerja OPD oleh Tim Evaluasi Internal',
             },
             {
                 icon: AlertTriangle,
@@ -219,7 +221,7 @@ const modules: Module[] = [
         title: 'Modul Pelaporan & Executive Dashboard',
         subtitle: 'Laporan Kinerja Instansi Pemerintah Otomatis',
         description:
-            'Visualisasi matriks kinerja antar OPD Pemprov Papua Barat, perbandingan target vs realisasi, analitik deviasi, serta ekspor Laporan Kinerja Instansi Pemerintah (LKjIP).',
+            'Visualisasi matriks kinerja antar OPD, perbandingan target vs realisasi, analitik deviasi, serta ekspor Laporan Kinerja Instansi Pemerintah (LKjIP).',
         subModules: [
             {
                 icon: FileText,
@@ -239,7 +241,7 @@ const modules: Module[] = [
             {
                 icon: ScrollText,
                 label: 'Audit Trail',
-                desc: 'Log aktivitas lengkap seluruh transaksi sistem — dari input data hingga persetujuan laporan',
+                desc: 'Log aktivitas lengkap seluruh transaksi sistem - dari input data hingga persetujuan laporan',
             },
         ],
     },
@@ -248,15 +250,15 @@ const modules: Module[] = [
         label: 'Integrasi API',
         icon: ShieldCheck,
         gradient: 'from-slate-700 to-slate-900',
-        title: 'Modul Integrasi & Satu Data Papua Barat',
+        title: 'Modul Integrasi & Satu Data Kinerja',
         subtitle: 'Interoperabilitas & Tata Kelola Akses',
         description:
-            'Interoperabilitas data dengan SIPD dan portal Satu Data Papua Barat melalui RESTful API terstandar, didukung kontrol akses berbasis peran (RBAC).',
+            'Interoperabilitas data dengan SIPD dan portal Satu Data melalui RESTful API terstandar, didukung kontrol akses berbasis peran (RBAC).',
         subModules: [
             {
                 icon: Plug,
                 label: 'Integrasi Sistem',
-                desc: 'REST API bearer-token untuk koneksi SIPD, Satu Data Papua Barat, dan sistem eksternal lainnya',
+                desc: 'REST API bearer-token untuk koneksi SIPD, Satu Data, dan sistem eksternal lainnya',
             },
             {
                 icon: Users,
@@ -266,12 +268,12 @@ const modules: Module[] = [
             {
                 icon: Shield,
                 label: 'Hak Akses & Peran (RBAC)',
-                desc: 'Kontrol akses granular berbasis peran: Super Admin, Bappeda, Kepala OPD, Pelaksana, Publik',
+                desc: 'Kontrol akses granular berbasis peran: Super Admin, Perangkat Daerah, Kepala OPD, Pelaksana, Publik',
             },
             {
                 icon: Building2,
                 label: 'Manajemen Organisasi',
-                desc: 'Kelola data OPD, unit kerja, dan struktur organisasi Pemprov Papua Barat',
+                desc: 'Kelola data OPD, unit kerja, dan struktur organisasi perangkat daerah',
             },
             {
                 icon: CalendarRange,
@@ -288,6 +290,10 @@ const modules: Module[] = [
 ];
 
 export default function Modules() {
+    const { appConfig } = usePage<PageProps>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+
     const [active, setActive] = useState(0);
     const mod = modules[active];
     const ModIcon = mod.icon;
@@ -298,13 +304,13 @@ export default function Modules() {
                 <Reveal className="text-center">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-semibold text-slate-800 shadow-2xs dark:border-border dark:bg-muted dark:text-foreground">
                         <Layers className="h-3.5 w-3.5 stroke-[2.5] text-primary" />
-                        <span>Arsitektur Sistem Papua Barat</span>
+                        <span>Arsitektur Sistem Tata Kelola</span>
                     </span>
                     <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl lg:text-4xl dark:text-foreground">
-                        Modul Fungsional e-KASUARI
+                        Modul Fungsional {appName}
                     </h2>
                     <p className="mx-auto mt-3 max-w-2xl text-sm sm:text-base text-gray-600 dark:text-muted-foreground">
-                        Enam modul inti yang saling terintegrasi untuk mendukung siklus tata kelola akuntabilitas kinerja pemerintah daerah Papua Barat.
+                        Enam modul inti yang saling terintegrasi untuk mendukung siklus tata kelola akuntabilitas kinerja {instansiName}.
                     </p>
                 </Reveal>
 

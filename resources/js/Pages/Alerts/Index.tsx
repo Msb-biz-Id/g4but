@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { AlertTriangle, Plus, Zap, CheckCircle2, XCircle, Settings2, Trash2, CircleDot } from 'lucide-react';
 import { EmptyState } from '@/Components/EmptyState';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 
 interface AlertItem {
@@ -182,20 +183,25 @@ export default function AlertsIndex({
  );
  };
 
- const availRoles = ['admin', 'bappeda', 'opd', 'inspectorate'];
+ const availRoles = ['admin', 'kepala_opd', 'opd', 'inspectorate'];
 
  return (
  <AuthenticatedLayout header="Early Warning System">
             <Head title="Early Warning System" />
 
             <div className="space-y-6">
-
-                {/* Section 1: Header area */}
-                <div className="flex justify-between items-center">
-                    <div className="flex flex-wrap items-center gap-2">
-                        {canManage && (
-                            <>
-                                <Button onClick={triggerDetection} className="gap-2">
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Monitoring & Evaluasi' },
+                        { label: 'Early Warning System (EWS)' },
+                    ]}
+                    title="Early Warning System (EWS)"
+                    description="Sistem deteksi dini anomali capaian kinerja, deviasi target, dan keterlambatan pelaporan indikator."
+                    badge="Deteksi Otomatis"
+                    actions={
+                        canManage ? (
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Button onClick={triggerDetection} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
                                     <Zap className="w-4 h-4" />
                                     Picu Deteksi
                                 </Button>
@@ -203,10 +209,10 @@ export default function AlertsIndex({
                                     <Plus className="w-4 h-4" />
                                     Tambah Aturan
                                 </Button>
-                            </>
-                        )}
-                    </div>
-                </div>
+                            </div>
+                        ) : undefined
+                    }
+                />
 
                 {/* Section 2: StatCards Grid 4 kolom */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

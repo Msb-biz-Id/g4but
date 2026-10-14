@@ -19,6 +19,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { cn } from '@/lib/utils';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface MigrationRow {
     id: number;
@@ -70,18 +71,26 @@ export default function DataMigrationsIndex({ auth, migrations, filters }: Props
  });
  };
 
- return (
- <AuthenticatedLayout
- header="Migrasi Data"
- >
- <Head title="Migrasi Data" />
- <div className="py-12">
- <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
- {flash?.success && (
- <div className="mb-4 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
- {flash.success}
- </div>
- )}
+    return (
+        <AuthenticatedLayout>
+            <Head title="Migrasi Data" />
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Migrasi Data Master"
+                    description="Inventarisasi, profiling, transformasi, validasi, rekonsiliasi, dan pemuatan data organisasi dan indikator ke sistem produksi."
+                    breadcrumbs={[
+                        { label: 'Pengaturan', href: route('settings.index') },
+                        { label: 'Migrasi Data' },
+                    ]}
+                />
+
+                <div className="mx-auto max-w-5xl space-y-6">
+                    {flash?.success && (
+                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
+                            {flash.success}
+                        </div>
+                    )}
 
  <Card>
  <CardHeader>

@@ -12,7 +12,7 @@ use Inertia\Response;
 /**
  * Monitoring Matrix Kelengkapan Dokumen OPD (MOD-003 / AC-007)
  *
- * Halaman eksklusif Super Admin dan Admin Provinsi untuk memantau
+ * Halaman eksklusif Super Admin dan Admin OPD untuk memantau
  * kelengkapan upload dokumen perencanaan per OPD secara sekilas
  * dalam bentuk tabel matriks (OPD × Tipe Dokumen).
  *
@@ -25,7 +25,6 @@ class MonitoringMatrixController extends Controller
 {
     // Tipe dokumen yang dipantau di matrix (subset dari 12, prioritas MVP)
     private const MATRIX_TYPES = [
-        'rpjmd' => 'RPJMD',
         'renstra' => 'Renstra',
         'renja' => 'Renja',
         'rkpd' => 'RKPD',
@@ -50,7 +49,7 @@ class MonitoringMatrixController extends Controller
         $organizations = Organization::query()
             ->where('is_active', true)
             ->orderBy('code')
-            ->get(['id', 'code', 'name', 'type', 'is_bappeda']);
+            ->get(['id', 'code', 'name', 'type']);
 
         $searchedTypes = [];
         foreach (array_keys(self::MATRIX_TYPES) as $t) {
@@ -59,13 +58,11 @@ class MonitoringMatrixController extends Controller
         $searchedTypes = array_values(array_unique($searchedTypes));
 
         // Ambil semua dokumen yang relevan untuk tahun evaluasi:
-        // Dokumen tahunan: year == $year
-        // Dokumen 5 tahunan (renstra, rpjmd, dll): tahun evaluasi berada dalam rentang berlakunya
         $documents = PlanningDocument::query()
             ->whereIn('type', $searchedTypes)
             ->get(['id', 'organization_id', 'type', 'status', 'approved_at', 'year', 'start_year', 'end_year', 'periode_type'])
             ->filter(function ($doc) use ($year) {
-                $isLimaTahunan = in_array($doc->type, ['rpjmd', 'renstra'], true)
+                $isLimaTahunan = in_array($doc->type, ['renstra'], true)
                     || $doc->periode_type === '5_tahunan'
                     || $doc->periode_type === 'lima_tahunan';
 
@@ -86,47 +83,14 @@ class MonitoringMatrixController extends Controller
             })
             ->groupBy('organization_id');
 
-        // Dokumen Pemda tingkat Provinsi (RPJMD dan RKPD)
-        $provOrgIds = Organization::where('type', 'province')
-            ->orWhere('code', 'PROV-PAPBAR')
-            ->orWhere('is_bappeda', true)
-            ->orWhere('type', 'bappeda')
-            ->orWhere('code', 'BAPPEDA-PB')
-            ->pluck('id')
-            ->toArray();
-
-        $pemdaDocs = PlanningDocument::whereIn('type', ['rpjmd', 'rkpd'])
-            ->whereIn('status', ['approved', 'locked'])
-            ->get(['id', 'organization_id', 'type', 'status', 'approved_at', 'year', 'start_year', 'end_year', 'periode_type'])
-            ->filter(function ($doc) use ($year) {
-                $start = $doc->start_year ?: $doc->year;
-                $end = $doc->end_year ?: ($start + 4);
-                if ($end <= $start) {
-                    $end = $start + 4;
-                }
-
-                return ($year >= $start && $year <= $end) || (int) $doc->year === $year;
-            });
-
         // Bangun baris matrix per OPD
-        $matrix = $organizations->map(function (Organization $org) use ($documents, $pemdaDocs, $provOrgIds) {
+        $matrix = $organizations->map(function (Organization $org) use ($documents) {
             $orgDocs = $documents->get($org->id, collect());
-            $isBappeda = (bool) (
-                $org->is_bappeda
-                || strtolower($org->type ?? '') === 'bappeda'
-                || str_contains(strtolower($org->name), 'bappeda')
-                || in_array($org->id, $provOrgIds, true)
-            );
 
-            $cells = collect(self::MATRIX_TYPES)->map(function ($label, $type) use ($orgDocs, $pemdaDocs, $isBappeda) {
+            $cells = collect(self::MATRIX_TYPES)->map(function ($label, $type) use ($orgDocs) {
                 $aliases = self::TYPE_ALIASES[$type] ?? [$type];
                 /** @var PlanningDocument|null $doc */
                 $doc = $orgDocs->first(fn ($d) => in_array($d->type, $aliases, true));
-
-                // Khusus Bappeda / Pemprov: jika dokumen RPJMD atau RKPD belum ada di unit ini, fallback ke dokumen Pemda yang sudah disetujui
-                if (! $doc && $isBappeda && in_array($type, ['rpjmd', 'rkpd'], true)) {
-                    $doc = $pemdaDocs->first(fn ($d) => in_array($d->type, $aliases, true));
-                }
 
                 if (! $doc) {
                     return ['status' => 'missing', 'id' => null, 'approved_at' => null];
@@ -151,7 +115,6 @@ class MonitoringMatrixController extends Controller
                     'code' => $org->code,
                     'name' => $org->name,
                     'type' => $org->type,
-                    'is_bappeda' => $org->is_bappeda,
                 ],
                 'cells' => $cells,
                 'score' => [

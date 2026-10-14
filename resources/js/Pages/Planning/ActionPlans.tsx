@@ -12,9 +12,20 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { Label } from '@/Components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/Components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/Components/ui/alert-dialog';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from '@/Components/ui/alert-dialog';
 import { cn, formatDate } from '@/lib/utils';
 import { Pencil, Trash2, TrendingUp, Plus, Filter, X } from 'lucide-react';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
 
 interface ActionPlan {
  id: number;
@@ -190,22 +201,21 @@ export default function ActionPlans({ plans, organizations, periods, indicators,
  >
  <Head title="Rencana Aksi" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-4">
-                    {/* Header Bar */}
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                                Rencana Aksi
-                            </h1>
-                            <p className="text-xs text-muted-foreground sm:text-sm">
-                                Pemantauan pelaksanaan aktivitas dan rencana aksi kinerja perangkat daerah.
-                            </p>
-                        </div>
-                        <Button onClick={openCreateModal} className="w-full sm:w-auto justify-center">
-                            <Plus className="mr-2 h-4 w-4" /> Tambah Rencana Aksi
-                        </Button>
-                    </div>
+            <div className="py-6">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
+                    <PageHeader
+                        title="Rencana Aksi Kinerja"
+                        description="Pemantauan pelaksanaan aktivitas, jadwal kerja, dan progres capaian rencana aksi kinerja perangkat daerah Pemerintah Provinsi Papua Barat."
+                        breadcrumbs={[
+                            { label: 'Perencanaan' },
+                            { label: 'Rencana Aksi' },
+                        ]}
+                        actions={(
+                            <Button onClick={openCreateModal} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm w-full sm:w-auto justify-center">
+                                <Plus className="mr-2 h-4 w-4" /> Tambah Rencana Aksi
+                            </Button>
+                        )}
+                    />
 
                     {/* Filter Card */}
                     <Card>

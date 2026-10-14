@@ -93,7 +93,7 @@ tr:nth-child(even) td { background: #f5f7fa; }
 @endif
 
 <div class="footer">
-  Dokumen ini digenerate secara otomatis oleh Sistem e-KASUARI pada {{ now()->toIso8601String() }}.<br>
+  Dokumen ini digenerate secara otomatis oleh Sistem e-SAKIP pada {{ now()->toIso8601String() }}.<br>
   Bersifat informatif — untuk penggunaan resmi harap verifikasi dengan data sumber.
 </div>
 </body>

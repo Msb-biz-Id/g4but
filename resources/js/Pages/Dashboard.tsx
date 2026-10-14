@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { PageProps } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, User as UserIcon, TableProperties, ArrowRight, ExternalLink, Target, TrendingUp, Search, X, Check, Copy, Download } from 'lucide-react';
 import ReactECharts from 'echarts-for-react';
@@ -77,81 +77,11 @@ export interface OpdSakipMatrix {
     };
 }
 
-export interface RpjmdYearlyData {
-    target: number | null;
-    realization: number | null;
-    achievement: number | null;
-    status: string;
-    predikat: string;
-    badge: string;
-    color: string;
-    bgClass: string;
-}
-
-export interface RpjmdMatrixRow {
-    no: number | string;
-    id: number;
-    kode: string;
-    tujuan: string;
-    sasaran: string;
-    strategic_objective_id: number | null;
-    indikator: string;
-    satuan: string;
-    polarization: string;
-    target: number | null;
-    realisasi: number | null;
-    capaian: number | null;
-    status: string;
-    predikat: string;
-    badge: string;
-    color: string;
-    bgClass: string;
-    opd_pengampu: string;
-    opd_id: number | null;
-    yearly: Record<number, RpjmdYearlyData>;
-    level?: 'goal' | 'objective';
-    parent_id?: number | null;
-    order_no?: number;
-    number_code?: string;
-    goal_code?: string;
-}
-
-export interface RpjmdMatrixSummary {
-    total_tujuan?: number;
-    total_sasaran: number;
-    total_indikator: number;
-    rata_capaian: number;
-    tercapai: number;
-    perlu_perhatian: number;
-    kritis: number;
-    tidak_dinilai?: number;
-    breakdown: {
-        tercapai: number;
-        perlu_perhatian: number;
-        terlambat: number;
-        kritis: number;
-    };
-    evaluation_year: number;
-}
-
-export interface RpjmdTrendPoint {
+export interface TrendPoint {
     tahun: number;
     target: number | null;
     realisasi: number | null;
-    capaian: number | null;
-    tercapai: number;
-    perlu_perhatian: number;
-    kritis?: number;
-    tidak_dinilai?: number;
-    status: string;
-}
-
-export interface RpjmdMatrixData {
-    summary: RpjmdMatrixSummary;
-    trend: RpjmdTrendPoint[];
-    rows: RpjmdMatrixRow[];
-    years: number[];
-    evaluation_year: number;
+    capaian?: number | null;
 }
 
 interface KpiKelengkapanPemda { pct: number; tersedia: number; total: number; status: string; }
@@ -165,7 +95,6 @@ interface KpiKritis { jumlah: number; }
 interface KpiData {
     kelengkapan_pemda: KpiKelengkapanPemda;
     opd_sakip_lengkap: KpiOpdLengkap;
-    rata_capaian_rpjmd: KpiCapaian;
     capaian_iku_pemda: KpiCapaian;
     rata_capaian_opd: KpiCapaian;
     nilai_sakip_pemda?: KpiSakipOpd;
@@ -177,7 +106,7 @@ interface KpiData {
 }
 
 interface StatusDistribusi { total: number; tercapai: number; perlu_perhatian: number; terlambat?: number; kritis: number; tidak_dinilai?: number; }
-interface TrendRpjmd { tahun: number; target: number | null; realisasi: number | null; }
+
 interface TrendPko { tahun: number; nilai: number | null; }
 
 interface OpdRankItem {
@@ -251,11 +180,9 @@ interface Props extends PageProps {
     current_filters?: CurrentFilters;
     filter_options?: FilterOptions;
     kpi: KpiData;
-    rpjmd_status: StatusDistribusi;
     iku_status: StatusDistribusi;
     opd_status: StatusDistribusi;
-    rpjmd_trend: TrendRpjmd[];
-    iku_trend: TrendRpjmd[];
+    iku_trend: TrendPoint[];
     pko_trend: TrendPko[];
     opd_ranking: OpdRankItem[];
     sakip_distribusi: SakipDistribusi;
@@ -268,7 +195,6 @@ interface Props extends PageProps {
     last_updated_at: string;
     pemda_sakip_matrix?: PemdaSakipMatrix;
     opd_sakip_matrix?: OpdSakipMatrix;
-    rpjmd_matrix?: RpjmdMatrixData;
     sakip_pemda?: any;
     sakip_pemda_matrix?: any;
 }
@@ -370,118 +296,9 @@ function SakipOpdDonutChart({
     );
 }
 
-// ─── RPJMD 5-Year Trend Chart (Modal Detail) ─────────────────────────────────
 
-function RpjmdModalTrendChart({ trend }: { trend: RpjmdTrendPoint[] }) {
-    const years = trend.map((t) => t.tahun);
-    const capaian = trend.map((t) => t.capaian);
-    const target = trend.map((t) => t.target ?? 0);
-    const yearStart = years[0] ?? 2026;
-    const yearEnd = years[years.length - 1] ?? 2030;
 
-    const option = {
-        tooltip: {
-            trigger: 'axis',
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-            borderColor: '#334155',
-            textStyle: { color: '#ffffff', fontSize: 11 },
-            formatter: (params: any) => {
-                const yr = params[0]?.axisValue;
-                const point = trend.find((t) => t.tahun === Number(yr));
-                let html = `<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:3px">Tren Sasaran RPJMD — Tahun ${yr}</div>`;
-                if (point?.capaian !== null && point?.capaian !== undefined) {
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Rata-rata Capaian:</span><b style="color:#10b981">${point.capaian}%</b></div>`;
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Tercapai (≥100%):</span><b>${point.tercapai} Indikator</b></div>`;
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Perlu Perhatian (50–<100%):</span><b style="color:#f59e0b">${point.perlu_perhatian} Indikator</b></div>`;
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Kritis (&lt;50%):</span><b style="color:#ef4444">${point.kritis ?? 0} Indikator</b></div>`;
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Benchmark:</span><b>100%</b></div>`;
-                } else {
-                    html += `<div style="color:#94a3b8;font-style:italic">Tahun masa depan (target perencanaan RPJMD ${yearStart}–${yearEnd})</div>`;
-                }
-                return html;
-            },
-        },
-        legend: {
-            bottom: 0,
-            itemWidth: 16,
-            itemHeight: 8,
-            textStyle: { fontSize: 11, color: '#64748b' },
-            data: [
-                { name: 'Benchmark', icon: 'line' },
-                { name: 'Rata-rata Capaian Realisasi (%)', icon: 'circle' },
-            ],
-        },
-        grid: {
-            top: 24,
-            bottom: 30,
-            left: 10,
-            right: 20,
-            containLabel: true,
-        },
-        xAxis: {
-            type: 'category',
-            data: years,
-            axisLine: { lineStyle: { color: '#cbd5e1' } },
-            axisLabel: { color: '#475569', fontSize: 11, fontWeight: 'bold' },
-        },
-        yAxis: {
-            type: 'value',
-            min: 50,
-            max: 120,
-            splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } },
-            axisLabel: {
-                formatter: '{value}%',
-                color: '#64748b',
-                fontSize: 10,
-            },
-        },
-        series: [
-            {
-                name: 'Benchmark',
-                type: 'line',
-                data: target,
-                lineStyle: { color: '#93c5fd', width: 2, type: 'dashed' },
-                itemStyle: { color: '#60a5fa' },
-                symbol: 'none',
-            },
-            {
-                name: 'Rata-rata Capaian Realisasi (%)',
-                type: 'line',
-                data: capaian,
-                lineStyle: { color: '#10b981', width: 3 },
-                itemStyle: { color: '#059669', borderWidth: 2, borderColor: '#ffffff' },
-                symbolSize: 8,
-                areaStyle: {
-                    color: {
-                        type: 'linear',
-                        x: 0,
-                        y: 0,
-                        x2: 0,
-                        y2: 1,
-                        colorStops: [
-                            { offset: 0, color: 'rgba(16, 185, 129, 0.28)' },
-                            { offset: 1, color: 'rgba(16, 185, 129, 0.02)' },
-                        ],
-                    },
-                },
-                label: {
-                    show: true,
-                    position: 'top',
-                    formatter: (p: any) => (p.value !== null && p.value !== undefined ? `${p.value}%` : ''),
-                    fontSize: 10.5,
-                    fontWeight: 'bold',
-                    color: '#065f46',
-                },
-            },
-        ],
-    };
 
-    return (
-        <div className="w-full h-52">
-            <ReactECharts option={option} style={{ width: '100%', height: '100%' }} opts={{ renderer: 'svg' }} />
-        </div>
-    );
-}
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 
@@ -696,9 +513,9 @@ function DonutChart({ data, label }: { data: StatusDistribusi; label: string }) 
     );
 }
 
-// ─── Trend Line Chart (Target vs Realisasi) — Interactive ECharts ────────────
+// ─── Trend Line Chart (Target vs Realisasi) - Interactive ECharts ────────────
 
-function TrendChart({ data }: { data: TrendRpjmd[]; title?: string }) {
+function TrendChart({ data }: { data: TrendPoint[]; title?: string }) {
     const validReal = data.map(d => d.realisasi).filter(v => v != null) as number[];
     const validTarg = data.map(d => d.target).filter(v => v != null) as number[];
     const allVals = [...validReal, ...validTarg];
@@ -803,7 +620,7 @@ function TrendChart({ data }: { data: TrendRpjmd[]; title?: string }) {
     );
 }
 
-// ─── PKO Trend Chart (Single Line) — Interactive ECharts ─────────────────────
+// ─── PKO Trend Chart (Single Line) - Interactive ECharts ─────────────────────
 
 function PkoTrendChart({ data }: { data: TrendPko[] }) {
     const vals = data.map(d => d.nilai).filter(v => v != null) as number[];
@@ -887,7 +704,7 @@ function PkoTrendChart({ data }: { data: TrendPko[] }) {
     );
 }
 
-// ─── SAKIP Bar Chart — Interactive ECharts ────────────────────────────────────
+// ─── SAKIP Bar Chart - Interactive ECharts ────────────────────────────────────
 
 function SakipBarChart({ data }: { data: SakipDistribusi }) {
     const bars = [
@@ -1033,13 +850,18 @@ function Card({
 
 export default function Dashboard({
     auth, tahun_evaluasi, triwulan_aktif, current_filters, filter_options, kpi,
-    rpjmd_status, iku_status, opd_status,
-    rpjmd_trend, iku_trend, pko_trend,
+    iku_status, opd_status,
+    iku_trend, pko_trend,
     opd_ranking, sakip_distribusi, pko_opd,
     renaks_summary, renaks_opd, budget_summary, budget_opd, attention_list, last_updated_at,
-    pemda_sakip_matrix, opd_sakip_matrix, rpjmd_matrix,
-    sakip_pemda, sakip_pemda_matrix,
+    pemda_sakip_matrix, opd_sakip_matrix, sakip_pemda, sakip_pemda_matrix,
 }: Props) {
+    const { appConfig } = usePage<PageProps>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+    const orgName = appConfig?.organizationName || 'Biro Organisasi Sekretariat Daerah';
+    const currentYear = appConfig?.currentYear || 2026;
+
     const initialRawYear = Number(current_filters?.tahun_evaluasi ?? tahun_evaluasi);
     const resolvedInitialYear = initialRawYear >= 2000 && initialRawYear <= 2100
         ? initialRawYear
@@ -1068,180 +890,15 @@ export default function Dashboard({
 
     const [isMatrixModalOpen, setIsMatrixModalOpen] = useState(false);
     const [isOpdModalOpen, setIsOpdModalOpen] = useState(false);
-    const [isRpjmdModalOpen, setIsRpjmdModalOpen] = useState(false);
-    const [rpjmdMatrixView, setRpjmdMatrixView] = useState<'eval_year' | 'trend_5yr'>('eval_year');
-    const [rpjmdSearchQuery, setRpjmdSearchQuery] = useState('');
-    const [rpjmdFilterSasaran, setRpjmdFilterSasaran] = useState<string>('');
-    const [rpjmdFilterOpd, setRpjmdFilterOpd] = useState<string>('');
-    const [rpjmdFilterStatus, setRpjmdFilterStatus] = useState<string>('Semua');
-    const [rpjmdCopied, setRpjmdCopied] = useState(false);
+    
+    
+    
+    
+    
+    
+    
 
-    const rpjmdYears = useMemo(() => {
-        return rpjmd_matrix?.years ?? filter_options?.years ?? [Number(tahun)];
-    }, [rpjmd_matrix?.years, filter_options?.years, tahun]);
-
-    const rpjmdSasaranOptions = useMemo(() => {
-        if (!rpjmd_matrix?.rows) return [];
-        const map = new Map<number, string>();
-        rpjmd_matrix.rows.forEach(r => {
-            if (r.strategic_objective_id && !map.has(r.strategic_objective_id)) {
-                map.set(r.strategic_objective_id, `${r.number_code || r.no} ${r.sasaran}`);
-            }
-        });
-        return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-    }, [rpjmd_matrix?.rows]);
-
-    const filteredRpjmdRows = useMemo(() => {
-        if (!rpjmd_matrix?.rows) return [];
-        return rpjmd_matrix.rows.filter((row) => {
-            if (rpjmdSearchQuery) {
-                const q = rpjmdSearchQuery.toLowerCase();
-                const match =
-                    ((row as any).misi && (row as any).misi.toLowerCase().includes(q)) ||
-                    row.tujuan.toLowerCase().includes(q) ||
-                    row.sasaran.toLowerCase().includes(q) ||
-                    row.indikator.toLowerCase().includes(q) ||
-                    row.opd_pengampu.toLowerCase().includes(q) ||
-                    (row.satuan && row.satuan.toLowerCase().includes(q));
-                if (!match) return false;
-            }
-            if (rpjmdFilterSasaran && row.strategic_objective_id !== Number(rpjmdFilterSasaran)) {
-                return false;
-            }
-            if (rpjmdFilterOpd && !row.opd_pengampu.toLowerCase().includes(rpjmdFilterOpd.toLowerCase())) {
-                return false;
-            }
-            if (rpjmdFilterStatus && rpjmdFilterStatus !== 'Semua') {
-                if (row.status !== rpjmdFilterStatus) {
-                    return false;
-                }
-            }
-            return true;
-        });
-    }, [rpjmd_matrix?.rows, rpjmdSearchQuery, rpjmdFilterSasaran, rpjmdFilterOpd, rpjmdFilterStatus]);
-
-    // Calculate rowspans for Misi and Tujuan in RPJMD table
-    const rpjmdRowSpans = useMemo(() => {
-        const misiSpans: number[] = new Array(filteredRpjmdRows.length).fill(1);
-        const tujuanSpans: number[] = new Array(filteredRpjmdRows.length).fill(1);
-
-        let i = 0;
-        while (i < filteredRpjmdRows.length) {
-            const currentMisi = (filteredRpjmdRows[i] as any).misi || 'Misi RPJMD';
-            let j = i + 1;
-            while (j < filteredRpjmdRows.length && ((filteredRpjmdRows[j] as any).misi || 'Misi RPJMD') === currentMisi) {
-                j++;
-            }
-            misiSpans[i] = j - i;
-            for (let k = i + 1; k < j; k++) {
-                misiSpans[k] = 0;
-            }
-
-            // Within this Misi group, calculate Tujuan spans
-            let t = i;
-            while (t < j) {
-                const currentTujuan = filteredRpjmdRows[t].tujuan || 'Tujuan RPJMD';
-                let u = t + 1;
-                while (u < j && (filteredRpjmdRows[u].tujuan || 'Tujuan RPJMD') === currentTujuan) {
-                    u++;
-                }
-                tujuanSpans[t] = u - t;
-                for (let v = t + 1; v < u; v++) {
-                    tujuanSpans[v] = 0;
-                }
-                t = u;
-            }
-
-            i = j;
-        }
-
-        return { misiSpans, tujuanSpans };
-    }, [filteredRpjmdRows]);
-
-    const handleCopyRpjmdToClipboard = useCallback(() => {
-        if (!rpjmd_matrix) return;
-        const rows = filteredRpjmdRows;
-        let text = '';
-        if (rpjmdMatrixView === 'eval_year') {
-            text += `No\tMisi\tTujuan\tSasaran RPJMD\tIndikator\tSatuan\tTarget (${rpjmd_matrix.evaluation_year})\tRealisasi (${rpjmd_matrix.evaluation_year})\tCapaian (%)\tStatus\n`;
-            rows.forEach((r: any, idx: number) => {
-                text += `${idx + 1}\t${r.misi || '-'}\t${r.tujuan}\t${r.sasaran}\t${r.indikator}\t${r.satuan}\t${r.target ?? '-'}\t${r.realisasi ?? '-'}\t${r.capaian !== null ? r.capaian + '%' : '-'}\t${r.status}\n`;
-            });
-        } else {
-            text += `No\tMisi\tTujuan\tSasaran RPJMD\tIndikator\tSatuan\t` +
-                rpjmd_matrix.years.map(y => `Target ${y}\tRealisasi ${y}\tCapaian ${y} (%)`).join('\t') +
-                `\tStatus (${rpjmd_matrix.evaluation_year})\n`;
-            rows.forEach((r: any, idx: number) => {
-                const yearCols = rpjmd_matrix.years.map(y => {
-                    const yd = r.yearly[y];
-                    return `${yd?.target ?? '-'}\t${yd?.realization ?? '-'}\t${yd?.achievement !== null && yd?.achievement !== undefined ? yd.achievement + '%' : '-'}`;
-                }).join('\t');
-                text += `${idx + 1}\t${r.misi || '-'}\t${r.tujuan}\t${r.sasaran}\t${r.indikator}\t${r.satuan}\t${yearCols}\t${r.status}\n`;
-            });
-        }
-        navigator.clipboard.writeText(text).then(() => {
-            setRpjmdCopied(true);
-            setTimeout(() => setRpjmdCopied(false), 2000);
-        });
-    }, [rpjmd_matrix, filteredRpjmdRows, rpjmdMatrixView]);
-
-    const handleDownloadRpjmdCsv = useCallback(() => {
-        if (!rpjmd_matrix) return;
-        const rows = filteredRpjmdRows;
-        let csvContent = '\uFEFF';
-
-        if (rpjmdMatrixView === 'eval_year') {
-            const headers = ['No', 'Tujuan', 'Sasaran RPJMD', 'Indikator', 'Kode', 'Satuan', `Target (${rpjmd_matrix.evaluation_year})`, `Realisasi (${rpjmd_matrix.evaluation_year})`, 'Capaian (%)', 'Status'];
-            csvContent += headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n';
-            rows.forEach((r, idx) => {
-                const line = [
-                    idx + 1,
-                    r.tujuan,
-                    r.sasaran,
-                    r.indikator,
-                    r.kode,
-                    r.satuan,
-                    r.target !== null ? r.target : '',
-                    r.realisasi !== null ? r.realisasi : '',
-                    r.capaian !== null ? r.capaian : '',
-                    r.status,
-                ];
-                csvContent += line.map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(',') + '\n';
-            });
-        } else {
-            const headers = ['No', 'Sasaran RPJMD', 'Indikator', 'Kode', 'Satuan'];
-            rpjmd_matrix.years.forEach(y => {
-                headers.push(`Target ${y}`, `Realisasi ${y}`, `Capaian ${y} (%)`);
-            });
-            headers.push(`Status (${rpjmd_matrix.evaluation_year})`);
-            csvContent += headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n';
-
-            rows.forEach((r) => {
-                const line: (string | number)[] = [r.no, r.sasaran, r.indikator, r.kode, r.satuan];
-                rpjmd_matrix.years.forEach(y => {
-                    const yd = r.yearly[y];
-                    line.push(
-                        yd?.target !== null && yd?.target !== undefined ? yd.target : '',
-                        yd?.realization !== null && yd?.realization !== undefined ? yd.realization : '',
-                        yd?.achievement !== null && yd?.achievement !== undefined ? yd.achievement : ''
-                    );
-                });
-                line.push(r.status);
-                csvContent += line.map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(',') + '\n';
-            });
-        }
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', `matriks-rpjmd-${rpjmd_matrix.evaluation_year}-${rpjmdMatrixView}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }, [rpjmd_matrix, filteredRpjmdRows, rpjmdMatrixView]);
-
+    
     const getExportUrl = useCallback((type: string = 'dashboard', format: string = 'pdf') => {
         const params = new URLSearchParams();
         params.set('type', type);
@@ -1291,7 +948,7 @@ export default function Dashboard({
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  HEADER — Responsive layout (Mobile: stacked + badge, Desktop: 3 cols)
+             *  HEADER - Responsive layout (Mobile: stacked + badge, Desktop: 3 cols)
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="bg-primary text-primary-foreground rounded-lg mb-3 p-3.5 sm:p-4 md:px-5 md:py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 shadow transition-colors duration-200">
@@ -1302,9 +959,9 @@ export default function Dashboard({
                             <ApplicationLogo className="w-full h-full object-contain" />
                         </div>
                         <div>
-                            <p className="text-[10px] sm:text-xs font-semibold text-primary-foreground/90 leading-none">Biro Organisasi Sekretariat Daerah</p>
-                            <p className="text-xs sm:text-sm font-bold text-primary-foreground leading-tight">Provinsi Papua Barat</p>
-                            <p className="text-[9px] sm:text-[10px] text-primary-foreground/75 leading-none">Sistem Monitoring Kinerja</p>
+                            <p className="text-[10px] sm:text-xs font-semibold text-primary-foreground/90 leading-none">{orgName}</p>
+                            <p className="text-xs sm:text-sm font-bold text-primary-foreground leading-tight">{instansiName}</p>
+                            <p className="text-[9px] sm:text-[10px] text-primary-foreground/75 leading-none">{appName} • Sistem Monitoring Kinerja</p>
                         </div>
                     </div>
                     {/* User badge on mobile only */}
@@ -1324,7 +981,7 @@ export default function Dashboard({
                             📊 Grafik & Visualisasi Interaktif
                         </span>
                     </div>
-                    <p className="text-primary-foreground/80 text-[11px] sm:text-xs leading-tight mt-0.5">Monitoring Kinerja dan Akuntabilitas Biro Organisasi Sekretariat Daerah Provinsi Papua Barat</p>
+                    <p className="text-primary-foreground/80 text-[11px] sm:text-xs leading-tight mt-0.5">Monitoring Kinerja dan Akuntabilitas {orgName} {instansiName}</p>
                     <p className="md:hidden text-[10px] text-primary-foreground/70 mt-1 font-medium">{today}</p>
                 </div>
 
@@ -1342,7 +999,7 @@ export default function Dashboard({
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  FILTER BAR — Responsive Grid Dinamis
+             *  FILTER BAR - Responsive Grid Dinamis
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 mb-3 w-full">
@@ -1391,7 +1048,7 @@ export default function Dashboard({
                     </div>
 
                     <div className="flex flex-col gap-1 w-full min-w-0">
-                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide truncate">Sasaran RPJMD</label>
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide truncate">Sasaran Strategis</label>
                         <Select2
                             value={sasaranId}
                             onChange={(val) => setSasaranId(val)}
@@ -1471,24 +1128,24 @@ export default function Dashboard({
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  GRID KPI — 9 KARTU, DIBAGI 2 BARIS (5 ATAS / 4 BAWAH)
+             *  GRID KPI - 9 KARTU, DIBAGI 2 BARIS (5 ATAS / 4 BAWAH)
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 mb-3">
 
-                {/* 1. Kelengkapan SAKIP Pemda (Klik Detail Matriks 13 Dokumen) */}
+                {/* 1. Kelengkapan SAKIP OPD (Klik Detail Matriks 13 Dokumen) */}
                 <div
                     onClick={() => setIsMatrixModalOpen(true)}
                     className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 flex flex-col justify-between gap-1.5 cursor-pointer hover:border-blue-400 hover:shadow-md transition group select-none relative"
-                    title="Klik untuk melihat detail matriks 13 dokumen SAKIP Pemda"
+                    title="Klik untuk melihat detail matriks 13 dokumen SAKIP OPD"
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                             <span className="text-lg sm:text-xl">📄</span>
-                            <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Kelengkapan SAKIP Pemda</p>
+                            <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Kelengkapan SAKIP OPD</p>
                         </div>
                         <span className="text-xs sm:text-[10px] text-blue-600 font-semibold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition flex items-center">
-                            Detail ↗
+                            Detail �-
                         </span>
                     </div>
                     <div>
@@ -1518,7 +1175,7 @@ export default function Dashboard({
                             <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">OPD SAKIP Lengkap</p>
                         </div>
                         <span className="text-xs sm:text-[10px] text-blue-600 font-semibold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition flex items-center">
-                            Detail ↗
+                            Detail �-
                         </span>
                     </div>
                     <div>
@@ -1541,35 +1198,35 @@ export default function Dashboard({
                     </div>
                 </div>
 
-                {/* 3. Rata-rata Capaian RPJMD (Klik Detail Matriks 35 Indikator & Tren 5 Tahun) */}
-                <div
-                    onClick={() => { setRpjmdMatrixView('eval_year'); setIsRpjmdModalOpen(true); }}
-                    className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 flex flex-col justify-between gap-1.5 cursor-pointer hover:border-blue-400 hover:shadow-md transition group select-none relative"
-                    title="Klik untuk melihat detail matriks 35 indikator RPJMD & tren 5 tahun"
+                {/* 3. Rata-rata Capaian Kinerja OPD */}
+                <Link
+                    href={`${route('analytics.index')}?tab=opd`}
+                    className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 flex flex-col justify-between gap-1.5 hover:border-blue-400 hover:shadow-md transition group select-none relative"
+                    title="Rata-rata capaian kinerja seluruh Perangkat Daerah (OPD). Klik untuk rincian."
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                            <span className="text-lg sm:text-xl">🎯</span>
-                            <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Rata-rata Capaian RPJMD</p>
+                            <span className="text-lg sm:text-xl">📊</span>
+                            <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Rata-rata Capaian Kinerja OPD</p>
                         </div>
                         <span className="text-xs sm:text-[10px] text-blue-600 font-semibold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition flex items-center">
-                            Detail ↗
+                            Detail �-
                         </span>
                     </div>
                     <div>
-                        <p className="text-xl sm:text-2xl font-extrabold text-gray-800">{kpi.rata_capaian_rpjmd.pct.toFixed(2)}%</p>
+                        <p className="text-xl sm:text-2xl font-extrabold text-gray-800">{kpi.rata_capaian_opd.pct.toFixed(2)}%</p>
                         <div className="mt-1 flex items-center justify-between">
-                            <StatusBadge status={kpi.rata_capaian_rpjmd.status} />
+                            <StatusBadge status={kpi.rata_capaian_opd.status} />
                             <span className="text-xs sm:text-[10px] text-gray-400 font-medium">
-                                {rpjmd_matrix?.summary.tercapai ?? 0}/{rpjmd_matrix?.summary.total_indikator ?? 0} Tercapai
+                                Seluruh OPD
                             </span>
                         </div>
                     </div>
                     <div className="text-xs sm:text-[10px] text-blue-600 font-medium flex items-center gap-1 group-hover:underline pt-0.5 border-t border-gray-50">
                         <TableProperties className="w-3 h-3" />
-                        <span>Klik Detail Matriks</span>
+                        <span>Buka Ranking OPD</span>
                     </div>
-                </div>
+                </Link>
 
                 {/* 4. Capaian IKU */}
                 <Link
@@ -1581,10 +1238,10 @@ export default function Dashboard({
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 <span className="text-lg sm:text-xl">👤</span>
-                                <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Capaian IKU Pemda</p>
+                                <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Capaian IKU OPD</p>
                             </div>
                             <span className="text-xs sm:text-[10px] text-blue-600 font-semibold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition flex items-center">
-                                Detail ↗
+                                Detail �-
                             </span>
                         </div>
                         <div className="mt-1">
@@ -1618,19 +1275,19 @@ export default function Dashboard({
                     </div>
                 </div>
 
-                {/* 6. Nilai SAKIP Pemda (Modul Evaluasi Pemda - PermenPANRB 88/2021) */}
+                {/* 6. Nilai SAKIP OPD (Modul Evaluasi - PermenPANRB 88/2021) */}
                 <Link
-                    href={`${route('analytics.index')}?tab=sakip_pemda`}
+                    href={`${route('analytics.index')}?tab=sakip`}
                     className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 flex flex-col justify-between gap-1.5 hover:border-blue-400 hover:shadow-md transition group select-none relative"
-                    title="Nilai Akuntabilitas Kinerja Instansi Pemerintah Tingkat Pemda (Evaluasi KemenPANRB). Klik untuk rincian."
+                    title="Nilai Akuntabilitas Kinerja Instansi Pemerintah Perangkat Daerah. Klik untuk rincian."
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                             <span className="text-lg sm:text-xl">🏛️</span>
-                            <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Nilai SAKIP Pemda</p>
+                            <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Nilai SAKIP OPD</p>
                         </div>
                         <span className="text-xs sm:text-[10px] text-blue-600 font-semibold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition flex items-center">
-                            Detail ↗
+                            Detail �-
                         </span>
                     </div>
                     <div>
@@ -1658,7 +1315,7 @@ export default function Dashboard({
                             <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Rata-rata Nilai SAKIP OPD</p>
                         </div>
                         <span className="text-xs sm:text-[10px] text-blue-600 font-semibold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition flex items-center">
-                            Detail ↗
+                            Detail �-
                         </span>
                     </div>
                     <div>
@@ -1672,11 +1329,11 @@ export default function Dashboard({
                     </div>
                 </Link>
 
-                {/* 8. Nilai PKO Pemda */}
+                {/* 8. Nilai PKO OPD */}
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 flex flex-col justify-between gap-1.5">
                     <div className="flex items-center gap-1.5 sm:gap-2">
                         <span className="text-lg sm:text-xl">🏆</span>
-                        <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Nilai PKO Pemda</p>
+                        <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Nilai PKO OPD</p>
                     </div>
                     <div>
                         <p className="text-xl sm:text-2xl font-extrabold text-gray-800">{kpi.nilai_pko_pemda.nilai.toFixed(2)}</p>
@@ -1712,29 +1369,12 @@ export default function Dashboard({
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  ROW 2 — 3 DONUT CHARTS
+             *  ROW 2 - DONUT CHARTS (IKU OPD & Capaian Kinerja OPD)
              * ─────────────────────────────────────────────────────────────────
              */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-3">
                 <Card
-                    title={`Status Capaian RPJMD (${rpjmd_status.total} Indikator)`}
-                    action={
-                        <button
-                            type="button"
-                            onClick={() => { setRpjmdMatrixView('eval_year'); setIsRpjmdModalOpen(true); }}
-                            className="flex items-center gap-1 text-xs text-blue-600 hover:underline cursor-pointer"
-                        >
-                            <span>Lihat Detail Matriks</span>
-                            <ChevronRight className="w-3 h-3" />
-                        </button>
-                    }
-                >
-                    <div onClick={() => { setRpjmdMatrixView('eval_year'); setIsRpjmdModalOpen(true); }} className="cursor-pointer" title="Klik untuk membuka detail matriks RPJMD">
-                        <DonutChart data={rpjmd_status} label="Indikator" />
-                    </div>
-                </Card>
-                <Card
-                    title={`Status IKU (${iku_status.total} IKU)`}
+                    title={`Status IKU OPD (${iku_status.total} IKU)`}
                     action="Lihat Detail"
                     actionHref={route('planning.iku.index')}
                 >
@@ -1753,29 +1393,12 @@ export default function Dashboard({
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  ROW 3 — 3 TREND CHARTS
+             *  ROW 3 - TREND CHARTS (Tren IKU & Tren PKO OPD)
              * ─────────────────────────────────────────────────────────────────
              */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-3">
                 <Card
-                    title={`Tren Capaian RPJMD (${rpjmd_matrix?.years ? `${rpjmd_matrix.years[0]}–${rpjmd_matrix.years[rpjmd_matrix.years.length - 1]}` : '5 Tahunan'})`}
-                    action={
-                        <button
-                            type="button"
-                            onClick={() => { setRpjmdMatrixView('trend_5yr'); setIsRpjmdModalOpen(true); }}
-                            className="flex items-center gap-1 text-xs text-blue-600 hover:underline cursor-pointer"
-                        >
-                            <span>Lihat Tren 5 Tahun</span>
-                            <ChevronRight className="w-3 h-3" />
-                        </button>
-                    }
-                >
-                    <div onClick={() => { setRpjmdMatrixView('trend_5yr'); setIsRpjmdModalOpen(true); }} className="cursor-pointer" title="Klik untuk melihat tabel tren 5 tahun RPJMD">
-                        <TrendChart data={rpjmd_trend} />
-                    </div>
-                </Card>
-                <Card
-                    title="Tren IKU"
+                    title="Tren IKU OPD"
                     action="Lihat Detail"
                     actionHref={route('planning.iku.index')}
                 >
@@ -1787,19 +1410,19 @@ export default function Dashboard({
                         <TrendChart data={iku_trend} />
                     </Link>
                 </Card>
-                <Card title="Tren Nilai PKO Pemerintah Daerah" action="Lihat Detail" actionHref={`${route('analytics.index')}?tab=pko`}>
+                <Card title="Tren Nilai PKO OPD" action="Lihat Detail" actionHref={`${route('analytics.index')}?tab=pko`}>
                     <PkoTrendChart data={pko_trend} />
                 </Card>
             </div>
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  ROW 4 — Top 10 Kinerja OPD | Capaian PKO Perangkat Daerah
+             *  ROW 4 - Top 10 Kinerja OPD | Capaian PKO Perangkat Daerah
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 mb-3">
 
-                {/* Top 10 OPD — col-span-7 agar leluasa dan tidak terpotong */}
+                {/* Top 10 OPD - col-span-7 agar leluasa dan tidak terpotong */}
                 <Card title={`Top 10 Capaian Kinerja OPD Tahun ${tahun_evaluasi}`} className="lg:col-span-7" noPad>
                     <div className="overflow-x-auto w-full">
                         <table className="w-full text-xs min-w-[480px]">
@@ -1833,12 +1456,12 @@ export default function Dashboard({
                                         <td className="px-2 py-2 text-center hidden md:table-cell">
                                             {opd.perlu_perhatian > 0
                                                 ? <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-700 font-bold text-[10px]">{opd.perlu_perhatian}</span>
-                                                : <span className="text-gray-300">—</span>}
+                                                : <span className="text-gray-300">-</span>}
                                         </td>
                                         <td className="px-2 py-2 text-center hidden md:table-cell">
                                             {opd.kritis > 0
                                                 ? <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 text-rose-700 font-bold text-[10px]">{opd.kritis}</span>
-                                                : <span className="text-gray-300">—</span>}
+                                                : <span className="text-gray-300">-</span>}
                                         </td>
                                         <td className="px-2.5 py-2 text-center"><StatusBadge status={opd.status} /></td>
                                     </tr>
@@ -1867,7 +1490,7 @@ export default function Dashboard({
                     </div>
                 </Card>
 
-                {/* PKO Perangkat Daerah — col-span-5 */}
+                {/* PKO Perangkat Daerah - col-span-5 */}
                 <Card
                     title="Capaian PKO Perangkat Daerah"
                     extraHeader={
@@ -1930,19 +1553,19 @@ export default function Dashboard({
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  ROW 5 — Capaian Rencana Aksi Triwulan (Fisik & Anggaran)
+             *  ROW 5 - Capaian Rencana Aksi Triwulan (Fisik & Anggaran)
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 mb-3">
 
                 {/* 1. Capaian Rencana Aksi Triwulan (Fisik) */}
                 <Card
-                    title={`Capaian Rencana Aksi Triwulan (Fisik) — Tahun ${renaks_summary.tahun} - ${renaks_summary.triwulan}`}
+                    title={`Capaian Rencana Aksi Triwulan (Fisik) - Tahun ${renaks_summary.tahun} - ${renaks_summary.triwulan}`}
                     action="Lihat Detail"
                     actionHref={`${route('analytics.index')}?tab=action_plans&year=${tahun}${triwulan && triwulan !== 'Semua' ? `&triwulan=${triwulan}` : ''}`}
                     noPad
                 >
-                    {/* Summary badges — 2 cols on mobile, 4 cols on sm+ */}
+                    {/* Summary badges - 2 cols on mobile, 4 cols on sm+ */}
                     <div className="px-3 sm:px-4 pt-3 pb-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {[
                             { icon: '✅', label: 'On Track',       n: renaks_summary.on_track,        color: 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300' },
@@ -2009,12 +1632,12 @@ export default function Dashboard({
 
                 {/* 2. Capaian Rencana Aksi Anggaran Triwulan (Keuangan) */}
                 <Card
-                    title={`Capaian Rencana Aksi Anggaran — Tahun ${budget_summary?.tahun ?? renaks_summary.tahun} - ${budget_summary?.triwulan ?? renaks_summary.triwulan}`}
+                    title={`Capaian Rencana Aksi Anggaran - Tahun ${budget_summary?.tahun ?? renaks_summary.tahun} - ${budget_summary?.triwulan ?? renaks_summary.triwulan}`}
                     action="Lihat Detail"
                     actionHref={`${route('analytics.index')}?tab=monitoring_budget&year=${tahun}${triwulan && triwulan !== 'Semua' ? `&triwulan=${triwulan}` : ''}`}
                     noPad
                 >
-                    {/* Summary badges — 2 cols on mobile, 4 cols on sm+ */}
+                    {/* Summary badges - 2 cols on mobile, 4 cols on sm+ */}
                     <div className="px-3 sm:px-4 pt-3 pb-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <div className="rounded-lg border p-2 flex flex-col items-center gap-0.5 bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950/40 dark:border-blue-800/60 dark:text-blue-300">
                             <span className="text-lg leading-tight">💰</span>
@@ -2091,12 +1714,12 @@ export default function Dashboard({
 
             {/*
              * ─────────────────────────────────────────────────────────────────
-             *  ROW 6 — Nilai SAKIP OPD | Daftar Perhatian Pimpinan
+             *  ROW 6 - Nilai SAKIP OPD | Daftar Perhatian Pimpinan
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 mb-3">
 
-                {/* Nilai SAKIP OPD — Luas & Proporsional di kolom 50% */}
+                {/* Nilai SAKIP OPD - Luas & Proporsional di kolom 50% */}
                 <Card
                     title="Nilai SAKIP OPD"
                     action="Lihat Detail"
@@ -2105,8 +1728,8 @@ export default function Dashboard({
                     <div className="flex flex-col justify-between h-full">
                         <SakipBarChart data={sakip_distribusi} />
                         <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between bg-slate-50 p-2.5 rounded text-xs">
-                            <span className="text-gray-600 font-medium">Nilai SAKIP Pemda:</span>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Nilai SAKIP Pemda Papua Barat (KemenPANRB)">
+                            <span className="text-gray-600 font-medium">Nilai SAKIP OPD:</span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Nilai SAKIP OPD (Akuntabilitas Kinerja)">
                                 {(kpi.nilai_sakip_pemda?.nilai ?? 0.0).toFixed(2)} ({kpi.nilai_sakip_pemda?.predikat ?? 'BELUM DINILAI'})
                             </span>
                         </div>
@@ -2176,11 +1799,11 @@ export default function Dashboard({
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 py-3 border-t border-gray-100 mt-2 gap-1.5 text-center sm:text-left">
-                <span>© {tahun_evaluasi} Biro Organisasi Sekretariat Daerah Provinsi Papua Barat. Hak Cipta Dilindungi.</span>
+                <span>© {tahun_evaluasi || currentYear} {orgName} {instansiName}. Hak Cipta Dilindungi.</span>
                 <span>Data diupdate terakhir: {last_updated_at}</span>
             </div>
 
-            {/* ─── MODAL DETAIL MATRIKS 13 DOKUMEN SAKIP PEMDA ────────────── */}
+            {/* ─── MODAL DETAIL MATRIKS 13 DOKUMEN SAKIP OPD ──────────────── */}
             <Dialog open={isMatrixModalOpen} onOpenChange={setIsMatrixModalOpen}>
                 <DialogContent className="max-w-4xl p-0 overflow-hidden sm:max-w-4xl bg-white border-0 shadow-2xl">
                     {/* Header */}
@@ -2191,11 +1814,11 @@ export default function Dashboard({
                                     <TableProperties className="w-4 h-4" />
                                 </span>
                                 <DialogTitle className="text-base sm:text-lg font-bold text-white tracking-tight">
-                                    Matriks Kelengkapan Dokumen SAKIP Pemerintah Daerah
+                                    Matriks Kelengkapan Dokumen SAKIP OPD
                                 </DialogTitle>
                             </div>
                             <DialogDescription className="text-xs text-slate-300 mt-1">
-                                Evaluasi ketersediaan dan kesesuaian periode 13 dokumen utama SAKIP Pemda — Tahun Evaluasi <strong>{tahun}</strong>
+                                Evaluasi ketersediaan dan kesesuaian periode 13 dokumen utama SAKIP OPD - Tahun Evaluasi <strong>{tahun}</strong>
                             </DialogDescription>
                         </div>
                     </div>
@@ -2422,7 +2045,7 @@ export default function Dashboard({
                                 </div>
                                 <div className="col-span-2 sm:col-span-5 rounded-lg border border-slate-200 bg-white p-2.5 flex items-center justify-between px-3.5 shadow-2xs text-xs text-slate-600">
                                     <span>
-                                        <strong>Rumus:</strong> Persentase OPD Lengkap = Jumlah OPD Lengkap (100%) / Total OPD × 100% = {opd_sakip_matrix?.opd_lengkap ?? 0} / {opd_sakip_matrix?.total_opd ?? 0} × 100% = <strong className="text-blue-700">{opd_sakip_matrix?.pct_lengkap ?? 0}%</strong>
+                                        <strong>Rumus:</strong> Persentase OPD Lengkap = Jumlah OPD Lengkap (100%) / Total OPD �- 100% = {opd_sakip_matrix?.opd_lengkap ?? 0} / {opd_sakip_matrix?.total_opd ?? 0} �- 100% = <strong className="text-blue-700">{opd_sakip_matrix?.pct_lengkap ?? 0}%</strong>
                                     </span>
                                 </div>
                             </div>
@@ -2565,452 +2188,7 @@ export default function Dashboard({
                 </DialogContent>
             </Dialog>
 
-            {/* ═══════════════════════════════════════════════════════════════
-             *  MODAL DIALOG: MATRIKS CAPAIAN SASARAN & INDIKATOR RPJMD (35 INDIKATOR + TREN 5 TAHUN)
-             * ═══════════════════════════════════════════════════════════════ */}
-            <Dialog open={isRpjmdModalOpen} onOpenChange={setIsRpjmdModalOpen}>
-                <DialogContent className="sm:max-w-7xl max-h-[92vh] overflow-y-auto p-0 gap-0 bg-white border-0 shadow-2xl">
-                    {/* Header */}
-                    <div className="bg-slate-900 text-white p-4 sm:p-5 pr-12 flex items-start justify-between border-b border-slate-800">
-                        <div>
-                            <div className="flex items-center gap-2.5">
-                                <span className="p-1.5 rounded-md bg-emerald-600/30 text-emerald-400 border border-emerald-500/30">
-                                    <Target className="w-4 h-4" />
-                                </span>
-                                <DialogTitle className="text-base sm:text-lg font-bold text-white tracking-tight">
-                                    Matriks Capaian Sasaran &amp; Indikator RPJMD Pemerintah Daerah
-                                </DialogTitle>
-                            </div>
-                            <DialogDescription className="text-xs text-slate-300 mt-1">
-                                Monitoring capaian target indikator sasaran RPJMD tahun evaluasi <strong>{tahun}</strong> dan analisis tren multi-tahun ({rpjmd_matrix?.years ? `${rpjmd_matrix.years[0]}–${rpjmd_matrix.years[rpjmd_matrix.years.length - 1]}` : '5 Tahunan'})
-                            </DialogDescription>
-                        </div>
-                    </div>
-
-                    <div className="p-4 sm:p-6 space-y-4">
-                        {/* 8 KARTU UTAMA EKSEKUTIF RPJMD */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-                            <div className="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-2xs">
-                                <p className="text-[10px] font-semibold text-rose-700 uppercase tracking-wide">Tujuan RPJMD</p>
-                                <p className="text-2xl font-black text-rose-800 mt-0.5">{rpjmd_matrix?.summary.total_tujuan ?? 0}</p>
-                                <span className="text-[10px] text-slate-400">Tujuan Makro</span>
-                            </div>
-                            <div className="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-2xs">
-                                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Sasaran RPJMD</p>
-                                <p className="text-2xl font-black text-slate-800 mt-0.5">{rpjmd_matrix?.summary.total_sasaran ?? 0}</p>
-                                <span className="text-[10px] text-slate-400">Sasaran Strategis</span>
-                            </div>
-                            <div className="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-2xs">
-                                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Indikator</p>
-                                <p className="text-2xl font-black text-blue-800 mt-0.5">{rpjmd_matrix?.summary.total_indikator ?? 0}</p>
-                                <span className="text-[10px] text-blue-500">Total Indikator</span>
-                            </div>
-                            <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 text-center shadow-2xs">
-                                <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Rata-rata Capaian</p>
-                                <p className="text-2xl font-black text-emerald-700 mt-0.5">{(rpjmd_matrix?.summary.rata_capaian ?? 0.0).toFixed(2)}%</p>
-                                <span className="text-[10px] text-emerald-600 font-medium">Tahun {tahun}</span>
-                            </div>
-                            <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 text-center shadow-2xs">
-                                <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Tercapai</p>
-                                <p className="text-2xl font-black text-emerald-700 mt-0.5">{rpjmd_matrix?.summary.tercapai ?? 0}</p>
-                                <span className="text-[10px] text-emerald-600 font-medium">Capaian &ge; 100%</span>
-                            </div>
-                            <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 text-center shadow-2xs">
-                                <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Perlu Perhatian</p>
-                                <p className="text-2xl font-black text-amber-700 mt-0.5">{rpjmd_matrix?.summary.perlu_perhatian ?? 0}</p>
-                                <span className="text-[10px] text-amber-600 font-medium">50% &le; Capaian &lt; 100%</span>
-                            </div>
-                            <div className="rounded-lg border border-rose-200 bg-rose-50/50 p-3 text-center shadow-2xs">
-                                <p className="text-[10px] font-semibold text-rose-700 uppercase tracking-wide">Kritis</p>
-                                <p className="text-2xl font-black text-rose-700 mt-0.5">{rpjmd_matrix?.summary.kritis ?? 0}</p>
-                                <span className="text-[10px] text-rose-600 font-medium">Capaian &lt; 50%</span>
-                            </div>
-                            <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 text-center shadow-2xs">
-                                <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">Tidak Dinilai</p>
-                                <p className="text-2xl font-black text-slate-700 mt-0.5">{rpjmd_matrix?.summary.tidak_dinilai ?? 0}</p>
-                                <span className="text-[10px] text-slate-500 font-medium">Target=0 &amp; Real=0</span>
-                            </div>
-                        </div>
-
-                        {/* GRAFIK TREN 5 TAHUN (2025 -> 2026 -> 2027 -> 2028 -> 2029) */}
-                        <div className="rounded-lg border border-slate-200 bg-slate-50/40 p-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-200">
-                                <div className="flex items-center gap-2">
-                                    <span className="p-1 rounded bg-blue-100 text-blue-700">
-                                        <TrendingUp className="w-3.5 h-3.5" />
-                                    </span>
-                                    <div>
-                                        <h4 className="text-xs font-bold text-slate-800">Capaian Sasaran RPJMD per Tahun</h4>
-                                        <p className="text-[11px] text-slate-500">
-                                            Lintasan tren deret waktu: <strong className="text-blue-700 font-mono">{rpjmdYears.join(' \u2192 ')}</strong>
-                                        </p>
-                                    </div>
-                                </div>
-                                <span className="text-[11px] text-blue-700 font-bold bg-blue-50 px-2.5 py-1 rounded border border-blue-200 shadow-2xs">
-                                    Benchmark: 100%
-                                </span>
-                            </div>
-                            <RpjmdModalTrendChart trend={rpjmd_matrix?.trend ?? []} />
-                        </div>
-
-                        {/* FILTER & VIEW TOGGLE BAR */}
-                        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
-                            {/* View Mode Buttons */}
-                            <div className="inline-flex rounded-md p-1 bg-slate-100 border border-slate-200 self-start md:self-auto">
-                                <button
-                                    type="button"
-                                    onClick={() => setRpjmdMatrixView('eval_year')}
-                                    className={`px-3 py-1 text-xs font-bold rounded cursor-pointer transition ${
-                                        rpjmdMatrixView === 'eval_year'
-                                            ? 'bg-white text-blue-700 shadow-xs'
-                                            : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                                >
-                                    Matriks Evaluasi ({tahun})
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setRpjmdMatrixView('trend_5yr')}
-                                    className={`px-3 py-1 text-xs font-bold rounded cursor-pointer transition flex items-center gap-1.5 ${
-                                        rpjmdMatrixView === 'trend_5yr'
-                                            ? 'bg-white text-blue-700 shadow-xs'
-                                            : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                                >
-                                    <span>Tabel Tren ({rpjmd_matrix?.years ? `${rpjmd_matrix.years[0]}–${rpjmd_matrix.years[rpjmd_matrix.years.length - 1]}` : '5 Tahunan'})</span>
-                                    <span className="text-[10px] px-1.5 py-0.2 bg-blue-100 text-blue-700 rounded-full font-bold">5 Thn</span>
-                                </button>
-                            </div>
-
-                            {/* Filters & Actions */}
-                            <div className="flex flex-wrap items-center gap-2">
-                                {/* Search */}
-                                <div className="relative min-w-[200px] flex-1 sm:flex-initial">
-                                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Cari sasaran, indikator, OPD..."
-                                        value={rpjmdSearchQuery}
-                                        onChange={(e) => setRpjmdSearchQuery(e.target.value)}
-                                        className="w-full pl-8 pr-7 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                                    />
-                                    {rpjmdSearchQuery && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setRpjmdSearchQuery('')}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                                        >
-                                            <X className="w-3 h-3" />
-                                        </button>
-                                    )}
-                                </div>
-
-                                {/* Filter Sasaran */}
-                                <div className="w-48 sm:w-56">
-                                    <Select2
-                                        value={rpjmdFilterSasaran}
-                                        onChange={(val) => setRpjmdFilterSasaran(val)}
-                                        options={[
-                                            { value: '', label: 'Semua Sasaran' },
-                                            ...rpjmdSasaranOptions.map((s) => ({
-                                                value: s.id,
-                                                label: s.name,
-                                            })),
-                                        ]}
-                                        placeholder="Semua Sasaran"
-                                        searchPlaceholder="Cari Sasaran..."
-                                    />
-                                </div>
-
-                                {/* Filter Status */}
-                                <div className="w-40 sm:w-44">
-                                    <Select2
-                                        value={rpjmdFilterStatus}
-                                        onChange={(val) => setRpjmdFilterStatus(val)}
-                                        options={[
-                                            { value: 'Semua', label: 'Semua Status' },
-                                            { value: 'Tercapai', label: 'Tercapai (≥100%)' },
-                                            { value: 'Perlu Perhatian', label: 'Perlu Perhatian (50%–<100%)' },
-                                            { value: 'Kritis', label: 'Kritis (<50% / Minus)' },
-                                            { value: 'Tidak Dinilai', label: 'Tidak Dinilai' },
-                                        ]}
-                                        placeholder="Semua Status"
-                                    />
-                                </div>
-
-                                {/* Copy to Clipboard */}
-                                <button
-                                    type="button"
-                                    onClick={handleCopyRpjmdToClipboard}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition shadow-2xs cursor-pointer"
-                                    title="Salin data tabel saat ini ke clipboard untuk ditempel di Excel (Ctrl+V)"
-                                >
-                                    {rpjmdCopied ? (
-                                        <>
-                                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                            <span className="text-emerald-700 font-bold">Tersalin!</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy className="w-3.5 h-3.5 text-slate-500" />
-                                            <span>Salin Excel</span>
-                                        </>
-                                    )}
-                                </button>
-
-                                {/* Download PDF */}
-                                <a
-                                    href={getExportUrl('rpjmd', 'pdf')}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    download
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition shadow-2xs cursor-pointer"
-                                    title="Download dokumen matriks capaian RPJMD dalam format PDF (sesuai filter aktif)"
-                                >
-                                    <Download className="w-3.5 h-3.5" />
-                                    <span>Download PDF</span>
-                                </a>
-                            </div>
-                        </div>
-
-                        {/* MATRIKS TABEL (SWITCHABLE: EVAL_YEAR vs TREND_5YR) */}
-                        {rpjmdMatrixView === 'eval_year' ? (
-                            /* VIEW 1: Matriks Evaluasi Tahun Berjalan */
-                            <div className="overflow-x-auto rounded-lg border border-slate-200">
-                                <table className="w-full text-left text-xs min-w-[950px] border-collapse">
-                                    <thead className="bg-slate-100 text-slate-700 border-b border-slate-200">
-                                        <tr>
-                                            <th className="px-3 py-2.5 font-bold text-center w-12 border-r border-slate-200">No</th>
-                                            <th className="px-3 py-2.5 font-bold w-44 border-r border-slate-200">Misi</th>
-                                            <th className="px-3 py-2.5 font-bold w-48 border-r border-slate-200">Tujuan</th>
-                                            <th className="px-3 py-2.5 font-bold w-52 border-r border-slate-200">Sasaran RPJMD</th>
-                                            <th className="px-3 py-2.5 font-bold border-r border-slate-200">Indikator</th>
-                                            <th className="px-2.5 py-2.5 font-bold text-right w-24 bg-blue-100 text-blue-950 border-r border-blue-200">Target</th>
-                                            <th className="px-2.5 py-2.5 font-bold text-right w-24 bg-emerald-100 text-emerald-950 border-r border-emerald-200">Realisasi</th>
-                                            <th className="px-2.5 py-2.5 font-bold text-right w-24 bg-amber-100 text-amber-950 border-r border-amber-200">Capaian</th>
-                                            <th className="px-3 py-2.5 font-bold text-center w-28">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {filteredRpjmdRows.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={9} className="px-4 py-8 text-center text-slate-400">
-                                                    Tidak ada indikator sasaran yang sesuai filter pencarian.
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            filteredRpjmdRows.map((row, idx) => (
-                                                <tr key={row.id} className="hover:bg-slate-50/70 transition">
-                                                    <td className="px-3 py-2.5 text-center font-semibold text-slate-500 border-r border-slate-100">{idx + 1}</td>
-                                                    {rpjmdRowSpans.misiSpans[idx] > 0 && (
-                                                        <td
-                                                            rowSpan={rpjmdRowSpans.misiSpans[idx]}
-                                                            className="px-3 py-2.5 text-slate-700 align-top bg-slate-50/60 font-medium border-r border-slate-200"
-                                                            title={(row as any).misi || 'Misi RPJMD'}
-                                                        >
-                                                            {(row as any).misi || 'Misi RPJMD'}
-                                                        </td>
-                                                    )}
-                                                    {rpjmdRowSpans.tujuanSpans[idx] > 0 && (
-                                                        <td
-                                                            rowSpan={rpjmdRowSpans.tujuanSpans[idx]}
-                                                            className="px-3 py-2.5 text-slate-700 align-top bg-slate-50/30 border-r border-slate-200"
-                                                            title={row.tujuan}
-                                                        >
-                                                            {row.tujuan}
-                                                        </td>
-                                                    )}
-                                                    <td className="px-3 py-2.5 font-semibold text-slate-800 border-r border-slate-100" title={row.sasaran}>
-                                                        {row.sasaran}
-                                                    </td>
-                                                    <td className="px-3 py-2.5 border-r border-slate-100">
-                                                        <div className="font-semibold text-slate-900">{row.indikator}</div>
-                                                        <div className="text-[10px] text-slate-400 font-mono">
-                                                            {row.kode} • Satuan: {row.satuan} • {row.polarization === 'negatif' ? 'Pola Negatif' : 'Pola Positif'}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-2.5 py-2.5 text-right font-mono font-medium text-blue-950 bg-blue-50/40 border-r border-slate-100">
-                                                        {row.target !== null ? row.target.toLocaleString('id-ID') : '-'}
-                                                    </td>
-                                                    <td className="px-2.5 py-2.5 text-right font-mono font-semibold text-emerald-950 bg-emerald-50/40 border-r border-slate-100">
-                                                        {row.realisasi !== null ? row.realisasi.toLocaleString('id-ID') : '-'}
-                                                    </td>
-                                                    <td className="px-2.5 py-2.5 text-right font-mono font-black text-xs text-amber-950 bg-amber-50/40 border-r border-slate-100">
-                                                        {row.capaian !== null ? (
-                                                            <span className={capaianColorCls(row.capaian)}>
-                                                                {row.capaian.toFixed(2)}%
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-slate-400">-</span>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-3 py-2.5 text-center">
-                                                        <StatusBadge status={row.status} />
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            /* VIEW 2: Tabel Tren 5 Tahun */
-                            <div className="overflow-x-auto rounded-lg border border-slate-200">
-                                <table className="w-full text-left text-xs min-w-[1250px] border-collapse">
-                                    <thead className="bg-slate-100 text-slate-700 border-b border-slate-200">
-                                        <tr>
-                                            <th rowSpan={2} className="px-2.5 py-2 font-bold text-center w-10 border-r border-slate-200">No</th>
-                                            <th rowSpan={2} className="px-3 py-2 font-bold w-44 border-r border-slate-200">Misi</th>
-                                            <th rowSpan={2} className="px-3 py-2 font-bold w-48 border-r border-slate-200">Tujuan</th>
-                                            <th rowSpan={2} className="px-3 py-2 font-bold w-52 border-r border-slate-200">Sasaran RPJMD</th>
-                                            <th rowSpan={2} className="px-3 py-2 font-bold w-52 border-r border-slate-200">Indikator</th>
-                                            {rpjmdYears.map((y) => (
-                                                <th
-                                                    key={y}
-                                                    colSpan={3}
-                                                    className={`px-2 py-1.5 font-bold text-center border-r border-slate-200 ${
-                                                        y === Number(tahun) ? 'bg-blue-200/70 text-blue-900 font-black' : 'bg-slate-200/50'
-                                                    }`}
-                                                >
-                                                    {y} {y === Number(tahun) && '(Aktif)'}
-                                                </th>
-                                            ))}
-                                            <th rowSpan={2} className="px-3 py-2 font-bold text-center w-28">Status ({tahun})</th>
-                                        </tr>
-                                        <tr className="bg-slate-50 text-[10.5px] border-b border-slate-200">
-                                            {rpjmdYears.map((y) => (
-                                                <React.Fragment key={`sub-${y}`}>
-                                                    <th className="px-1.5 py-1 text-right font-semibold bg-blue-100/80 text-blue-900 border-r border-blue-200">Tgt</th>
-                                                    <th className="px-1.5 py-1 text-right font-semibold bg-emerald-100/80 text-emerald-900 border-r border-emerald-200">Real</th>
-                                                    <th className="px-1.5 py-1 text-right font-bold bg-amber-100/80 text-amber-900 border-r border-slate-200">Cap (%)</th>
-                                                </React.Fragment>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {filteredRpjmdRows.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={6 + rpjmdYears.length * 3} className="px-4 py-8 text-center text-slate-400">
-                                                    Tidak ada indikator sasaran yang sesuai filter pencarian.
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            filteredRpjmdRows.map((row, idx) => (
-                                                <tr key={`trend-${row.id}`} className="hover:bg-slate-50/70 transition">
-                                                    <td className="px-2.5 py-2 text-center font-semibold text-slate-500 border-r border-slate-100">{idx + 1}</td>
-                                                    {rpjmdRowSpans.misiSpans[idx] > 0 && (
-                                                        <td
-                                                            rowSpan={rpjmdRowSpans.misiSpans[idx]}
-                                                            className="px-3 py-2 text-slate-700 align-top bg-slate-50/60 font-medium border-r border-slate-200"
-                                                            title={(row as any).misi || 'Misi RPJMD'}
-                                                        >
-                                                            {(row as any).misi || 'Misi RPJMD'}
-                                                        </td>
-                                                    )}
-                                                    {rpjmdRowSpans.tujuanSpans[idx] > 0 && (
-                                                        <td
-                                                            rowSpan={rpjmdRowSpans.tujuanSpans[idx]}
-                                                            className="px-3 py-2 text-slate-700 align-top bg-slate-50/30 border-r border-slate-200"
-                                                            title={row.tujuan}
-                                                        >
-                                                            {row.tujuan}
-                                                        </td>
-                                                    )}
-                                                    <td className="px-3 py-2 font-semibold text-slate-800 border-r border-slate-100" title={row.sasaran}>
-                                                        {row.sasaran}
-                                                    </td>
-                                                    <td className="px-3 py-2 border-r border-slate-100">
-                                                        <div className="font-semibold text-slate-900">{row.indikator}</div>
-                                                        <div className="text-[10px] text-slate-400 font-mono">{row.kode} ({row.satuan})</div>
-                                                    </td>
-                                                    {rpjmdYears.map((y) => {
-                                                        const yd = row.yearly[y];
-                                                        const isCurrentYear = y === Number(tahun);
-                                                        return (
-                                                            <React.Fragment key={`td-${row.id}-${y}`}>
-                                                                <td className={`px-1.5 py-2 text-right font-mono text-[11px] bg-blue-50/40 text-blue-950 ${isCurrentYear ? 'font-medium' : ''}`}>
-                                                                    {yd?.target !== null && yd?.target !== undefined ? yd.target.toLocaleString('id-ID') : '-'}
-                                                                </td>
-                                                                <td className={`px-1.5 py-2 text-right font-mono text-[11px] font-semibold bg-emerald-50/40 text-emerald-950`}>
-                                                                    {yd?.realization !== null && yd?.realization !== undefined ? yd.realization.toLocaleString('id-ID') : '-'}
-                                                                </td>
-                                                                <td className={`px-1.5 py-2 text-right font-mono text-[11px] font-bold border-r border-slate-100 bg-amber-50/40 text-amber-950`}>
-                                                                    {yd?.achievement !== null && yd?.achievement !== undefined ? (
-                                                                        <span className={capaianColorCls(yd.achievement)}>
-                                                                            {yd.achievement.toFixed(1)}%
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-slate-300 font-normal">-</span>
-                                                                    )}
-                                                                </td>
-                                                            </React.Fragment>
-                                                        );
-                                                    })}
-                                                    <td className="px-3 py-2 text-center">
-                                                        <StatusBadge status={row.status} />
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-
-                        {/* FOOTNOTE & ATURAN STATUS */}
-                        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600 space-y-1.5">
-                            <p className="font-bold text-slate-700">Keterangan Status Capaian RPJMD:</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-[11px] mt-1">
-                                <div className="p-2 rounded bg-emerald-50 border border-emerald-200 text-emerald-900">
-                                    <strong>🟢 Tercapai (≥ 100%)</strong>: Target terpenuhi atau terlampaui.
-                                </div>
-                                <div className="p-2 rounded bg-amber-50 border border-amber-200 text-amber-900">
-                                    <strong>🟡 Perlu Perhatian (50% - &lt;100%)</strong>: Capaian antara 50% sampai kurang dari 100%.
-                                </div>
-                                <div className="p-2 rounded bg-rose-50 border border-rose-300 text-rose-950">
-                                    <strong>🔴 Kritis (&lt; 50% / Minus)</strong>: Terkendala berat, belum ada realisasi, atau nilai minus.
-                                </div>
-                                <div className="p-2 rounded bg-slate-100 border border-slate-300 text-slate-800">
-                                    <strong>⚪ Tidak Dinilai</strong>: Target = 0 dan Realisasi = 0.
-                                </div>
-                            </div>
-                            <div className="mt-2 text-[11px] text-slate-500 pt-2 border-t border-slate-200">
-                                💡 <strong>Aturan Khusus:</strong> Apabila capaian bernilai minus (&lt; 0), indikator secara otomatis diklasifikasikan berstatus <strong>Kritis</strong> sesuai kriteria evaluasi kinerja.
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Modal Footer */}
-                    <div className="bg-slate-50 px-5 py-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                            <a
-                                href={getExportUrl('rpjmd', 'pdf')}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                download
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 shadow-2xs transition cursor-pointer"
-                            >
-                                <Download className="w-3.5 h-3.5" />
-                                <span>Download PDF Matriks RPJMD</span>
-                            </a>
-                            <Link
-                                href={`${route('analytics.index')}?tab=rpjmd`}
-                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline"
-                            >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                                <span>Buka Tab RPJMD di Analitik</span>
-                            </Link>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => setIsRpjmdModalOpen(false)}
-                            className="w-full sm:w-auto px-4 py-1.5 text-xs font-semibold rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 shadow-2xs transition cursor-pointer"
-                        >
-                            Tutup
-                        </button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            
         </AuthenticatedLayout>
     );
 }

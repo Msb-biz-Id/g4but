@@ -33,7 +33,7 @@ class IkuApiController extends Controller
         $periodId = $request->integer('period_id');
         $periodIds = [$periodId];
 
-        // Jika periode adalah tahunan (start_year == end_year), sertakan juga periode RPJMD yang mencakup tahun tersebut
+        // Jika periode adalah tahunan (start_year == end_year), sertakan juga periode Renstra yang mencakup tahun tersebut
         $period = PlanningPeriod::find($periodId);
         if ($period) {
             $targetYear = (int) ($period->start_year ?? $period->year);
@@ -50,8 +50,7 @@ class IkuApiController extends Controller
             ->when(
                 $request->filled('org_id') && $request->input('level') === 'perangkat_daerah',
                 fn ($q) => $q->where(function ($sub) use ($request) {
-                    $sub->where('organization_id', $request->integer('org_id'))
-                        ->orWhere('organization_id', 1); // Tujuan RPJMD Pemerintah Provinsi yang diacu oleh OPD
+                    $sub->where('organization_id', $request->integer('org_id'));
                 })
             )
             ->orderBy('name')

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import React, { useMemo, useState } from 'react';
 import {
     AlertCircle,
@@ -41,6 +41,7 @@ import { toast } from 'sonner';
 import ReactECharts from 'echarts-for-react';
 import { formatDate, formatRupiah, formatRupiahCompact } from '@/lib/utils';
 import { Select2 } from '@/Components/ui/select2';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 // --- ECharts Sub-components ---------------------------------------------------
 
@@ -138,105 +139,6 @@ function SakipOpdDonutChart({
     );
 }
 
-function RpjmdAnalyticsTrendChart({ trend }: { trend: RpjmdTrendPoint[] }) {
-    const years = trend.map((t) => t.tahun);
-    const capaian = trend.map((t) => t.capaian);
-    const target = trend.map((t) => t.target ?? 0);
-
-    const option = {
-        tooltip: {
-            trigger: 'axis',
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-            borderColor: '#334155',
-            textStyle: { color: '#ffffff', fontSize: 11 },
-            formatter: (params: any) => {
-                const yr = params[0]?.axisValue;
-                const point = trend.find((t) => t.tahun === Number(yr));
-                let html = `<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:3px">Tren Sasaran RPJMD — Tahun ${yr}</div>`;
-                if (point?.capaian !== null && point?.capaian !== undefined) {
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Rata-rata Capaian:</span><b style="color:#10b981">${point.capaian}%</b></div>`;
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Tercapai (≥100%):</span><b>${point.tercapai} Indikator</b></div>`;
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Perlu Perhatian (50–<100%):</span><b style="color:#f59e0b">${point.perlu_perhatian} Indikator</b></div>`;
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Kritis (&lt;50%):</span><b style="color:#ef4444">${point.kritis ?? 0} Indikator</b></div>`;
-                    html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Benchmark:</span><b>100%</b></div>`;
-                } else {
-                    html += `<div style="color:#94a3b8;font-style:italic">Tahun masa depan (target perencanaan 2025-2029)</div>`;
-                }
-                return html;
-            },
-        },
-        legend: {
-            bottom: 0,
-            itemWidth: 16,
-            itemHeight: 8,
-            textStyle: { fontSize: 11, color: '#64748b' },
-            data: [
-                { name: 'Benchmark', icon: 'line' },
-                { name: 'Rata-rata Capaian Realisasi (%)', icon: 'circle' },
-            ],
-        },
-        grid: { top: 24, bottom: 30, left: 10, right: 20, containLabel: true },
-        xAxis: {
-            type: 'category',
-            data: years,
-            axisLine: { lineStyle: { color: '#cbd5e1' } },
-            axisLabel: { color: '#475569', fontSize: 11, fontWeight: 'bold' },
-        },
-        yAxis: {
-            type: 'value',
-            min: 50,
-            max: 120,
-            splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } },
-            axisLabel: { formatter: '{value}%', color: '#64748b', fontSize: 10 },
-        },
-        series: [
-            {
-                name: 'Benchmark',
-                type: 'line',
-                data: target,
-                lineStyle: { color: '#93c5fd', width: 2, type: 'dashed' },
-                itemStyle: { color: '#60a5fa' },
-                symbol: 'none',
-            },
-            {
-                name: 'Rata-rata Capaian Realisasi (%)',
-                type: 'line',
-                data: capaian,
-                lineStyle: { color: '#10b981', width: 3 },
-                itemStyle: { color: '#059669', borderWidth: 2, borderColor: '#ffffff' },
-                symbolSize: 8,
-                areaStyle: {
-                    color: {
-                        type: 'linear',
-                        x: 0,
-                        y: 0,
-                        x2: 0,
-                        y2: 1,
-                        colorStops: [
-                            { offset: 0, color: 'rgba(16, 185, 129, 0.28)' },
-                            { offset: 1, color: 'rgba(16, 185, 129, 0.02)' },
-                        ],
-                    },
-                },
-                label: {
-                    show: true,
-                    position: 'top',
-                    formatter: (p: any) => (p.value !== null && p.value !== undefined ? `${p.value}%` : ''),
-                    fontSize: 10.5,
-                    fontWeight: 'bold',
-                    color: '#065f46',
-                },
-            },
-        ],
-    };
-
-    return (
-        <div className="w-full h-52">
-            <ReactECharts option={option} style={{ width: '100%', height: '100%' }} opts={{ renderer: 'svg' }} />
-        </div>
-    );
-}
-
 function IkuAnalyticsTrendChart({ trend }: { trend: Array<{ tahun: number; target?: number; capaian: number | null; status: string; tercapai?: number; perhatian?: number; kritis?: number }> }) {
     const years = trend.map((t) => t.tahun);
     const capaian = trend.map((t) => t.capaian);
@@ -270,7 +172,7 @@ function IkuAnalyticsTrendChart({ trend }: { trend: Array<{ tahun: number; targe
         yAxis: { type: 'value', min: 0, max: 120, splitLine: { lineStyle: { type: 'dashed' } }, axisLabel: { formatter: '{value}%' } },
         series: [
             {
-                name: 'Rata-rata Capaian IKU PEMDA (%)',
+                name: 'Rata-rata Capaian IKU OPD (%)',
                 type: 'line',
                 data: capaian,
                 lineStyle: { color: '#2563eb', width: 3 },
@@ -317,6 +219,8 @@ function SakipPemdaTrendChart({
     trend: Array<{ tahun: number; nilai: number; predikat: string }>;
     evalYear?: number;
 }) {
+    const { appConfig } = usePage<PageProps>().props;
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
     const years = trend.map((t) => t.tahun);
     const nilai = trend.map((t) => t.nilai);
 
@@ -329,7 +233,7 @@ function SakipPemdaTrendChart({
             formatter: (params: any) => {
                 const yr = params[0]?.axisValue;
                 const point = trend.find((t) => t.tahun === Number(yr));
-                let html = `<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:3px">SAKIP Pemprov Papua Barat — Tahun ${yr}</div>`;
+                let html = `<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:3px">SAKIP ${instansiName} - Tahun ${yr}</div>`;
                 if (point) {
                     html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Nilai SAKIP:</span><b style="color:#10b981">${point.nilai.toFixed(2)}</b></div>`;
                     html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Predikat:</span><b>${point.predikat}</b></div>`;
@@ -342,7 +246,7 @@ function SakipPemdaTrendChart({
         yAxis: { type: 'value', min: 70, max: 100, splitLine: { lineStyle: { type: 'dashed' } } },
         series: [
             {
-                name: 'Nilai SAKIP Pemda',
+                name: 'Nilai SAKIP OPD',
                 type: 'line',
                 data: nilai,
                 lineStyle: { color: '#10b981', width: 3 },
@@ -392,6 +296,8 @@ function PkoPemdaTrendChart({
     trend: Array<{ tahun: number; nilai: number | null; predikat: string; tren?: string }>;
     evalYear?: number;
 }) {
+    const { appConfig } = usePage<PageProps>().props;
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
     // Hanya tampilkan tahun yang memiliki data riil (tahun masa depan yang belum ada tidak diplot)
     const validTrend = trend.filter((t) => t.nilai !== null && t.nilai !== undefined);
     const years = validTrend.map((t) => t.tahun);
@@ -406,7 +312,7 @@ function PkoPemdaTrendChart({
             formatter: (params: any) => {
                 const yr = params[0]?.axisValue;
                 const point = trend.find((t) => t.tahun === Number(yr));
-                let html = `<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:3px">PKO Pemerintah Daerah — Tahun ${yr}</div>`;
+                let html = `<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:3px">PKO ${instansiName} - Tahun ${yr}</div>`;
                 if (point && point.nilai !== null && point.nilai !== undefined) {
                     html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Nilai PKO:</span><b>${point.nilai.toFixed(2)}</b></div>`;
                     html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Predikat:</span><b>${point.predikat}</b></div>`;
@@ -431,7 +337,7 @@ function PkoPemdaTrendChart({
         },
         series: [
             {
-                name: 'Nilai PKO Pemda',
+                name: 'Nilai PKO OPD',
                 type: 'bar',
                 barWidth: 38,
                 data: nilai,
@@ -1187,83 +1093,6 @@ function TableSearchInput({
 
 // --- TypeScript Interfaces ---------------------------------------------------
 
-export interface RpjmdYearlyData {
-    target: number | null;
-    realization: number | null;
-    achievement: number | null;
-    status: string;
-    predikat: string;
-    badge: string;
-    color: string;
-    bgClass: string;
-}
-
-export interface RpjmdMatrixRow {
-    no: number | string;
-    id: number;
-    kode: string;
-    tujuan: string;
-    sasaran: string;
-    strategic_objective_id: number | null;
-    indikator: string;
-    satuan: string;
-    polarization: string;
-    target: number | null;
-    realisasi: number | null;
-    capaian: number | null;
-    status: string;
-    predikat: string;
-    badge: string;
-    color: string;
-    bgClass: string;
-    opd_pengampu: string;
-    opd_id: number | null;
-    yearly: Record<number, RpjmdYearlyData>;
-    level?: 'goal' | 'objective';
-    parent_id?: number | null;
-    order_no?: number;
-    number_code?: string;
-    goal_code?: string;
-}
-
-export interface RpjmdMatrixSummary {
-    total_tujuan?: number;
-    total_sasaran: number;
-    total_indikator: number;
-    rata_capaian: number;
-    tercapai: number;
-    perlu_perhatian: number;
-    kritis: number;
-    tidak_dinilai?: number;
-    breakdown: {
-        tercapai: number;
-        perlu_perhatian: number;
-        terlambat: number;
-        kritis: number;
-    };
-    evaluation_year: number;
-}
-
-export interface RpjmdTrendPoint {
-    tahun: number;
-    target: number | null;
-    realisasi: number | null;
-    capaian: number | null;
-    tercapai: number;
-    perlu_perhatian: number;
-    kritis?: number;
-    tidak_dinilai?: number;
-    status: string;
-}
-
-export interface RpjmdMatrixData {
-    summary: RpjmdMatrixSummary;
-    trend: RpjmdTrendPoint[];
-    rows: RpjmdMatrixRow[];
-    years: number[];
-    evaluation_year: number;
-}
-
 export interface IkuPemdaRow {
     no: number;
     id: number;
@@ -1900,7 +1729,6 @@ interface Props extends PageProps {
     action_plans: ActionPlanRow[];
     action_plans_matrix?: ActionPlansMatrixData;
     monitoring_budget_matrix?: MonitoringBudgetMatrixData;
-    rpjmd_analysis: RpjmdMatrixData;
     iku_pemda_matrix?: IkuPemdaMatrixData;
     opd_ranking_matrix?: OpdRankingMatrixData;
     risk_map_matrix?: RiskMapMatrixData;
@@ -1912,7 +1740,6 @@ interface Props extends PageProps {
 // --- Submodule Tabs (Lengkap sesuai file DASHBOARD ANALITIK.docx Baris 1 s/d 6) -
 type Tab =
     | 'sakip_docs'
-    | 'rpjmd'
     | 'iku'
     | 'opd'
     | 'sakip_pemda'
@@ -1926,13 +1753,12 @@ type Tab =
     | 'heatmap';
 
 const TABS: { id: Tab; label: string; subLabel: string; icon: React.ElementType; rowBadge?: string }[] = [
-    { id: 'sakip_docs',        label: 'Kelengkapan SAKIP',     subLabel: '13 Pemda & 12 OPD',          icon: FileCheck2,    rowBadge: 'Baris 1' },
-    { id: 'rpjmd',             label: 'Capaian RPJMD',         subLabel: '35 Indikator & Tren 5 Thn',  icon: Target,        rowBadge: 'Baris 2' },
-    { id: 'iku',               label: 'Capaian IKU PEMDA',     subLabel: 'Indikator Utama & Karakter', icon: Sparkles,      rowBadge: 'Baris 2' },
+    { id: 'sakip_docs',        label: 'Kelengkapan SAKIP',     subLabel: '12 Dokumen OPD',             icon: FileCheck2,    rowBadge: 'Baris 1' },
+    { id: 'iku',               label: 'Capaian IKU OPD',      subLabel: 'Indikator Utama & Karakter', icon: Sparkles,      rowBadge: 'Baris 2' },
     { id: 'opd',               label: 'Capaian Kinerja OPD',   subLabel: 'Ranking & Drilldown Pohon',  icon: BarChart3,     rowBadge: 'Baris 3' },
-    { id: 'sakip_pemda',       label: 'Nilai SAKIP Pemda',     subLabel: '4 Komponen Akuntabilitas',   icon: Building2,     rowBadge: 'Baris 3' },
-    { id: 'sakip_eval',        label: 'Nilai SAKIP OPD',       subLabel: '4 Komponen & Detail LHE',    icon: Medal,         rowBadge: 'Baris 3' },
-    { id: 'pko',               label: 'Capaian PKO',           subLabel: 'PKO Pemda & PKO OPD',        icon: Trophy,        rowBadge: 'Baris 4' },
+    { id: 'sakip_pemda',       label: 'Nilai SAKIP OPD',       subLabel: '4 Komponen Akuntabilitas',   icon: Building2,     rowBadge: 'Baris 3' },
+    { id: 'sakip_eval',        label: 'Nilai SAKIP Detail',    subLabel: '4 Komponen & Detail LHE',    icon: Medal,         rowBadge: 'Baris 3' },
+    { id: 'pko',               label: 'Capaian PKO',           subLabel: 'PKO OPD & Rata-rata',        icon: Trophy,        rowBadge: 'Baris 4' },
     { id: 'action_plans',      label: 'Rencana Aksi TW',          subLabel: 'Realisasi Fisik Triwulanan', icon: Target,        rowBadge: 'Baris 5' },
     { id: 'monitoring_budget', label: 'Rencana Aksi Anggaran TW', subLabel: 'Serapan Keuangan Triwulan',  icon: Coins,         rowBadge: 'Baris 5' },
     { id: 'risk_map',          label: 'Peta Risiko / EWS',        subLabel: 'Peringatan Dini Terpadu',    icon: ShieldAlert,   rowBadge: 'Baris 6' },
@@ -1957,7 +1783,6 @@ export default function AnalyticsIndex({
     action_plans,
     action_plans_matrix,
     monitoring_budget_matrix,
-    rpjmd_analysis,
     iku_pemda_matrix,
     opd_ranking_matrix,
     risk_map_matrix,
@@ -1965,6 +1790,13 @@ export default function AnalyticsIndex({
     organizations,
     available_years,
 }: Props) {
+    const { appConfig } = usePage<PageProps>().props;
+    const appName = appConfig?.appName || 'e-SAKIP';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+    const orgName = appConfig?.organizationName || 'Biro Organisasi Sekretariat Daerah';
+    const currentYear = appConfig?.currentYear || 2026;
+    const activePeriodRange = appConfig?.activePeriodRange || '2025–2029';
+
     const [activeTab, setActiveTab] = useState<Tab>(() => {
         if (typeof window !== 'undefined') {
             const tabParam = new URLSearchParams(window.location.search).get('tab') as Tab | null;
@@ -1993,10 +1825,7 @@ export default function AnalyticsIndex({
     const [copied, setCopied] = useState(false);
 
     // View toggles
-    const [sakipDocView, setSakipDocView] = useState<'pemda' | 'opd'>('pemda');
-    const [rpjmdMatrixView, setRpjmdMatrixView] = useState<'eval_year' | 'trend_5yr'>('eval_year');
-    const [rpjmdFilterSasaran, setRpjmdFilterSasaran] = useState<string>('');
-    const [rpjmdFilterStatus, setRpjmdFilterStatus] = useState<string>('Semua');
+    const [sakipDocView, setSakipDocView] = useState<'pemda' | 'opd'>('opd');
 
     const [ikuMatrixView, setIkuMatrixView] = useState<'eval_year' | 'trend_5yr'>('eval_year');
     const [ikuFilterStatus, setIkuFilterStatus] = useState<string>('Semua');
@@ -2007,7 +1836,7 @@ export default function AnalyticsIndex({
     const [sakipMatrixView, setSakipMatrixView] = useState<'components' | 'trend_5yr'>('components');
     const [sakipFilterPredikat, setSakipFilterPredikat] = useState<string>('Semua');
 
-    const [pkoSubView, setPkoSubView] = useState<'pemda' | 'opd'>('pemda');
+    const [pkoSubView, setPkoSubView] = useState<'pemda' | 'opd'>('opd');
     const [pkoOpdMatrixView, setPkoOpdMatrixView] = useState<'ranking' | 'trend_5yr'>('ranking');
     const [pkoFilterView, setPkoFilterView] = useState<'all' | 'top' | 'bottom'>('all');
 
@@ -2051,21 +1880,18 @@ export default function AnalyticsIndex({
         return [evalYear - 2, evalYear - 1, evalYear, evalYear + 1, evalYear + 2];
     }, [available_years, evalYear]);
 
-    const rpjmdYears = useMemo(() => {
-        return rpjmd_analysis?.years ?? defaultDynamicYears;
-    }, [rpjmd_analysis?.years, defaultDynamicYears]);
-
+    
     const ikuPemdaYears = useMemo(() => {
-        return iku_pemda_matrix?.years ?? rpjmd_analysis?.years ?? defaultDynamicYears;
-    }, [iku_pemda_matrix?.years, rpjmd_analysis?.years, defaultDynamicYears]);
+        return iku_pemda_matrix?.years ?? defaultDynamicYears;
+    }, [iku_pemda_matrix?.years, defaultDynamicYears]);
 
     const opdTrendYears = useMemo(() => {
-        return opd_ranking_matrix?.years ?? rpjmd_analysis?.years ?? defaultDynamicYears;
-    }, [opd_ranking_matrix?.years, rpjmd_analysis?.years, defaultDynamicYears]);
+        return opd_ranking_matrix?.years ?? defaultDynamicYears;
+    }, [opd_ranking_matrix?.years, defaultDynamicYears]);
 
     const sakipTrendYears = useMemo(() => {
-        return sakip_eval_matrix?.years ?? rpjmd_analysis?.years ?? defaultDynamicYears;
-    }, [sakip_eval_matrix?.years, rpjmd_analysis?.years, defaultDynamicYears]);
+        return sakip_eval_matrix?.years ?? defaultDynamicYears;
+    }, [sakip_eval_matrix?.years, defaultDynamicYears]);
 
     const pkoYears = useMemo(() => {
         return pko_matrix?.years ?? defaultDynamicYears;
@@ -2105,68 +1931,8 @@ export default function AnalyticsIndex({
         return sakip_docs.opd_rows.filter((r) => r.organization_code.toLowerCase().includes(q) || r.organization_name.toLowerCase().includes(q) || r.status.toLowerCase().includes(q));
     }, [sakip_docs.opd_rows, searchQuery]);
 
-    const filteredRpjmd = useMemo(() => {
-        if (!rpjmd_analysis?.rows) return [];
-        return rpjmd_analysis.rows.filter((r) => {
-            if (searchQuery.trim()) {
-                const q = searchQuery.toLowerCase();
-                const match =
-                    ((r as any).misi && (r as any).misi.toLowerCase().includes(q)) ||
-                    r.tujuan.toLowerCase().includes(q) ||
-                    r.sasaran.toLowerCase().includes(q) ||
-                    r.indikator.toLowerCase().includes(q) ||
-                    r.opd_pengampu.toLowerCase().includes(q) ||
-                    (r.satuan && r.satuan.toLowerCase().includes(q));
-                if (!match) return false;
-            }
-            if (rpjmdFilterSasaran && r.strategic_objective_id !== Number(rpjmdFilterSasaran)) {
-                return false;
-            }
-            if (rpjmdFilterStatus && rpjmdFilterStatus !== 'Semua') {
-                if (r.status !== rpjmdFilterStatus) return false;
-            }
-            return true;
-        });
-    }, [rpjmd_analysis?.rows, searchQuery, rpjmdFilterSasaran, rpjmdFilterStatus]);
-
-    // Calculate rowspans for Misi and Tujuan in RPJMD table
-    const rpjmdRowSpans = useMemo(() => {
-        const misiSpans: number[] = new Array(filteredRpjmd.length).fill(1);
-        const tujuanSpans: number[] = new Array(filteredRpjmd.length).fill(1);
-
-        let i = 0;
-        while (i < filteredRpjmd.length) {
-            const currentMisi = (filteredRpjmd[i] as any).misi || 'Misi RPJMD';
-            let j = i + 1;
-            while (j < filteredRpjmd.length && ((filteredRpjmd[j] as any).misi || 'Misi RPJMD') === currentMisi) {
-                j++;
-            }
-            misiSpans[i] = j - i;
-            for (let k = i + 1; k < j; k++) {
-                misiSpans[k] = 0;
-            }
-
-            // Within this Misi group, calculate Tujuan spans
-            let t = i;
-            while (t < j) {
-                const currentTujuan = filteredRpjmd[t].tujuan || 'Tujuan RPJMD';
-                let u = t + 1;
-                while (u < j && (filteredRpjmd[u].tujuan || 'Tujuan RPJMD') === currentTujuan) {
-                    u++;
-                }
-                tujuanSpans[t] = u - t;
-                for (let v = t + 1; v < u; v++) {
-                    tujuanSpans[v] = 0;
-                }
-                t = u;
-            }
-
-            i = j;
-        }
-
-        return { misiSpans, tujuanSpans };
-    }, [filteredRpjmd]);
-
+    
+    
     const filteredIkuPemda = useMemo(() => {
         const source = iku_pemda_matrix?.rows ?? [];
         return source.filter((r) => {
@@ -2326,17 +2092,7 @@ export default function AnalyticsIndex({
         return rows;
     }, [monitoring_budget_matrix?.rows, searchQuery, budgetFilterStatus]);
 
-    const rpjmdSasaranOptions = useMemo(() => {
-        if (!rpjmd_analysis?.rows) return [];
-        const map = new Map<number, string>();
-        rpjmd_analysis.rows.forEach((r) => {
-            if (r.strategic_objective_id && !map.has(r.strategic_objective_id)) {
-                map.set(r.strategic_objective_id, `${r.number_code || r.no} ${r.sasaran}`);
-            }
-        });
-        return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-    }, [rpjmd_analysis?.rows]);
-
+    
     // -- Fungsi Salin Data ke Clipboard (Format TSV untuk Excel / Spreadsheet) -
     const handleCopyToClipboard = async () => {
         let tsv = '';
@@ -2356,28 +2112,8 @@ export default function AnalyticsIndex({
                 });
                 tsv = [headers.join('\t'), ...lines].join('\n');
             }
-        } else if (activeTab === 'rpjmd') {
-            if (rpjmdMatrixView === 'eval_year') {
-                const headers = ['No', 'Misi', 'Tujuan', 'Sasaran RPJMD', 'Indikator', 'Satuan', `Target (${evalYear})`, `Realisasi (${evalYear})`, `Capaian (%)`, 'Status'];
-                const lines = filteredRpjmd.map((r, idx) => [idx + 1, (r as any).misi || 'Misi RPJMD', r.tujuan, r.sasaran, r.indikator, r.satuan, r.target ?? '-', r.realisasi ?? '-', r.capaian !== null ? `${r.capaian}%` : '-', r.status].join('\t'));
-                tsv = [headers.join('\t'), ...lines].join('\n');
-            } else {
-                const years = rpjmdYears;
-                const yearHeaders = years.map((y) => `Target ${y}\tReal ${y}\tCap ${y} (%)`).join('\t');
-                const headers = ['No', 'Misi', 'Tujuan', 'Sasaran RPJMD', 'Indikator', 'Satuan', yearHeaders, `Status (${evalYear})`].join('\t');
-                const lines = filteredRpjmd.map((r, idx) => {
-                    const yearCols = years
-                        .map((y) => {
-                            const yd = r.yearly[y];
-                            return `${yd?.target ?? '-'}\t${yd?.realization ?? '-'}\t${yd?.achievement !== null && yd?.achievement !== undefined ? `${yd.achievement}%` : '-'}`;
-                        })
-                        .join('\t');
-                    return [idx + 1, (r as any).misi || 'Misi RPJMD', r.tujuan, r.sasaran, r.indikator, r.satuan, yearCols, r.status].join('\t');
-                });
-                tsv = [headers, ...lines].join('\n');
-            }
         } else if (activeTab === 'iku') {
-            const headers = ['No', 'Sasaran Strategis', 'Indikator IKU PEMDA', 'Satuan', 'Karakter', `Target (${evalYear})`, `Realisasi (${evalYear})`, `Capaian (%)`, 'Status', 'Predikat', 'OPD Pengampu'];
+            const headers = ['No', 'Sasaran Strategis', 'Indikator IKU OPD', 'Satuan', 'Karakter', `Target (${evalYear})`, `Realisasi (${evalYear})`, `Capaian (%)`, 'Status', 'Predikat', 'OPD Pengampu'];
             const lines = filteredIkuPemda.map((r) => [r.no, r.sasaran, r.indikator, r.satuan, r.karakter, r.target ?? '-', r.realisasi ?? '-', r.capaian !== null ? `${r.capaian}%` : '-', r.status, r.predikat, r.opd_pengampu].join('\t'));
             tsv = [headers.join('\t'), ...lines].join('\n');
         } else if (activeTab === 'opd') {
@@ -2386,7 +2122,7 @@ export default function AnalyticsIndex({
                 const lines = filteredOpdRanking.map((r) => [r.rank, r.perangkat_daerah, r.jumlah_indikator, `${r.rata_capaian.toFixed(2)}%`, r.tercapai, r.perhatian, r.kritis, r.status].join('\t'));
                 tsv = [headers.join('\t'), ...lines].join('\n');
             } else {
-                const years = opd_ranking_matrix?.years ?? rpjmd_analysis?.years ?? available_years ?? [evalYear];
+                const years = opd_ranking_matrix?.years ?? available_years ?? [evalYear];
                 const yearHeaders = years.map((y) => `Capaian ${y} (%)`).join('\t');
                 const headers = ['Rank', 'Perangkat Daerah', 'Jumlah Indikator Kinerja', yearHeaders, 'Tren', `Status (${evalYear})`];
                 const lines = filteredOpdRanking.map((r) => {
@@ -2407,7 +2143,7 @@ export default function AnalyticsIndex({
                 k.predikat,
                 k.deskripsi,
             ].join('\t'));
-            const totalLine = ['', 'TOTAL NILAI SAKIP PEMDA', '100.0', (dataPemda?.nilai ?? 0.0).toFixed(2), `${(dataPemda?.nilai ?? 0.0).toFixed(2)}%`, dataPemda?.predikat ?? 'BELUM DINILAI', 'Evaluasi Akuntabilitas Kinerja Pemda (KemenPANRB)'].join('\t');
+            const totalLine = ['', 'TOTAL NILAI SAKIP OPD', '100.0', (dataPemda?.nilai ?? 0.0).toFixed(2), `${(dataPemda?.nilai ?? 0.0).toFixed(2)}%`, dataPemda?.predikat ?? 'BELUM DINILAI', 'Evaluasi Akuntabilitas Kinerja OPD (PermenPANRB 88/2021)'].join('\t');
             tsv = [headers.join('\t'), ...lines, totalLine].join('\n');
         } else if (activeTab === 'sakip_eval') {
             if (sakipMatrixView === 'components') {
@@ -2415,7 +2151,7 @@ export default function AnalyticsIndex({
                 const lines = filteredSakipEval.map((r) => [r.no, r.kode, r.perangkat_daerah, r.perencanaan.toFixed(2), r.pengukuran.toFixed(2), r.pelaporan.toFixed(2), r.evaluasi_internal.toFixed(2), r.nilai.toFixed(2), r.predikat, r.lhe?.status_dokumen ?? 'LHE Tersedia'].join('\t'));
                 tsv = [headers.join('\t'), ...lines].join('\n');
             } else {
-                const years = sakip_eval_matrix?.years ?? rpjmd_analysis?.years ?? available_years ?? [evalYear];
+                const years = sakip_eval_matrix?.years ?? available_years ?? [evalYear];
                 const yearHeaders = years.map((y) => `Nilai SAKIP ${y}`).join('\t');
                 const headers = ['No', 'Kode OPD', 'Perangkat Daerah', yearHeaders, 'Tren', `Nilai (${evalYear})`, `Predikat (${evalYear})`, 'Status LHE'];
                 const lines = filteredSakipEval.map((r) => {
@@ -2642,28 +2378,19 @@ export default function AnalyticsIndex({
 
     return (
         <AuthenticatedLayout>
-            <Head title="Dashboard Analitik — Data Real & Workbench Kinerja" />
+            <Head title="Dashboard Analitik - Data Real & Workbench Kinerja" />
 
             <div className="space-y-6">
                 {/* --- HEADER UTAMA ---------------------------------------------- */}
-                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                                    Dashboard Analitik Kinerja
-                                </h1>
-                                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-400">
-                                    <FileSpreadsheet className="h-3.5 w-3.5" />
-                                    Data Real Dinamis SAKIP
-                                </span>
-                            </div>
-                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
-                                Modul Analitik Kinerja Pemerintah Provinsi Papua Barat sesuai panduan teknis SAKIP (Baris 1 s/d 6). Dilengkapi tombol salin langsung ke Excel (<kbd className="rounded bg-slate-100 px-1 text-[11px] font-mono text-slate-700 dark:bg-slate-800 dark:text-slate-300">Ctrl + V</kbd>) dan download PDF.
-                            </p>
-                        </div>
-
-                        {/* Top Action Buttons */}
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Analitik & Evaluasi' },
+                        { label: 'Workbench Analitik' },
+                    ]}
+                    title="Dashboard Analitik Kinerja"
+                    description={`Modul Analitik Kinerja ${instansiName} sesuai panduan teknis SAKIP. Salin langsung ke Excel atau unduh berkas laporan PDF.`}
+                    badge="Data Real Dinamis SAKIP"
+                    actions={
                         <div className="flex flex-wrap items-center gap-2.5">
                             {/* Filter Tahun Utama */}
                             <div className="w-36">
@@ -2700,7 +2427,7 @@ export default function AnalyticsIndex({
                                 href={getExportUrl()}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-primary/90 focus:outline-hidden focus:ring-2 focus:ring-primary cursor-pointer transition"
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 focus:outline-hidden focus:ring-2 focus:ring-primary cursor-pointer transition"
                                 title={`Download PDF Laporan ${activeTab.toUpperCase()} Tahun ${evalYear}`}
                             >
                                 <FileDown className="h-4 w-4" />
@@ -2710,8 +2437,8 @@ export default function AnalyticsIndex({
                                 </span>
                             </a>
                         </div>
-                    </div>
-                </div>
+                    }
+                />
 
                 {/* --- TAB NAVIGATION BAR ---------------------------------------- */}
                 <div className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-t-xl px-2 pt-2 shadow-xs">
@@ -2794,7 +2521,7 @@ export default function AnalyticsIndex({
                                         onClick={() => setSakipDocView('pemda')}
                                         className={`px-3 py-1 text-xs font-semibold rounded-md transition ${sakipDocView === 'pemda' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}
                                     >
-                                        Pemda (13 Dok)
+                                        Induk (13 Dok)
                                     </button>
                                     <button
                                         onClick={() => setSakipDocView('opd')}
@@ -2805,23 +2532,7 @@ export default function AnalyticsIndex({
                                 </div>
                             )}
 
-                            {activeTab === 'rpjmd' && (
-                                <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800 shadow-2xs">
-                                    <button
-                                        onClick={() => setRpjmdMatrixView('eval_year')}
-                                        className={`px-3 py-1 text-xs font-semibold rounded-md transition ${rpjmdMatrixView === 'eval_year' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}
-                                    >
-                                        Matriks Evaluasi ({evalYear})
-                                    </button>
-                                    <button
-                                        onClick={() => setRpjmdMatrixView('trend_5yr')}
-                                        className={`px-3 py-1 text-xs font-semibold rounded-md transition ${rpjmdMatrixView === 'trend_5yr' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}
-                                    >
-                                        Tabel Tren 5 Tahun (2025–2029)
-                                    </button>
-                                </div>
-                            )}
-
+                            
                             {activeTab === 'iku' && (
                                 <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800 shadow-2xs">
                                     <button
@@ -2863,7 +2574,7 @@ export default function AnalyticsIndex({
                                             onClick={() => setPkoSubView('pemda')}
                                             className={`px-3 py-1 text-xs font-semibold rounded-md transition ${pkoSubView === 'pemda' ? 'bg-amber-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
                                         >
-                                            <Building2 className="w-3.5 h-3.5 inline mr-1.5" />PKO Pemerintah Daerah
+                                            <Building2 className="w-3.5 h-3.5 inline mr-1.5" />PKO {instansiName}
                                         </button>
                                         <button
                                             onClick={() => setPkoSubView('opd')}
@@ -2982,21 +2693,21 @@ export default function AnalyticsIndex({
                                         <div className="flex items-center gap-2">
                                             <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
                                             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                                                Daftar Kelengkapan Dokumen SAKIP Pemda ({evalYear})
+                                                Daftar Kelengkapan Dokumen SAKIP OPD ({evalYear})
                                             </h4>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2">
                                             <TableSearchInput
                                                 value={searchQuery}
                                                 onChange={setSearchQuery}
-                                                placeholder="Cari dokumen Pemda..."
+                                                placeholder="Cari dokumen..."
                                             />
                                             <a
                                                 href={getExportUrl('sakip_docs_pemda')}
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 shadow-2xs cursor-pointer transition"
-                                                title={`Download PDF Dokumen SAKIP Pemda Tahun ${evalYear}`}
+                                                title={`Download PDF Dokumen SAKIP OPD Tahun ${evalYear}`}
                                             >
                                                 <FileDown className="h-3.5 w-3.5" />
                                                 <span>Download PDF</span>
@@ -3175,348 +2886,12 @@ export default function AnalyticsIndex({
                         </div>
                     )}
 
-                    {/* ===============================================================
-                        TAB 2: CAPAIAN SASARAN RPJMD PEMDA (35 Indikator & Tren 5 Tahun)
-                    =============================================================== */}
-                    {activeTab === 'rpjmd' && (
-                        <div className="p-4 space-y-4">
-                            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-                                <div className="rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-800 dark:bg-slate-800 shadow-2xs">
-                                    <p className="text-[10px] font-semibold text-rose-700 uppercase tracking-wide">Tujuan RPJMD</p>
-                                    <p className="text-2xl font-black text-rose-800 dark:text-rose-400 mt-0.5">{rpjmd_analysis?.summary.total_tujuan ?? 0}</p>
-                                    <span className="text-[10px] text-slate-400">Tujuan Makro</span>
-                                </div>
-                                <div className="rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-800 dark:bg-slate-800 shadow-2xs">
-                                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Sasaran RPJMD</p>
-                                    <p className="text-2xl font-black text-slate-800 dark:text-white mt-0.5">{rpjmd_analysis?.summary.total_sasaran ?? 0}</p>
-                                    <span className="text-[10px] text-slate-400">Sasaran Strategis</span>
-                                </div>
-                                <div className="rounded-lg border border-slate-200 bg-white p-3 text-center dark:border-slate-800 dark:bg-slate-800 shadow-2xs">
-                                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Indikator</p>
-                                    <p className="text-2xl font-black text-blue-800 dark:text-blue-400 mt-0.5">{rpjmd_analysis?.summary.total_indikator ?? 0}</p>
-                                    <span className="text-[10px] text-blue-500">Total Indikator</span>
-                                </div>
-                                <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 text-center shadow-2xs">
-                                    <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Rata-rata Capaian</p>
-                                    <p className="text-2xl font-black text-emerald-700 mt-0.5">{(rpjmd_analysis?.summary.rata_capaian ?? 0.0).toFixed(2)}%</p>
-                                    <span className="text-[10px] text-emerald-600 font-medium">Tahun {evalYear}</span>
-                                </div>
-                                <div
-                                    onClick={() => setRpjmdFilterStatus(rpjmdFilterStatus === 'Tercapai' ? 'Semua' : 'Tercapai')}
-                                    className={`rounded-lg border p-3 text-center shadow-2xs cursor-pointer transition ${
-                                        rpjmdFilterStatus === 'Tercapai'
-                                            ? 'ring-2 ring-emerald-500 bg-emerald-100/70 border-emerald-400'
-                                            : 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100/40'
-                                    }`}
-                                >
-                                    <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">Tercapai</p>
-                                    <p className="text-2xl font-black text-emerald-800 mt-0.5">{rpjmd_analysis?.summary.tercapai ?? 0}</p>
-                                    <span className="text-[10px] text-emerald-600 font-medium">Capaian &ge; 100%</span>
-                                </div>
-                                <div
-                                    onClick={() => setRpjmdFilterStatus(rpjmdFilterStatus === 'Perlu Perhatian' ? 'Semua' : 'Perlu Perhatian')}
-                                    className={`rounded-lg border p-3 text-center shadow-2xs cursor-pointer transition ${
-                                        rpjmdFilterStatus === 'Perlu Perhatian'
-                                            ? 'ring-2 ring-amber-500 bg-amber-100/70 border-amber-400'
-                                            : 'border-amber-200 bg-amber-50/50 hover:bg-amber-100/40'
-                                    }`}
-                                >
-                                    <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Perlu Perhatian</p>
-                                    <p className="text-2xl font-black text-amber-800 mt-0.5">{rpjmd_analysis?.summary.perlu_perhatian ?? 0}</p>
-                                    <span className="text-[10px] text-amber-600 font-medium">50% &le; Capaian &lt; 100%</span>
-                                </div>
-                                <div
-                                    onClick={() => setRpjmdFilterStatus(rpjmdFilterStatus === 'Kritis' ? 'Semua' : 'Kritis')}
-                                    className={`rounded-lg border p-3 text-center shadow-2xs cursor-pointer transition ${
-                                        rpjmdFilterStatus === 'Kritis'
-                                            ? 'ring-2 ring-rose-500 bg-rose-100/70 border-rose-400'
-                                            : 'border-rose-200 bg-rose-50/50 hover:bg-rose-100/40'
-                                    }`}
-                                >
-                                    <p className="text-[10px] font-semibold text-rose-700 uppercase tracking-wide">Kritis</p>
-                                    <p className="text-2xl font-black text-rose-800 mt-0.5">{rpjmd_analysis?.summary.kritis ?? 0}</p>
-                                    <span className="text-[10px] text-rose-600 font-medium">Capaian &lt; 50%</span>
-                                </div>
-                                <div
-                                    onClick={() => setRpjmdFilterStatus(rpjmdFilterStatus === 'Tidak Dinilai' ? 'Semua' : 'Tidak Dinilai')}
-                                    className={`rounded-lg border p-3 text-center shadow-2xs cursor-pointer transition ${
-                                        rpjmdFilterStatus === 'Tidak Dinilai'
-                                            ? 'ring-2 ring-slate-500 bg-slate-100/70 dark:bg-slate-700 border-slate-400'
-                                            : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/40 dark:border-slate-700 dark:bg-slate-800/60'
-                                    }`}
-                                >
-                                    <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Tidak Dinilai</p>
-                                    <p className="text-2xl font-black text-slate-700 dark:text-slate-200 mt-0.5">{rpjmd_analysis?.summary.tidak_dinilai ?? 0}</p>
-                                    <span className="text-[10px] text-slate-500 font-medium">Target = 0 &amp; Real = 0</span>
-                                </div>
-                            </div>
-
-                            {/* GRAFIK TREN 5 TAHUN */}
-                            <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-800 shadow-2xs">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-700 gap-2">
-                                    <div>
-                                        <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                            <TrendingUp className="h-4 w-4 text-emerald-600" />
-                                            Grafik Capaian Sasaran RPJMD per Tahun (2025 &rarr; 2029)
-                                        </h3>
-                                        <p className="text-xs text-slate-500">Pimpinan dapat memantau pergerakan tren multi-tahun capaian indikator sasaran RPJMD.</p>
-                                    </div>
-                                    <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 dark:bg-blue-950/50 dark:text-blue-300 px-2.5 py-1 rounded-md border border-blue-200 dark:border-blue-800">
-                                        Benchmark
-                                    </span>
-                                </div>
-                                <RpjmdAnalyticsTrendChart trend={rpjmd_analysis?.trend ?? []} />
-                            </div>
-
-                            {/* FILTER STATUS TABS & MATRIKS RPJMD CONTROLS */}
-                            <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                    <span className="text-xs font-semibold text-slate-500 mr-1">Status:</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRpjmdFilterStatus('Semua')}
-                                        className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${
-                                            rpjmdFilterStatus === 'Semua'
-                                                ? 'bg-primary text-white shadow-xs'
-                                                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100'
-                                        }`}
-                                    >
-                                        Semua ({rpjmd_analysis?.summary.total_indikator ?? 0})
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRpjmdFilterStatus('Tercapai')}
-                                        className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${
-                                            rpjmdFilterStatus === 'Tercapai'
-                                                ? 'bg-emerald-600 text-white shadow-xs'
-                                                : 'bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-50'
-                                        }`}
-                                    >
-                                        🟢 Tercapai ({rpjmd_analysis?.summary.tercapai ?? 0})
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRpjmdFilterStatus('Perlu Perhatian')}
-                                        className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${
-                                            rpjmdFilterStatus === 'Perlu Perhatian'
-                                                ? 'bg-amber-600 text-white shadow-xs'
-                                                : 'bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 hover:bg-amber-50'
-                                        }`}
-                                    >
-                                        🟡 Perlu Perhatian ({rpjmd_analysis?.summary.perlu_perhatian ?? 0})
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRpjmdFilterStatus('Kritis')}
-                                        className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${
-                                            rpjmdFilterStatus === 'Kritis'
-                                                ? 'bg-rose-600 text-white shadow-xs'
-                                                : 'bg-white dark:bg-slate-800 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-700 hover:bg-rose-50'
-                                        }`}
-                                    >
-                                        🔴 Kritis ({rpjmd_analysis?.summary.kritis ?? 0})
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRpjmdFilterStatus('Tidak Dinilai')}
-                                        className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${
-                                            rpjmdFilterStatus === 'Tidak Dinilai'
-                                                ? 'bg-slate-600 text-white shadow-xs'
-                                                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
-                                        }`}
-                                    >
-                                        ⚪ Tidak Dinilai ({rpjmd_analysis?.summary.tidak_dinilai ?? 0})
-                                    </button>
-                                </div>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <TableSearchInput
-                                        value={searchQuery}
-                                        onChange={setSearchQuery}
-                                        placeholder="Cari sasaran / indikator..."
-                                    />
-                                    <a
-                                        href={getExportUrl('rpjmd')}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xs cursor-pointer transition"
-                                        title={`Download PDF Capaian RPJMD Tahun ${evalYear}`}
-                                    >
-                                        <FileDown className="h-3.5 w-3.5" />
-                                        <span>Download PDF</span>
-                                        <span className="rounded bg-white/20 px-1.5 py-0.2 text-[10px] font-bold">
-                                            {evalYear}
-                                        </span>
-                                    </a>
-                                </div>
-                            </div>
-
-                            {rpjmdMatrixView === 'eval_year' ? (
-                                <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-                                    <table className="w-full text-left text-xs min-w-[950px] border-collapse">
-                                        <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
-                                            <tr>
-                                                <th className="px-3 py-3 font-semibold text-center w-12 border-r border-slate-200 dark:border-slate-700">No</th>
-                                                <th className="px-3 py-3 font-semibold w-44 border-r border-slate-200 dark:border-slate-700">Misi</th>
-                                                <th className="px-3 py-3 font-semibold w-48 border-r border-slate-200 dark:border-slate-700">Tujuan</th>
-                                                <th className="px-4 py-3 font-semibold w-52 border-r border-slate-200 dark:border-slate-700">Sasaran RPJMD</th>
-                                                <th className="px-4 py-3 font-semibold border-r border-slate-200 dark:border-slate-700">Indikator</th>
-                                                <th className="px-3 py-3 font-semibold text-right w-24 bg-blue-100 text-blue-950 dark:bg-blue-900/60 dark:text-blue-100 border-r border-blue-200 dark:border-blue-800">Target</th>
-                                                <th className="px-3 py-3 font-semibold text-right w-24 bg-emerald-100 text-emerald-950 dark:bg-emerald-900/60 dark:text-emerald-100 border-r border-emerald-200 dark:border-emerald-800">Realisasi</th>
-                                                <th className="px-3 py-3 font-semibold text-right w-28 bg-amber-100 text-amber-950 dark:bg-amber-900/60 dark:text-amber-100 border-r border-amber-200 dark:border-amber-800">Capaian</th>
-                                                <th className="px-3 py-3 font-semibold text-center w-32">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                                            {filteredRpjmd.length === 0 ? (
-                                                <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-400">Tidak ada data indikator sasaran yang cocok.</td></tr>
-                                            ) : (
-                                                filteredRpjmd.map((row, idx) => (
-                                                    <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                                                        <td className="px-3 py-2.5 text-center text-slate-500 font-medium border-r border-slate-100 dark:border-slate-800">{idx + 1}</td>
-                                                        {rpjmdRowSpans.misiSpans[idx] > 0 && (
-                                                            <td
-                                                                rowSpan={rpjmdRowSpans.misiSpans[idx]}
-                                                                className="px-3 py-2.5 text-slate-700 dark:text-slate-300 align-top bg-slate-50/60 dark:bg-slate-800/40 font-medium border-r border-slate-200 dark:border-slate-700"
-                                                                title={(row as any).misi || 'Misi RPJMD'}
-                                                            >
-                                                                {(row as any).misi || 'Misi RPJMD'}
-                                                            </td>
-                                                        )}
-                                                        {rpjmdRowSpans.tujuanSpans[idx] > 0 && (
-                                                            <td
-                                                                rowSpan={rpjmdRowSpans.tujuanSpans[idx]}
-                                                                className="px-3 py-2.5 text-slate-600 dark:text-slate-400 align-top bg-slate-50/30 dark:bg-slate-800/20 border-r border-slate-200 dark:border-slate-700"
-                                                                title={row.tujuan}
-                                                            >
-                                                                {row.tujuan}
-                                                            </td>
-                                                        )}
-                                                        <td className="px-4 py-2.5 font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-100 dark:border-slate-800" title={row.sasaran}>{row.sasaran}</td>
-                                                        <td className="px-4 py-2.5 border-r border-slate-100 dark:border-slate-800">
-                                                            <p className="font-semibold text-slate-900 dark:text-white">{row.indikator}</p>
-                                                            <p className="text-[10px] text-slate-400 font-mono">{row.kode} ({row.satuan})</p>
-                                                        </td>
-                                                        <td className="px-3 py-2.5 text-right font-mono text-blue-950 dark:text-blue-100 bg-blue-50/40 dark:bg-blue-950/20 border-r border-slate-100 dark:border-slate-800 font-medium">
-                                                            {row.target !== null ? row.target.toLocaleString('id-ID') : '-'}
-                                                        </td>
-                                                        <td className="px-3 py-2.5 text-right font-mono font-semibold text-emerald-950 dark:text-emerald-100 bg-emerald-50/40 dark:bg-emerald-950/20 border-r border-slate-100 dark:border-slate-800">
-                                                            {row.realisasi !== null ? row.realisasi.toLocaleString('id-ID') : '-'}
-                                                        </td>
-                                                        <td className="px-3 py-2.5 text-right font-mono font-bold text-sm bg-amber-50/40 dark:bg-amber-950/20 border-r border-slate-100 dark:border-slate-800">
-                                                            {row.capaian !== null ? (
-                                                                <span className={row.capaian < 0 || row.capaian < 50 ? 'text-rose-700 dark:text-rose-400 font-black' : row.capaian >= 100 ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}>
-                                                                    {row.capaian.toFixed(2)}%
-                                                                </span>
-                                                            ) : '-'}
-                                                        </td>
-                                                        <td className="px-3 py-2.5 text-center"><span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold border ${statusBadgeCls(row.status)}`}>{row.status}</span></td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-                                    <table className="w-full text-left text-xs min-w-[1250px] border-collapse">
-                                        <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
-                                            <tr>
-                                                <th rowSpan={2} className="px-2.5 py-2 font-bold text-center w-10 border-r border-slate-200 dark:border-slate-700">No</th>
-                                                <th rowSpan={2} className="px-3 py-2 font-bold w-44 border-r border-slate-200 dark:border-slate-700">Misi</th>
-                                                <th rowSpan={2} className="px-3 py-2 font-bold w-48 border-r border-slate-200 dark:border-slate-700">Tujuan</th>
-                                                <th rowSpan={2} className="px-3 py-2 font-bold w-52 border-r border-slate-200 dark:border-slate-700">Sasaran RPJMD</th>
-                                                <th rowSpan={2} className="px-3 py-2 font-bold w-52 border-r border-slate-200 dark:border-slate-700">Indikator</th>
-                                                {rpjmdYears.map((y) => (
-                                                    <th key={y} colSpan={3} className={`px-2 py-1.5 font-bold text-center border-r border-slate-200 dark:border-slate-700 ${y === Number(evalYear) ? 'bg-blue-200/70 text-blue-900 dark:bg-blue-950/70 dark:text-blue-200 font-black' : 'bg-slate-200/50 dark:bg-slate-800/50'}`}>
-                                                        {y} {y === Number(evalYear) && '(Aktif)'}
-                                                    </th>
-                                                ))}
-                                                <th rowSpan={2} className="px-3 py-2 font-bold text-center w-32">Status ({evalYear})</th>
-                                            </tr>
-                                            <tr className="bg-slate-50 dark:bg-slate-800 text-[10.5px] border-b border-slate-200 dark:border-slate-700">
-                                                {rpjmdYears.map((y) => (
-                                                    <React.Fragment key={`sub-${y}`}>
-                                                        <th className="px-1.5 py-1 text-right font-semibold bg-blue-100/80 text-blue-900 dark:bg-blue-950/50 dark:text-blue-200 border-r border-blue-200 dark:border-blue-800">Tgt</th>
-                                                        <th className="px-1.5 py-1 text-right font-semibold bg-emerald-100/80 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200 border-r border-emerald-200 dark:border-emerald-800">Real</th>
-                                                        <th className="px-1.5 py-1 text-right font-bold bg-amber-100/80 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200 border-r border-slate-200 dark:border-slate-700">Cap (%)</th>
-                                                    </React.Fragment>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                            {filteredRpjmd.length === 0 ? (
-                                                <tr><td colSpan={6 + rpjmdYears.length * 3} className="px-4 py-8 text-center text-slate-400">Tidak ada data indikator sasaran yang cocok.</td></tr>
-                                            ) : (
-                                                filteredRpjmd.map((row, idx) => (
-                                                    <tr key={`trend-${row.id}`} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition">
-                                                        <td className="px-2.5 py-2 text-center font-semibold text-slate-500 border-r border-slate-100 dark:border-slate-800">{idx + 1}</td>
-                                                        {rpjmdRowSpans.misiSpans[idx] > 0 && (
-                                                            <td
-                                                                rowSpan={rpjmdRowSpans.misiSpans[idx]}
-                                                                className="px-3 py-2 text-slate-700 dark:text-slate-300 align-top bg-slate-50/60 dark:bg-slate-800/40 font-medium border-r border-slate-200 dark:border-slate-700"
-                                                                title={(row as any).misi || 'Misi RPJMD'}
-                                                            >
-                                                                {(row as any).misi || 'Misi RPJMD'}
-                                                            </td>
-                                                        )}
-                                                        {rpjmdRowSpans.tujuanSpans[idx] > 0 && (
-                                                            <td
-                                                                rowSpan={rpjmdRowSpans.tujuanSpans[idx]}
-                                                                className="px-3 py-2 text-slate-700 dark:text-slate-300 align-top bg-slate-50/30 dark:bg-slate-800/20 border-r border-slate-200 dark:border-slate-700"
-                                                                title={row.tujuan}
-                                                            >
-                                                                {row.tujuan}
-                                                            </td>
-                                                        )}
-                                                        <td className="px-3 py-2 font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-100 dark:border-slate-800" title={row.sasaran}>{row.sasaran}</td>
-                                                        <td className="px-3 py-2 border-r border-slate-100 dark:border-slate-800">
-                                                            <div className="font-semibold text-slate-900 dark:text-white">{row.indikator}</div>
-                                                            <div className="text-[10px] text-slate-400 font-mono">{row.kode} ({row.satuan})</div>
-                                                        </td>
-                                                        {rpjmdYears.map((y) => {
-                                                            const yd = row.yearly[y];
-                                                            const isCurrentYear = y === Number(evalYear);
-                                                            return (
-                                                                <React.Fragment key={`td-${row.id}-${y}`}>
-                                                                    <td className={`px-1.5 py-2 text-right font-mono text-[11px] bg-blue-50/40 dark:bg-blue-950/20 text-blue-950 dark:text-blue-100 ${isCurrentYear ? 'font-medium' : ''}`}>
-                                                                        {yd?.target !== null && yd?.target !== undefined ? yd.target.toLocaleString('id-ID') : '-'}
-                                                                    </td>
-                                                                    <td className={`px-1.5 py-2 text-right font-mono text-[11px] font-semibold bg-emerald-50/40 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-100`}>
-                                                                        {yd?.realization !== null && yd?.realization !== undefined ? yd.realization.toLocaleString('id-ID') : '-'}
-                                                                    </td>
-                                                                    <td className={`px-1.5 py-2 text-right font-mono text-[11px] font-bold border-r border-slate-100 dark:border-slate-800 bg-amber-50/40 dark:bg-amber-950/20 text-amber-950 dark:text-amber-100`}>
-                                                                        {yd?.achievement !== null && yd?.achievement !== undefined ? (
-                                                                            <span className={yd.achievement < 0 || yd.achievement < 50 ? 'text-rose-700 dark:text-rose-400 font-black' : yd.achievement >= 100 ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}>
-                                                                                {yd.achievement.toFixed(1)}%
-                                                                            </span>
-                                                                        ) : '-'}
-                                                                    </td>
-                                                                </React.Fragment>
-                                                            );
-                                                        })}
-                                                        <td className="px-3 py-2 text-center">
-                                                            <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold border ${statusBadgeCls(row.status)}`}>{row.status}</span>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">
-                                💡 <strong>Kriteria Status Capaian RPJMD:</strong> 🟢 <strong>Tercapai:</strong> Capaian &ge; 100% &nbsp;|&nbsp; 🟡 <strong>Perlu Perhatian:</strong> 50% &le; Capaian &lt; 100% &nbsp;|&nbsp; 🔴 <strong>Kritis:</strong> Capaian &lt; 50% atau nilai minus &nbsp;|&nbsp; ⚪ <strong>Tidak Dinilai:</strong> Target = 0 dan Realisasi = 0.
-                            </div>
-                        </div>
-                    )}
-
                     {/* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
-                        TAB 3: CAPAIAN IKU PEMDA (Baris 2 Panduan)
+                        TAB 3: CAPAIAN IKU OPD (Baris 2 Panduan)
                     = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  */}
                     {activeTab === 'iku' && (
                         <div className="p-4 space-y-4">
-                            {/* 6 KARTU UTAMA SESUAI POLA RPJMD */}
+                            {/* 6 KARTU UTAMA STATISTIK */}
                             <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
                                 <div
                                     onClick={() => setIkuFilterStatus('Semua')}
@@ -3585,15 +2960,15 @@ export default function AnalyticsIndex({
                                 </div>
                             </div>
 
-                            {/* GRAFIK TREN 5 TAHUN IKU PEMDA */}
+                            {/* GRAFIK TREN 5 TAHUN IKU OPD */}
                             <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-800 shadow-2xs">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-700 gap-2">
                                     <div>
                                         <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                             <TrendingUp className="h-4 w-4 text-primary" />
-                                            Grafik Capaian IKU PEMDA per Tahun (2025 &rarr; 2029)
+                                            Grafik Capaian IKU OPD per Tahun ({activePeriodRange})
                                         </h3>
-                                        <p className="text-xs text-slate-500">Pimpinan dapat memantau pergerakan tren multi-tahun capaian IKU PEMDA.</p>
+                                        <p className="text-xs text-slate-500">Pimpinan dapat memantau pergerakan tren multi-tahun capaian IKU OPD.</p>
                                     </div>
                                     <span className="text-xs font-mono font-bold text-primary bg-blue-50 dark:bg-blue-950/50 px-2.5 py-1 rounded-md border border-blue-200 dark:border-blue-800">
                                         Benchmark
@@ -3602,7 +2977,7 @@ export default function AnalyticsIndex({
                                 <IkuAnalyticsTrendChart trend={iku_pemda_matrix?.trend ?? []} />
                             </div>
 
-                            {/* FILTER STATUS TABS & MATRIKS IKU PEMDA CONTROLS */}
+                            {/* FILTER STATUS TABS & MATRIKS IKU OPD CONTROLS */}
                             <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                     <span className="text-xs font-semibold text-slate-500 mr-1">Status:</span>
@@ -3675,7 +3050,7 @@ export default function AnalyticsIndex({
                                         target="_blank"
                                         rel="noreferrer"
                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 shadow-2xs cursor-pointer transition"
-                                        title={`Download PDF Capaian IKU PEMDA Tahun ${evalYear}`}
+                                        title={`Download PDF Capaian IKU OPD Tahun ${evalYear}`}
                                     >
                                         <FileDown className="h-3.5 w-3.5" />
                                         <span>Download PDF</span>
@@ -3693,7 +3068,7 @@ export default function AnalyticsIndex({
                                             <tr>
                                                 <th className="px-3 py-3 font-semibold text-center w-10">No</th>
                                                 <th className="px-4 py-3 font-semibold w-52">Sasaran Strategis</th>
-                                                <th className="px-4 py-3 font-semibold">Indikator IKU PEMDA</th>
+                                                <th className="px-4 py-3 font-semibold">Indikator IKU OPD</th>
                                                 <th className="px-2 py-3 font-semibold text-center w-20">Satuan</th>
                                                 <th className="px-3 py-3 font-semibold text-center w-36">Karakter Indikator</th>
                                                 <th className="px-3 py-3 font-semibold text-right w-24">Target</th>
@@ -3704,7 +3079,7 @@ export default function AnalyticsIndex({
                                         </thead>
                                         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                                             {filteredIkuPemda.length === 0 ? (
-                                                <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-400">Tidak ada IKU Pemda yang sesuai pencarian.</td></tr>
+                                                <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-400">Tidak ada IKU OPD yang sesuai pencarian.</td></tr>
                                             ) : (
                                                 filteredIkuPemda.map((row) => (
                                                     <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
@@ -3747,7 +3122,7 @@ export default function AnalyticsIndex({
                                             <tr>
                                                 <th rowSpan={2} className="px-2.5 py-2 font-bold text-center w-10 border-r border-slate-200">No</th>
                                                 <th rowSpan={2} className="px-3 py-2 font-bold w-48 border-r border-slate-200">Sasaran Strategis</th>
-                                                <th rowSpan={2} className="px-3 py-2 font-bold w-52 border-r border-slate-200">IKU PEMDA</th>
+                                                <th rowSpan={2} className="px-3 py-2 font-bold w-52 border-r border-slate-200">IKU OPD</th>
                                                 {ikuPemdaYears.map((y) => (
                                                     <th key={y} colSpan={3} className={`px-2 py-1 font-bold text-center border-r border-slate-200 ${y === Number(evalYear) ? 'bg-blue-100 text-blue-900 font-black' : ''}`}>
                                                         {y}
@@ -3798,7 +3173,7 @@ export default function AnalyticsIndex({
                             )}
 
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">
-                                💡 <strong>Kriteria Status Capaian IKU PEMDA:</strong> 🟢 <strong>Tercapai:</strong> Capaian &ge; 100% &nbsp;|&nbsp; 🟡 <strong>Perlu Perhatian:</strong> 50% &le; Capaian &lt; 100% &nbsp;|&nbsp; 🔴 <strong>Kritis:</strong> Capaian &lt; 50% atau nilai minus &nbsp;|&nbsp; ⚪ <strong>Tidak Dinilai:</strong> Target = 0 dan Realisasi = 0.
+                                💡 <strong>Kriteria Status Capaian IKU OPD:</strong> 🟢 <strong>Tercapai:</strong> Capaian &ge; 100% &nbsp;|&nbsp; 🟡 <strong>Perlu Perhatian:</strong> 50% &le; Capaian &lt; 100% &nbsp;|&nbsp; 🔴 <strong>Kritis:</strong> Capaian &lt; 50% atau nilai minus &nbsp;|&nbsp; ⚪ <strong>Tidak Dinilai:</strong> Target = 0 dan Realisasi = 0.
                             </div>
                         </div>
                     )}
@@ -3808,7 +3183,7 @@ export default function AnalyticsIndex({
                     =============================================================== */}
                     {activeTab === 'opd' && (
                         <div className="p-4 space-y-4">
-                            {/* 6 KARTU UTAMA SESUAI POLA RPJMD */}
+                            {/* 6 KARTU UTAMA STATISTIK */}
                             <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
                                 <div
                                     onClick={() => setOpdFilterStatus('Semua')}
@@ -3883,7 +3258,7 @@ export default function AnalyticsIndex({
                                     <div>
                                         <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                             <BarChart3 className="h-4 w-4 text-sky-600" />
-                                            Grafik Rata-rata Capaian Kinerja Perangkat Daerah per Tahun (2025 &rarr; 2029)
+                                            Grafik Rata-rata Capaian Kinerja Perangkat Daerah per Tahun ({activePeriodRange})
                                         </h3>
                                         <p className="text-xs text-slate-500">Pimpinan dapat memantau pergerakan tren rata-rata capaian kinerja OPD.</p>
                                     </div>
@@ -4161,27 +3536,27 @@ export default function AnalyticsIndex({
                     )}
 
                     {/* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
-                        TAB: NILAI SAKIP PEMDA (Baris 3 Panduan - Modul Evaluasi Pemda)
+                        TAB: NILAI SAKIP OPD (Baris 3 Panduan - Modul Evaluasi)
                     = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  */}
                     {activeTab === 'sakip_pemda' && (
                         <div className="p-4 space-y-4">
-                            {/* PENJELASAN EVALUASI SAKIP PEMDA */}
+                            {/* PENJELASAN EVALUASI SAKIP OPD */}
                             <div className="p-3.5 rounded-lg border border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-900/60 text-xs text-emerald-900 dark:text-emerald-200 flex items-start gap-2.5">
                                 <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                                 <div>
                                     <p className="font-bold text-[13px] text-emerald-950 dark:text-emerald-100">
-                                        Evaluasi SAKIP Pemerintah Daerah (Tingkat Pemerintah Provinsi Papua Barat):
+                                        Evaluasi SAKIP Perangkat Daerah (Tingkat OPD):
                                     </p>
                                     <p className="mt-0.5 text-emerald-800 dark:text-emerald-300 leading-relaxed text-[11.5px]">
-                                        Nilai SAKIP Pemda bersumber langsung dari <strong>Modul Evaluasi Pemda</strong> yang mengacu pada <strong>PermenPANRB No. 88/2021</strong>. Evaluasi dilakukan terhadap 4 pilar utama akuntabilitas: <strong>Perencanaan Kinerja (30%)</strong>, <strong>Pengukuran Kinerja (30%)</strong>, <strong>Pelaporan Kinerja (15%)</strong>, dan <strong>Evaluasi Internal (25%)</strong> oleh Kementerian PAN-RB.
+                                        Nilai SAKIP OPD bersumber dari <strong>Modul Evaluasi</strong> yang mengacu pada <strong>PermenPANRB No. 88/2021</strong>. Evaluasi dilakukan terhadap 4 pilar utama akuntabilitas: <strong>Perencanaan Kinerja (30%)</strong>, <strong>Pengukuran Kinerja (30%)</strong>, <strong>Pelaporan Kinerja (15%)</strong>, dan <strong>Evaluasi Internal (25%)</strong>.
                                     </p>
                                 </div>
                             </div>
 
-                            {/* 5 KARTU UTAMA SAKIP PEMDA */}
+                            {/* 5 KARTU UTAMA SAKIP OPD */}
                             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                                 <div className="rounded-lg border border-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/40 p-3.5 text-center shadow-2xs col-span-2 sm:col-span-1">
-                                    <p className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wide">Nilai Akhir SAKIP Pemda</p>
+                                    <p className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wide">Nilai Akhir SAKIP OPD</p>
                                     <p className="text-2xl font-black text-emerald-900 dark:text-emerald-100 mt-0.5">
                                         {(sakipPemdaData?.nilai ?? 0.0).toFixed(2)}
                                     </p>
@@ -4227,26 +3602,26 @@ export default function AnalyticsIndex({
                                 </div>
                             </div>
 
-                            {/* TREN DERET WAKTU SAKIP PEMDA 5 TAHUN */}
+                            {/* TREN DERET WAKTU SAKIP OPD 5 TAHUN */}
                             <div className="p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs">
                                 <div className="flex items-center justify-between mb-2">
                                     <p className="font-bold text-xs text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                                         <TrendingUp className="w-4 h-4 text-emerald-600" />
-                                        <span>Tren Deret Waktu Nilai SAKIP Pemda (Siklus RPJMD 2025–2029)</span>
+                                        <span>Tren Deret Waktu Nilai SAKIP OPD (Periode Perencanaan {activePeriodRange})</span>
                                     </p>
                                     <span className="text-[11px] text-slate-500">
-                                        Baseline 2025 s/d Target 2029
+                                        Periode Perencanaan {activePeriodRange}
                                     </span>
                                 </div>
                                 <SakipPemdaTrendChart trend={sakipPemdaData?.trend ?? []} evalYear={evalYear} />
                             </div>
 
-                            {/* MATRIKS TABEL 4 KOMPONEN SAKIP PEMDA */}
+                            {/* MATRIKS TABEL 4 KOMPONEN SAKIP OPD */}
                             <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs overflow-hidden">
                                 <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2">
                                     <div>
                                         <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                                            <span>Matriks Evaluasi 4 Komponen SAKIP Pemerintah Provinsi Papua Barat</span>
+                                            <span>Matriks Evaluasi 4 Komponen SAKIP Perangkat Daerah</span>
                                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
                                                 Tahun {evalYear}
                                             </span>
@@ -4268,7 +3643,7 @@ export default function AnalyticsIndex({
                                             href={getExportUrl('sakip_pemda')}
                                             target="_blank"
                                             rel="noreferrer"
-                                            title={`Download PDF Evaluasi SAKIP Pemda Tahun ${evalYear}`}
+                                            title={`Download PDF Evaluasi SAKIP OPD Tahun ${evalYear}`}
                                             className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 rounded hover:bg-emerald-700 transition"
                                         >
                                             <Download className="w-3.5 h-3.5" />
@@ -4312,7 +3687,7 @@ export default function AnalyticsIndex({
                                             {/* BARIS TOTAL */}
                                             <tr className="bg-emerald-50/70 dark:bg-emerald-950/40 border-t-2 border-emerald-300 dark:border-emerald-700 font-bold">
                                                 <td colSpan={2} className="px-3 py-2.5 text-center text-emerald-950 dark:text-emerald-100 font-black">
-                                                    TOTAL NILAI SAKIP PEMDA
+                                                    TOTAL NILAI SAKIP OPD
                                                 </td>
                                                 <td className="px-3 py-2.5 text-center text-emerald-900 dark:text-emerald-200">100.0%</td>
                                                 <td className="px-3 py-2.5 text-center text-emerald-900 dark:text-emerald-100 text-sm font-black">
@@ -4378,7 +3753,7 @@ export default function AnalyticsIndex({
                                     <div className="space-y-1.5 p-3 bg-white dark:bg-slate-900 rounded border border-purple-100 dark:border-purple-900/40">
                                         <p className="text-slate-500 font-medium">Catatan Evaluator:</p>
                                         <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                                            {sakipPemdaData?.lhe?.catatan ?? (sakipPemdaData?.nilai ? `Pemerintah Provinsi Papua Barat telah menunjukkan implementasi akuntabilitas kinerja dengan predikat mutu ${sakipPemdaData?.predikat || 'BELUM DINILAI'}.` : 'Belum ada catatan evaluasi LHE untuk tahun ini.')}
+                                            {sakipPemdaData?.lhe?.catatan ?? (sakipPemdaData?.nilai ? `${instansiName} telah menunjukkan implementasi akuntabilitas kinerja dengan predikat mutu ${sakipPemdaData?.predikat || 'BELUM DINILAI'}.` : 'Belum ada catatan evaluasi LHE untuk tahun ini.')}
                                         </p>
                                         <p className="text-slate-500 font-medium mt-2">Rekomendasi Tindak Lanjut:</p>
                                         <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -4408,12 +3783,12 @@ export default function AnalyticsIndex({
                                 </div>
                             </div>
 
-                            {/* ACUAN SAKIP PEMDA PAPUA BARAT */}
+                            {/* ACUAN SAKIP OPD */}
                             <div className="p-3 rounded-lg border border-emerald-200 bg-emerald-50/60 dark:bg-emerald-950/20 dark:border-emerald-900/60 flex items-center justify-between flex-wrap gap-2 text-xs text-emerald-900 dark:text-emerald-200">
                                 <div className="flex items-center gap-2">
                                     <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                                     <span>
-                                        <strong>Acuan Evaluasi Pemda:</strong> Nilai SAKIP Pemprov Papua Barat = <strong>{(sakipPemdaData?.nilai ?? 0.0).toFixed(2)}</strong> (Predikat <strong>{sakipPemdaData?.predikat ?? 'BELUM DINILAI'}</strong>) &bull; Rata-rata Nilai OPD: <strong>{(sakip_eval_matrix?.summary.rata_rata_nilai ?? 0.0).toFixed(2)}</strong>
+                                        <strong>Acuan Evaluasi OPD:</strong> Nilai SAKIP OPD = <strong>{(sakipPemdaData?.nilai ?? 0.0).toFixed(2)}</strong> (Predikat <strong>{sakipPemdaData?.predikat ?? 'BELUM DINILAI'}</strong>) &bull; Rata-rata Nilai OPD: <strong>{(sakip_eval_matrix?.summary.rata_rata_nilai ?? 0.0).toFixed(2)}</strong>
                                     </span>
                                 </div>
                                 <button
@@ -4421,7 +3796,7 @@ export default function AnalyticsIndex({
                                     onClick={() => setActiveTab('sakip_pemda')}
                                     className="text-emerald-700 dark:text-emerald-300 font-bold hover:underline flex items-center gap-1 cursor-pointer"
                                 >
-                                    <span>Lihat Rincian SAKIP Pemda</span>
+                                    <span>Lihat Rincian SAKIP OPD</span>
                                     <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
                             </div>
@@ -4545,10 +3920,10 @@ export default function AnalyticsIndex({
                                     <div>
                                         <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                             <Medal className="h-4 w-4 text-purple-600" />
-                                            Grafik Perkembangan Rata-rata Nilai SAKIP OPD (2025 &rarr; 2029)
+                                            Grafik Perkembangan Rata-rata Nilai SAKIP OPD ({activePeriodRange})
                                         </h3>
                                         <p className="text-xs text-slate-500 mt-0.5">
-                                            Pemantauan tren mutu akuntabilitas kinerja perangkat daerah selama 5 tahun periode RPJMD
+                                            Pemantauan tren mutu akuntabilitas kinerja perangkat daerah selama 5 tahun periode perencanaan
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -4586,7 +3961,7 @@ export default function AnalyticsIndex({
                                         }`}
                                     >
                                         <TrendingUp className="h-3.5 w-3.5" />
-                                        <span>Matriks Tren 5 Tahun (2025–2029)</span>
+                                        <span>Matriks Tren 5 Tahun ({activePeriodRange})</span>
                                     </button>
                                 </div>
 
@@ -4819,7 +4194,7 @@ export default function AnalyticsIndex({
                     )}
 
                     {/* ===============================================================
-                        TAB 6: CAPAIAN PKO (PEMDA & OPD) (Baris 4 Panduan)
+                        TAB 6: CAPAIAN PKO OPD (Baris 4 Panduan)
                     =============================================================== */}
                     {activeTab === 'pko' && (
                         <div className="p-4 space-y-4">
@@ -4836,7 +4211,7 @@ export default function AnalyticsIndex({
                                         }`}
                                     >
                                         <Building2 className="h-4 w-4" />
-                                        <span>PKO Pemerintah Daerah (Provinsi Papua Barat)</span>
+                                        <span>PKO {instansiName} (Tingkat Makro)</span>
                                     </button>
                                     <button
                                         type="button"
@@ -4853,7 +4228,7 @@ export default function AnalyticsIndex({
                                 </div>
 
                                 <span className="text-xs text-slate-500 dark:text-slate-400 font-mono hidden sm:inline">
-                                    Panduan Teknis Baris 4: Item 6 (Pemda 5 Thn) &amp; Item 7 (Ranking OPD)
+                                    Panduan Teknis Baris 4: Item 6 (Tren 5 Thn) &amp; Item 7 (Ranking OPD)
                                 </span>
                             </div>
 
@@ -4864,15 +4239,15 @@ export default function AnalyticsIndex({
                                         <Building2 className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                                         <div className="space-y-1">
                                             <p className="font-bold text-sm">
-                                                Capaian Penilaian Kinerja Organisasi (PKO) Pemerintah Provinsi Papua Barat
+                                                Capaian Penilaian Kinerja Organisasi (PKO) {instansiName}
                                             </p>
                                             <p className="text-amber-800 dark:text-amber-300 leading-relaxed">
-                                                Ini adalah capaian PKO <strong>Pemerintah Provinsi Papua Barat secara makro</strong> (bukan masing-masing OPD). Data ditarik dari realisasi capaian PKO berdasarkan hasil evaluasi setiap tahun.
+                                                Ini adalah capaian PKO <strong>{instansiName} secara makro</strong> (bukan masing-masing OPD). Data ditarik dari realisasi capaian PKO berdasarkan hasil evaluasi setiap tahun.
                                             </p>
                                         </div>
                                     </div>
 
-                                    {/* 2 Kartu Utama PKO Pemda */}
+                                    {/* 2 Kartu Utama PKO OPD */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div className="rounded-lg border border-amber-300 bg-amber-50/80 dark:bg-amber-950/40 p-4 text-center shadow-2xs">
                                             <p className="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">Nilai PKO Pemprov ({evalYear})</p>
@@ -4893,15 +4268,15 @@ export default function AnalyticsIndex({
                                         </div>
                                     </div>
 
-                                    {/* GRAFIK TREN 5 TAHUN PKO PEMDA */}
+                                    {/* GRAFIK TREN 5 TAHUN PKO OPD */}
                                     <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-800 shadow-2xs">
                                         <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-100 dark:border-slate-700">
                                             <div>
                                                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                                     <TrendingUp className="h-4 w-4 text-amber-600" />
-                                                    Grafik Tren Capaian PKO Pemerintah Daerah Provinsi Papua Barat
+                                                    Grafik Tren Capaian PKO {instansiName}
                                                 </h3>
-                                                <p className="text-[11px] text-slate-500">Visualisasi deret waktu capaian PKO gabungan: Realisasi baseline historis, tahun aktif, dan target proyeksi RPJMD.</p>
+                                                <p className="text-[11px] text-slate-500">Visualisasi deret waktu capaian PKO gabungan: Realisasi baseline historis, tahun aktif, dan target proyeksi perencanaan 5 tahun.</p>
                                             </div>
                                             <div className="flex items-center gap-2 text-xs">
                                                 <span className="inline-flex items-center gap-1 font-mono text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
@@ -4918,7 +4293,7 @@ export default function AnalyticsIndex({
                                             <div className="flex items-center gap-2">
                                                 <FileSpreadsheet className="h-4 w-4 text-amber-600" />
                                                 <span className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                                                    Matriks Capaian PKO Pemerintah Daerah per Tahun (Acuan Tampilan Detail)
+                                                    Matriks Capaian PKO {instansiName} per Tahun (Acuan Tampilan Detail)
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -4935,7 +4310,7 @@ export default function AnalyticsIndex({
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-amber-600 text-white hover:bg-amber-700 shadow-2xs cursor-pointer"
-                                                    title={`Download PDF PKO Pemda Tahun ${evalYear}`}
+                                                    title={`Download PDF PKO OPD Tahun ${evalYear}`}
                                                 >
                                                     <FileDown className="h-3.5 w-3.5" />
                                                     <span>Download PDF</span>
@@ -5007,7 +4382,7 @@ export default function AnalyticsIndex({
                                     </div>
 
                                     {/* KETERANGAN PENILAIAN PREDIKAT PKO / NKO */}
-                                    <KeteranganPenilaianPkoAkip title="Keterangan Penilaian Predikat PKO Pemerintah Daerah" />
+                                    <KeteranganPenilaianPkoAkip title={`Keterangan Penilaian Predikat PKO ${instansiName}`} />
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -5019,7 +4394,7 @@ export default function AnalyticsIndex({
                                                 Capaian Penilaian Kinerja Organisasi (PKO) Perangkat Daerah (Seluruh OPD)
                                             </p>
                                             <p className="text-blue-800 dark:text-blue-300 leading-relaxed">
-                                                Matriks ini digunakan untuk <strong>membandingkan kinerja organisasi seluruh Perangkat Daerah</strong> di lingkungan Pemerintah Provinsi Papua Barat. Nilai Kinerja Organisasi (NKO / PKO) dihitung langsung dari capaian indikator kinerja secara transparan dan akuntabel sesuai standar PermenPANRB No. 22/2024.
+                                                Matriks ini digunakan untuk <strong>membandingkan kinerja organisasi seluruh Perangkat Daerah</strong> di lingkungan {instansiName}. Nilai Kinerja Organisasi (NKO / PKO) dihitung langsung dari capaian indikator kinerja secara transparan dan akuntabel sesuai standar PermenPANRB No. 22/2024.
                                             </p>
                                         </div>
                                     </div>
@@ -5346,7 +4721,7 @@ export default function AnalyticsIndex({
                                     </div>
                                     <div className="space-y-1">
                                         <h4 className="text-sm font-bold text-amber-950 dark:text-amber-100 flex items-center gap-2">
-                                            <span>8. Capaian Kinerja Rencana Aksi Triwulan — Early Warning System (EWS)</span>
+                                            <span>8. Capaian Kinerja Rencana Aksi Triwulan - Early Warning System (EWS)</span>
                                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-200/80 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
                                                 Monitoring {actionPlansTw} Tahun {evalYear}
                                             </span>
@@ -5790,7 +5165,7 @@ export default function AnalyticsIndex({
                                     </div>
                                     <div className="space-y-1">
                                         <h4 className="text-sm font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
-                                            <span>Rencana Aksi Anggaran TW — Monitoring Serapan Keuangan Triwulanan</span>
+                                            <span>Rencana Aksi Anggaran TW - Monitoring Serapan Keuangan Triwulanan</span>
                                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-200/80 text-emerald-900 dark:bg-emerald-900/60 dark:text-emerald-200">
                                                 Monitoring {actionPlansTw} Tahun {evalYear}
                                             </span>
@@ -6236,7 +5611,7 @@ export default function AnalyticsIndex({
                             {/* 5 EWS INDIKATOR MULTI-KRITERIA */}
                             <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
                                 <div className="rounded-lg border border-rose-200 bg-rose-50/50 p-3 text-center shadow-2xs">
-                                    <p className="text-[10px] font-semibold text-rose-700 uppercase">IKU Pemda Kritis</p>
+                                    <p className="text-[10px] font-semibold text-rose-700 uppercase">IKU OPD Kritis</p>
                                     <p className="text-xl font-black text-rose-900 mt-0.5">{risk_map_matrix?.summary.critical_iku_count ?? 0}</p>
                                     <span className="text-[10px] text-rose-600">Perlu Penanganan Cepat</span>
                                 </div>
@@ -6771,7 +6146,7 @@ export default function AnalyticsIndex({
                                                             <div key={pIdx} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-3 space-y-2">
                                                                 <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                                                                     <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-mono text-[9.5px]">PROGRAM</span>
-                                                                    <span>{prog.kode} — {prog.nama}</span>
+                                                                    <span>{prog.kode} - {prog.nama}</span>
                                                                 </div>
 
                                                                 {/* Kegiatan */}
@@ -6780,7 +6155,7 @@ export default function AnalyticsIndex({
                                                                         <div key={kIdx} className="space-y-1">
                                                                             <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 dark:text-slate-200">
                                                                                 <span className="px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 font-mono text-[9px]">KEGIATAN</span>
-                                                                                <span>{keg.kode} — {keg.nama}</span>
+                                                                                <span>{keg.kode} - {keg.nama}</span>
                                                                             </div>
 
                                                                             {/* Subkegiatan */}
@@ -6788,7 +6163,7 @@ export default function AnalyticsIndex({
                                                                                 {keg.subkegiatan.map((sub, sIdx) => (
                                                                                     <div key={sIdx} className="flex items-center gap-2">
                                                                                         <span className="px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono text-[9px]">SUBKEGIATAN</span>
-                                                                                        <span>{sub.kode} — {sub.nama}</span>
+                                                                                        <span>{sub.kode} - {sub.nama}</span>
                                                                                     </div>
                                                                                 ))}
                                                                             </div>
@@ -6909,7 +6284,7 @@ export default function AnalyticsIndex({
                                     <Target className="h-5 w-5 text-emerald-700" />
                                     <div>
                                         <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                                            Rincian Rencana Aksi Kinerja — {actionPlansTw}
+                                            Rincian Rencana Aksi Kinerja - {actionPlansTw}
                                         </h3>
                                         <p className="text-xs text-slate-500">{selectedOpdForPlansModal.opd} ({selectedOpdForPlansModal.kode})</p>
                                     </div>
@@ -7051,7 +6426,7 @@ export default function AnalyticsIndex({
                                     <Coins className="h-5 w-5 text-emerald-700" />
                                     <div>
                                         <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                                            Rincian Subkegiatan Anggaran — {actionPlansTw}
+                                            Rincian Subkegiatan Anggaran - {actionPlansTw}
                                         </h3>
                                         <p className="text-xs text-slate-500">{selectedOpdForBudgetModal.opd} ({selectedOpdForBudgetModal.kode})</p>
                                     </div>
@@ -7193,7 +6568,7 @@ export default function AnalyticsIndex({
                         </span>
                     </div>
                     <div className="flex items-center gap-3 text-[11px] text-slate-400 flex-shrink-0">
-                        <span>&copy; 2026 Biro Organisasi Sekretariat Daerah Provinsi Papua Barat. Hak Cipta Dilindungi.</span>
+                        <span>&copy; {currentYear} {orgName} {instansiName}. Hak Cipta Dilindungi.</span>
                     </div>
                 </div>
             </div>

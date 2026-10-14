@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import MeasurementNav from '@/Pages/Measurement/MeasurementNav';
+import PageBreadcrumb from '@/Components/Dashboard/PageBreadcrumb';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import TablePagination from '@/Components/TablePagination';
@@ -116,7 +117,7 @@ interface OrganizationOption {
     name: string;
 }
 
-interface RpjmdPeriodInfo {
+interface PlanningPeriodInfo {
     id: number;
     code: string;
     name: string;
@@ -166,10 +167,12 @@ interface Props {
     selectedOrgId: number | null;
     years: number[];
     activeYear?: number;
-    activeRpjmdPeriod?: RpjmdPeriodInfo | null;
-    availableRpjmdPeriods?: RpjmdPeriodInfo[];
+    activePlanningPeriod?: PlanningPeriodInfo | null;
+    activeRpjmdPeriod?: PlanningPeriodInfo | null;
+    availablePlanningPeriods?: PlanningPeriodInfo[];
+    availableRpjmdPeriods?: PlanningPeriodInfo[];
     canManage: boolean;
-    userIsSpBappeda: boolean;
+    canManageAllOpd?: boolean;
 }
 
 function OpdRealizationTrendChart({ years, items, goals }: { years: number[]; items: OpdItem[]; goals?: OpdItem[] }) {
@@ -289,7 +292,7 @@ function OpdRealizationTrendChart({ years, items, goals }: { years: number[]; it
             formatter: (params: any) => {
                 const yr = params[0]?.axisValue;
                 const point = trendData.find((t) => t.year === Number(yr));
-                let html = `<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:3px">Tren Capaian Renstra PD — Tahun ${yr}</div>`;
+                let html = `<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:3px">Tren Capaian Renstra PD - Tahun ${yr}</div>`;
                 if (point?.achievement !== null && point?.achievement !== undefined) {
                     html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Rata-rata Capaian:</span><b style="color:#10b981">${point.achievement}%</b></div>`;
                     html += `<div style="display:flex;justify-content:space-between;gap:12px"><span>Benchmark:</span><b>100%</b></div>`;
@@ -535,11 +538,17 @@ export default function RealizationOpd({
     selectedOrgId,
     years = [],
     activeYear,
-    activeRpjmdPeriod,
-    availableRpjmdPeriods = [],
+    activePlanningPeriod,
+    activeRpjmdPeriod: propRpjmdPeriod,
+    availablePlanningPeriods = [],
+    availableRpjmdPeriods: propRpjmdPeriods = [],
     canManage,
-    userIsSpBappeda,
+    canManageAllOpd,
 }: Props) {
+    const isGlobalManager = Boolean(canManageAllOpd);
+    const activePeriod = activePlanningPeriod ?? propRpjmdPeriod;
+    const availablePeriods = availablePlanningPeriods.length > 0 ? availablePlanningPeriods : propRpjmdPeriods;
+
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
     const [quickAddParentGoal, setQuickAddParentGoal] = useState<OpdItem | null>(null);
@@ -853,7 +862,7 @@ export default function RealizationOpd({
             route('measurement.realization.opd'),
             {
                 organization_id: cleanOrgId,
-                ...(activeRpjmdPeriod?.id ? { period_id: String(activeRpjmdPeriod.id) } : {}),
+                ...(activePeriod?.id ? { period_id: String(activePeriod.id) } : {}),
             },
             { preserveState: true }
         );
@@ -1442,7 +1451,7 @@ export default function RealizationOpd({
 
     const exportPdfUrl = route('measurement.realization.opd.export-pdf', {
         organization_id: selectedOrgId ?? undefined,
-        period_id: activeRpjmdPeriod?.id ?? undefined,
+        period_id: activePeriod?.id ?? undefined,
         year: evalYear,
     });
 
@@ -1450,9 +1459,13 @@ export default function RealizationOpd({
         <AuthenticatedLayout>
             <Head title="Realisasi Kinerja (Perangkat Daerah)" />
 
-            <div className="py-6 px-4 sm:px-6 lg:px-8 max-w-full print:p-0">
+            <div className="py-6 px-4 sm:px-6 lg:px-8 max-w-full print:p-0 space-y-4">
                 <div className="print:hidden">
-                    <MeasurementNav activeTab="opd" userIsSpBappeda={userIsSpBappeda} exportPdfUrl={exportPdfUrl} />
+                    <PageBreadcrumb items={[
+                        { label: 'Pengukuran' },
+                        { label: 'Realisasi Kinerja Perangkat Daerah' },
+                    ]} className="mb-4" />
+                    <MeasurementNav activeTab="opd" canManageAllOpd={isGlobalManager} exportPdfUrl={exportPdfUrl} />
                 </div>
 
                 {/* OPD Selector & Evaluation Year Bar */}
@@ -1673,9 +1686,9 @@ export default function RealizationOpd({
                                 <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-300 text-[11px] font-semibold">
                                     Struktur Berjenjang 1:N
                                 </Badge>
-                                {activeRpjmdPeriod && (
+                                {activePeriod && (
                                     <Badge variant="outline" className="border-blue-500/60 bg-blue-50/50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-300 text-xs font-normal">
-                                        Periode: {activeRpjmdPeriod.name}
+                                        Periode: {activePeriod.name}
                                     </Badge>
                                 )}
                             </div>
@@ -1686,10 +1699,10 @@ export default function RealizationOpd({
 
                         {/* Search & Action Controls */}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full lg:w-auto print:hidden">
-                            {availableRpjmdPeriods.length > 1 && (
+                            {availablePeriods.length > 1 && (
                                 <div className="w-48 sm:w-56 shrink-0">
                                     <Select2
-                                        value={activeRpjmdPeriod?.id ?? ''}
+                                        value={activePeriod?.id ?? ''}
                                         onChange={(val) => {
                                             const cleanPeriodId = typeof val === 'object' && val !== null
                                                 ? String((val as any)?.target?.value ?? (val as any)?.[0] ?? val)
@@ -1703,7 +1716,7 @@ export default function RealizationOpd({
                                                 { preserveState: true, preserveScroll: true }
                                             );
                                         }}
-                                        options={availableRpjmdPeriods.map((p) => ({
+                                        options={availablePeriods.map((p) => ({
                                             value: p.id,
                                             label: p.name,
                                         }))}
@@ -2080,13 +2093,13 @@ export default function RealizationOpd({
                                                                         rowSpan={goalInds.length}
                                                                         className="px-3 py-2 border-b border-r border-border align-top text-center text-slate-400 min-w-[180px] bg-sky-50/20 dark:bg-sky-950/10"
                                                                     >
-                                                                        —
+                                                                        -
                                                                     </td>
                                                                     <td
                                                                         rowSpan={goalInds.length}
                                                                         className="px-2 py-2 border-b border-r border-border text-center align-top text-slate-400 min-w-[65px] bg-sky-50/20 dark:bg-sky-950/10"
                                                                     >
-                                                                        —
+                                                                        -
                                                                     </td>
                                                                 </>
                                                             )}
@@ -2098,7 +2111,7 @@ export default function RealizationOpd({
                                                                         {gInd.measurement_pattern}
                                                                     </span>
                                                                 ) : (
-                                                                    <span className="text-slate-400">—</span>
+                                                                    <span className="text-slate-400">-</span>
                                                                 )}
                                                             </td>
 
@@ -2110,7 +2123,7 @@ export default function RealizationOpd({
                                                                 >
                                                                     {gInd.targets?.[yr] !== undefined && gInd.targets?.[yr] !== null && gInd.targets?.[yr] !== ''
                                                                         ? Number(gInd.targets[yr]).toLocaleString('id-ID')
-                                                                        : '—'}
+                                                                        : '-'}
                                                                 </td>
                                                             ))}
 
@@ -2122,7 +2135,7 @@ export default function RealizationOpd({
                                                                 >
                                                                     {gInd.realizations?.[yr] !== undefined && gInd.realizations?.[yr] !== null && gInd.realizations?.[yr] !== ''
                                                                         ? Number(gInd.realizations[yr]).toLocaleString('id-ID')
-                                                                        : '—'}
+                                                                        : '-'}
                                                                 </td>
                                                             ))}
 
@@ -2143,7 +2156,7 @@ export default function RealizationOpd({
                                                                                 : 'bg-amber-50/20 dark:bg-amber-950/10'
                                                                         }`}
                                                                     >
-                                                                        {achievement !== null ? `${achievement.toFixed(2)}%` : '—'}
+                                                                        {achievement !== null ? `${achievement.toFixed(2)}%` : '-'}
                                                                     </td>
                                                                 );
                                                             })}
@@ -2168,7 +2181,7 @@ export default function RealizationOpd({
                                                                                 {status}
                                                                             </span>
                                                                         ) : (
-                                                                            '—'
+                                                                            '-'
                                                                         )}
                                                                     </td>
                                                                 );
@@ -2209,10 +2222,10 @@ export default function RealizationOpd({
                                                     {childrenWithInds.length === 0 ? (
                                                         <tr className="bg-slate-50/50 dark:bg-slate-900/30">
                                                             <td className="px-3 py-2 border-b border-r border-border text-center text-slate-400 bg-white dark:bg-slate-900">
-                                                                —
+                                                                -
                                                             </td>
                                                             <td className="px-2 py-2 border-b border-r border-border text-center text-slate-400 bg-white dark:bg-slate-900">
-                                                                —
+                                                                -
                                                             </td>
                                                             <td
                                                                 colSpan={canManage ? 4 + years.length * 4 + 1 : 4 + years.length * 4}
@@ -2245,13 +2258,13 @@ export default function RealizationOpd({
                                                                                 rowSpan={inds.length}
                                                                                 className="px-3 py-2 border-b border-r border-border text-center align-top text-slate-400 min-w-[180px] bg-white dark:bg-slate-900"
                                                                             >
-                                                                                —
+                                                                                -
                                                                             </td>
                                                                             <td
                                                                                 rowSpan={inds.length}
                                                                                 className="px-2 py-2 border-b border-r border-border text-center align-top text-slate-400 min-w-[65px] bg-white dark:bg-slate-900"
                                                                             >
-                                                                                —
+                                                                                -
                                                                             </td>
                                                                             <td
                                                                                 rowSpan={inds.length}
@@ -2310,7 +2323,7 @@ export default function RealizationOpd({
                                                                         >
                                                                             {cInd.targets?.[yr] !== undefined && cInd.targets?.[yr] !== null && cInd.targets?.[yr] !== ''
                                                                                 ? Number(cInd.targets[yr]).toLocaleString('id-ID')
-                                                                                : '—'}
+                                                                                : '-'}
                                                                         </td>
                                                                     ))}
 
@@ -2322,7 +2335,7 @@ export default function RealizationOpd({
                                                                         >
                                                                             {cInd.realizations?.[yr] !== undefined && cInd.realizations?.[yr] !== null && cInd.realizations?.[yr] !== ''
                                                                                 ? Number(cInd.realizations[yr]).toLocaleString('id-ID')
-                                                                                : '—'}
+                                                                                : '-'}
                                                                         </td>
                                                                     ))}
 
@@ -2343,7 +2356,7 @@ export default function RealizationOpd({
                                                                                         : 'bg-amber-50/20 dark:bg-amber-950/10'
                                                                                 }`}
                                                                             >
-                                                                                {achievement !== null ? `${achievement.toFixed(2)}%` : '—'}
+                                                                                {achievement !== null ? `${achievement.toFixed(2)}%` : '-'}
                                                                             </td>
                                                                         );
                                                                     })}
@@ -2368,7 +2381,7 @@ export default function RealizationOpd({
                                                                                         {status}
                                                                                     </span>
                                                                                 ) : (
-                                                                                    '—'
+                                                                                    '-'
                                                                                 )}
                                                                             </td>
                                                                         );
@@ -2500,8 +2513,8 @@ export default function RealizationOpd({
                     </div>
 
                     <form onSubmit={handleCreateSubmit} className="space-y-4">
-                        {/* OPD Target Selector (for Provincial Admin / SP Bappeda) */}
-                        {userIsSpBappeda && (
+                        {/* OPD Target Selector (for Admin OPD) */}
+                        {isGlobalManager && (
                             <div className="space-y-1 p-3 bg-muted/30 rounded-lg border">
                                 <Label className="text-xs font-semibold">
                                     Target Perangkat Daerah <span className="text-destructive">*</span>

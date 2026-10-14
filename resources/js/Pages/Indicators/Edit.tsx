@@ -195,7 +195,7 @@ export default function IndicatorsEdit({
  }
  className="mt-1 block w-full"
  >
- <option value="">—</option>
+ <option value="">-</option>
  {units.map((unit) => (
  <option key={unit.id} value={unit.id}>
  {unit.code} - {unit.name}
@@ -309,7 +309,7 @@ export default function IndicatorsEdit({
  v{v.version_number}
  </span>
  <span className="text-gray-600">
- {v.change_reason ?? '—'}
+ {v.change_reason ?? '-'}
  </span>
  <span className="text-xs text-gray-400">
  {formatDateTime(v.created_at)}

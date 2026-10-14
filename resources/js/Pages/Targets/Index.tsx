@@ -17,6 +17,8 @@ import { Filter, Plus, X } from 'lucide-react';
 import { PageProps } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
 
 interface Target {
     id: number;
@@ -106,24 +108,24 @@ export default function TargetsIndex({
                     )}
 
                     {/* Header Bar */}
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                                Target Indikator
-                            </h1>
-                            <p className="text-xs text-muted-foreground sm:text-sm">
-                                Penetapan target kinerja indikator per periode dan perangkat daerah.
-                            </p>
-                        </div>
-                        {canCreate && (
-                            <Button asChild className="w-full sm:w-auto justify-center">
-                                <Link href={route('targets.create')}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Tambah Target
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
+                    <PageHeader
+                        breadcrumbs={[
+                            { label: 'Perencanaan' },
+                            { label: 'Target Indikator' },
+                        ]}
+                        title="Target Indikator Kinerja"
+                        description="Penetapan dan komitmen angka target indikator per periode dan perangkat daerah."
+                        actions={
+                            canCreate ? (
+                                <Button asChild className="w-full sm:w-auto justify-center bg-primary text-primary-foreground hover:bg-primary/90">
+                                    <Link href={route('targets.create')}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Tambah Target
+                                    </Link>
+                                </Button>
+                            ) : undefined
+                        }
+                    />
 
                     {/* Filter Card */}
                     <Card>
@@ -204,9 +206,9 @@ export default function TargetsIndex({
                                         </TableCell>
                                         <TableCell>
                                             <div className="text-sm font-medium text-gray-900">
-                                                {target.indicator_version?.indicator?.code ?? '—'}{' '}
+                                                {target.indicator_version?.indicator?.code ?? '-'}{' '}
                                                 -{' '}
-                                                {target.indicator_version?.name ?? '—'}
+                                                {target.indicator_version?.name ?? '-'}
                                             </div>
                                             <div className="mt-1 text-xs text-gray-500">
                                                 v{target.indicator_version?.version_number} ·{' '}
@@ -215,10 +217,10 @@ export default function TargetsIndex({
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            {target.organization?.code ?? '—'}
+                                            {target.organization?.code ?? '-'}
                                         </TableCell>
                                         <TableCell>
-                                            {target.planning_period?.name ?? '—'}
+                                            {target.planning_period?.name ?? '-'}
                                         </TableCell>
                                         <TableCell className="text-right font-semibold">
                                             {Number(target.target_value).toLocaleString('id-ID')}

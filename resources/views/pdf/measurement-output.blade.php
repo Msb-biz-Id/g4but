@@ -37,7 +37,7 @@ tr:nth-child(even) td { background:#f8fafc; }
       <div class="instansi">Pemerintah Provinsi Papua Barat</div>
       <div class="doc-title">LAPORAN MONITORING KINERJA FISIK / OUTPUT</div>
       <div class="doc-sub">Pengukuran Kinerja &nbsp;|&nbsp; Tahun {{ $currentYear }} &nbsp;|&nbsp;
-        @if($organization) {{ $organization->name }} @else Semua OPD @endif &nbsp;|&nbsp; Sistem e-KASUARI SAKIP</div>
+        @if($organization) {{ $organization->name }} @else Semua OPD @endif &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
@@ -113,7 +113,7 @@ tr:nth-child(even) td { background:#f8fafc; }
 <p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data monitoring output.</p>
 @endif
 <div class="footer">
-  <div class="fl">Sistem e-KASUARI — SAKIP Provinsi Papua Barat</div>
+  <div class="fl">Sistem e-SAKIP — SAKIP Provinsi Papua Barat</div>
   <div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div>
 </div>
 </body>

@@ -7,7 +7,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DejaVu Sans',sans-serif; font-size:8px; color:#1a1a2e; padding:14px 18px; text-align:left; }
 
-/* Kop Surat Resmi Standard e-KASUARI */
+/* Kop Surat Resmi Standard e-SAKIP */
 .hdr-table { width:100%; border-collapse:collapse; border:none; border-bottom:2px solid #1e3a5f; margin-bottom:10px; padding-bottom:8px; }
 .hdr-table tr, .hdr-table tr td { border:none !important; background:transparent !important; padding:0 !important; }
 .hdr-logo-cell { width:60px; text-align:left; vertical-align:middle; }
@@ -92,9 +92,9 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
       @endif
     </td>
     <td class="hdr-title-cell">
-      <div class="instansi">{{ strtoupper($appName ?? 'e-KASUARI') }} &mdash; SISTEM AKUNTABILITAS KINERJA INSTANSI PEMERINTAH</div>
+      <div class="instansi">{{ strtoupper($appName ?? 'e-SAKIP') }} &mdash; SISTEM AKUNTABILITAS KINERJA INSTANSI PEMERINTAH</div>
       <div class="doc-title">{{ strtoupper($title) }}</div>
-      <div class="doc-sub">Modul AI Asisten SAKIP &nbsp;|&nbsp; Lingkup: {{ $scope }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-KASUARI' }}</div>
+      <div class="doc-sub">Modul AI Asisten SAKIP &nbsp;|&nbsp; Lingkup: {{ $scope }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-SAKIP' }}</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
@@ -170,7 +170,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
   @endif
 
   <div class="source-note">
-    * Dihasilkan secara otomatis oleh Modul AI Asisten SAKIP Sistem e-KASUARI berdasarkan agregasi data kinerja resmi tervalidasi.
+    * Dihasilkan secara otomatis oleh Modul AI Asisten SAKIP Sistem e-SAKIP berdasarkan agregasi data kinerja resmi tervalidasi.
   </div>
 
 @else
@@ -188,12 +188,12 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
     <td style="width: 58%;">
       <div class="legal-note">
         <strong>Catatan Legalitas &amp; Sistem:</strong><br>
-        Dokumen ini diterbitkan secara resmi oleh modul AI Asisten SAKIP {{ $appName ?? 'e-KASUARI' }} Perangkat Daerah berdasarkan agregasi data kinerja dan keuangan yang tervalidasi. Informasi ini merupakan telaah analitis otomatis untuk mendukung perumusan kebijakan dan akuntabilitas kinerja unit kerja.
+        Dokumen ini diterbitkan secara resmi oleh modul AI Asisten SAKIP {{ $appName ?? 'e-SAKIP' }} Perangkat Daerah berdasarkan agregasi data kinerja dan keuangan yang tervalidasi. Informasi ini merupakan telaah analitis otomatis untuk mendukung perumusan kebijakan dan akuntabilitas kinerja unit kerja.
       </div>
     </td>
     <td style="width: 42%;">
       <div class="signature-box">
-        <div class="sig-title">Manokwari, {{ date('d F Y') }}<br>Diverifikasi Sistem {{ $appName ?? 'e-KASUARI' }}</div>
+        <div class="sig-title">Manokwari, {{ date('d F Y') }}<br>Diverifikasi Sistem {{ $appName ?? 'e-SAKIP' }}</div>
         <div class="sig-name">{{ $userName }}</div>
         <div class="sig-role">Operator / Pejabat Penanggung Jawab</div>
       </div>
@@ -203,7 +203,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 
 {{-- FOOTER HALAMAN DOKUMEN --}}
 <div class="footer">
-  <div class="fl">Sistem {{ $appName ?? 'e-KASUARI' }} &mdash; SAKIP &amp; Kinerja Perangkat Daerah</div>
+  <div class="fl">Sistem {{ $appName ?? 'e-SAKIP' }} &mdash; SAKIP &amp; Kinerja Perangkat Daerah</div>
   <div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div>
 </div>
 

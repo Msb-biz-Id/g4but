@@ -32,13 +32,13 @@ class SeededUserLoginTest extends TestCase
     public function test_all_opd_accounts_can_login_and_access_dashboard(): void
     {
         $accounts = [
-            'superadmin@ekasuari.local' => RoleEnum::SuperAdmin->value,
-            'admin.opd@ekasuari.local' => RoleEnum::AdminOpd->value,
-            'kepala.opd@ekasuari.local' => RoleEnum::KepalaOpd->value,
-            'admin.sekretariat@ekasuari.local' => RoleEnum::AdminSekretariat->value,
-            'kepala.sekretariat@ekasuari.local' => RoleEnum::KepalaSekretariat->value,
-            'admin.dikdas@ekasuari.local' => RoleEnum::AdminBidang->value,
-            'kabid.dikdas@ekasuari.local' => RoleEnum::KepalaBidang->value,
+            'superadmin@esakip.local' => RoleEnum::SuperAdmin->value,
+            'admin.opd@esakip.local' => RoleEnum::AdminOpd->value,
+            'kepala.opd@esakip.local' => RoleEnum::KepalaOpd->value,
+            'admin.sekretariat@esakip.local' => RoleEnum::AdminSekretariat->value,
+            'kepala.sekretariat@esakip.local' => RoleEnum::KepalaSekretariat->value,
+            'admin.dikdas@esakip.local' => RoleEnum::AdminBidang->value,
+            'kabid.dikdas@esakip.local' => RoleEnum::KepalaBidang->value,
         ];
 
         foreach ($accounts as $email => $expectedRole) {

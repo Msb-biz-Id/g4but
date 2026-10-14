@@ -29,14 +29,14 @@ class IndicatorController extends Controller
         $this->authorize('view-indicators');
 
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $indicators = Indicator::query()
             ->with('currentVersion:id,indicator_id,version_number,name')
             ->with('measurementUnit:id,code,name,symbol')
             ->with('ownerOrganization:id,code,name')
-            ->when(! $isProvincialAdmin, function ($query) use ($accessibleOrgIds) {
+            ->when(! $isOpdAdmin, function ($query) use ($accessibleOrgIds) {
                 $query->where(function ($q) use ($accessibleOrgIds) {
                     $q->whereIn('owner_organization_id', $accessibleOrgIds)
                         ->orWhereNull('owner_organization_id')
@@ -65,7 +65,7 @@ class IndicatorController extends Controller
                 ->whereIn('id', $accessibleOrgIds)
                 ->orderBy('code')
                 ->get(['id', 'code', 'name']),
-            'isProvincialAdmin' => $isProvincialAdmin,
+            'isOpdAdmin' => $isOpdAdmin,
             'accessibleOrgIds' => $accessibleOrgIds,
         ]);
     }
@@ -75,28 +75,28 @@ class IndicatorController extends Controller
         $this->authorize('create-indicators');
 
         $user = request()->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         return Inertia::render('Indicators/Create', [
             'units' => MeasurementUnit::query()->where('is_active', true)->orderBy('code')->get(),
             'organizations' => Organization::query()
-                ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+                ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
                 ->orderBy('code')->get(['id', 'code', 'name']),
         ]);
     }
 
     private function authorizeIndicatorMutation(?User $user, Indicator $indicator): void
     {
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
-        if ($isProvincialAdmin) {
+        $isOpdAdmin = $user && $user->isOpdAdmin();
+        if ($isOpdAdmin) {
             return;
         }
 
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         if (! $indicator->owner_organization_id || (int) $indicator->owner_organization_id === 1 || ! in_array((int) $indicator->owner_organization_id, $accessibleOrgIds, true)) {
-            abort(403, 'Anda tidak memiliki hak akses untuk mengubah indikator Pemda atau Perangkat Daerah lain.');
+            abort(403, 'Anda tidak memiliki hak akses untuk mengubah indikator Perangkat Daerah lain.');
         }
     }
 
@@ -105,12 +105,12 @@ class IndicatorController extends Controller
         $this->authorize('create-indicators');
 
         $user = $request->user();
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $validated = $request->validate($this->rules());
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             if (empty($validated['owner_organization_id']) || (int) $validated['owner_organization_id'] === 1 || ! in_array((int) $validated['owner_organization_id'], $accessibleOrgIds, true)) {
                 abort(403, 'Indikator Perangkat Daerah harus memiliki OPD pemilik dalam lingkup Anda.');
             }
@@ -160,7 +160,7 @@ class IndicatorController extends Controller
         $user = request()->user();
         $this->authorizeIndicatorMutation($user, $indicator);
 
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $indicator->load('currentVersion', 'versions');
@@ -169,7 +169,7 @@ class IndicatorController extends Controller
             'indicator' => $indicator,
             'units' => MeasurementUnit::query()->where('is_active', true)->orderBy('code')->get(),
             'organizations' => Organization::query()
-                ->when(! $isProvincialAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
+                ->when(! $isOpdAdmin, fn ($q) => $q->whereIn('id', $accessibleOrgIds))
                 ->orderBy('code')->get(['id', 'code', 'name']),
         ]);
     }
@@ -181,12 +181,12 @@ class IndicatorController extends Controller
         $user = $request->user();
         $this->authorizeIndicatorMutation($user, $indicator);
 
-        $isProvincialAdmin = $user && $user->roles()->whereIn('name', ['Super Admin', 'Admin Provinsi'])->exists();
+        $isOpdAdmin = $user && $user->isOpdAdmin();
         $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
 
         $validated = $request->validate($this->rules($indicator->id));
 
-        if (! $isProvincialAdmin) {
+        if (! $isOpdAdmin) {
             $validated['owner_organization_id'] = $indicator->owner_organization_id;
         } elseif (! empty($validated['owner_organization_id'])) {
             $this->authorization->canAccessOrganization($user, (int) $validated['owner_organization_id'])

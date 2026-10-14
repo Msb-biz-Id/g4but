@@ -11,7 +11,7 @@ use Tests\TestCase;
  * Test registrasi user.
  *
  * Keputusan desain (FR-SEC-REG): Registrasi mandiri via URL /register
- * DINONAKTIFKAN. e-KASUARI adalah sistem internal pemerintah — user hanya
+ * DINONAKTIFKAN. e-SAKIP adalah sistem internal pemerintah — user hanya
  * boleh dibuat oleh Super Admin melalui menu Manajemen User.
  *
  * Test di bawah memverifikasi bahwa:

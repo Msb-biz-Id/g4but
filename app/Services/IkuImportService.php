@@ -22,7 +22,7 @@ class IkuImportService
 {
     /** Kolom wajib ada di baris header Excel */
     public const REQUIRED_HEADERS = [
-        'Level', 'Nama OPD', 'Periode (RPJMD)', 'Tujuan', 'Sasaran', 'Nama Indikator', 'Satuan',
+        'Level', 'Nama OPD', 'Periode (Renstra)', 'Tujuan', 'Sasaran', 'Nama Indikator', 'Satuan',
         'Tahun Baseline', 'Nilai Baseline', 'Keterangan Baseline', 'Definisi Operasional',
         'Formula', 'Polarisasi', 'Sumber Data', 'Frekuensi',
     ];
@@ -157,7 +157,8 @@ class IkuImportService
             ? range($period->start_year, $period->end_year)
             : PlanningPeriod::getAvailableYears();
         if (empty($years)) {
-            $years = [2025, 2026, 2027, 2028, 2029];
+            $nowYear = (int) date('Y');
+            $years = range($nowYear, $nowYear + 4);
         }
 
         // Header
@@ -179,7 +180,7 @@ class IkuImportService
 
         // Baris contoh
         $exampleTargets = array_map(fn ($idx) => (string) (86 + $idx), array_keys($years));
-        $periodName = $period ? $period->name : 'Renstra 2025-2029';
+        $periodName = $period ? $period->name : ('Renstra '.min($years).'–'.max($years));
         $example = array_merge([
             'opd', 'Dinas Pendidikan', $periodName,
             'Meningkatnya mutu pendidikan', 'Meningkatnya akses pendidikan',
@@ -314,7 +315,7 @@ class IkuImportService
             ->first();
 
         // Resolve planning period
-        $periodName = trim($row['Periode (Renstra)'] ?? $row['Periode (RPJMD)'] ?? '');
+        $periodName = trim($row['Periode (Renstra)']  ?? '');
         $period = null;
         if (! empty($periodName)) {
             $period = PlanningPeriod::where('name', 'like', '%'.$periodName.'%')->first();

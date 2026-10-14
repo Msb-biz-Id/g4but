@@ -78,7 +78,7 @@ class KnowledgeTest extends TestCase
 
         $response = $this->actingAs($this->superAdmin)
             ->post(route('knowledge.store'), [
-                'title' => 'FAQ E-KASUARI',
+                'title' => 'FAQ E-SAKIP',
                 'document_type' => 'faq',
                 'category' => 'FAQ',
                 'content' => 'Pertanyaan umum.',
@@ -90,13 +90,13 @@ class KnowledgeTest extends TestCase
         $response->assertRedirect(route('knowledge.index'));
 
         $this->assertDatabaseHas('knowledge_documents', [
-            'title' => 'FAQ E-KASUARI',
+            'title' => 'FAQ E-SAKIP',
             'document_type' => 'faq',
             'version' => 1,
             'status' => 'draft',
         ]);
 
-        $document = KnowledgeDocument::where('title', 'FAQ E-KASUARI')->first();
+        $document = KnowledgeDocument::where('title', 'FAQ E-SAKIP')->first();
         $this->assertNotNull($document->file_path);
         Storage::disk('local')->assertExists($document->file_path);
     }

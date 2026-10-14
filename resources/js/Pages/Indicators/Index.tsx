@@ -19,6 +19,8 @@ import { PageProps } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import PageHeader from '@/Components/Dashboard/PageHeader';
+import StatusBadge from '@/Components/Dashboard/StatusBadge';
 
 interface Props extends PageProps {
     indicators: {
@@ -50,7 +52,7 @@ interface Props extends PageProps {
     };
     filters: { search?: string; status?: string; organization_id?: string; per_page?: number };
     organizations: Array<{ id: number; code: string; name: string }>;
-    isProvincialAdmin?: boolean;
+    isOpdAdmin?: boolean;
     accessibleOrgIds?: number[];
 }
 
@@ -73,7 +75,7 @@ export default function IndicatorsIndex({
     indicators,
     filters,
     organizations,
-    isProvincialAdmin = false,
+    isOpdAdmin = false,
     accessibleOrgIds = [],
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
@@ -117,24 +119,24 @@ export default function IndicatorsIndex({
             <div className="py-8">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-4">
                     {/* Header Bar */}
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                                Indikator Kinerja
-                            </h1>
-                            <p className="text-xs text-muted-foreground sm:text-sm">
-                                Kelola master data indikator kinerja daerah dan perangkat daerah.
-                            </p>
-                        </div>
-                        {canCreate && (
-                            <Button asChild className="w-full sm:w-auto justify-center">
-                                <Link href={route('indicators.create')}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Tambah Indikator
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
+                    <PageHeader
+                        breadcrumbs={[
+                            { label: 'Master Data & Pengaturan' },
+                            { label: 'Indikator Kinerja' },
+                        ]}
+                        title="Indikator Kinerja"
+                        description="Kelola master data indikator kinerja daerah dan perangkat daerah beserta formulasi dan polarisasi."
+                        actions={
+                            canCreate ? (
+                                <Button asChild className="w-full sm:w-auto justify-center bg-primary text-primary-foreground hover:bg-primary/90">
+                                    <Link href={route('indicators.create')}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Tambah Indikator
+                                    </Link>
+                                </Button>
+                            ) : undefined
+                        }
+                    />
 
                     {/* Filter Bar */}
                     <Card>
@@ -258,10 +260,10 @@ export default function IndicatorsIndex({
                                                 <TableCell>
                                                     {ind.measurement_unit?.symbol ??
                                                         ind.measurement_unit?.code ??
-                                                        '—'}
+                                                        '-'}
                                                 </TableCell>
                                                 <TableCell>
-                                                    {ind.owner_organization?.code ?? '—'}
+                                                    {ind.owner_organization?.code ?? '-'}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge variant={statusLabels[ind.status]?.variant}>
@@ -271,15 +273,14 @@ export default function IndicatorsIndex({
                                                 <TableCell className="text-right">
                                                     {(() => {
                                                         const canManageItem =
-                                                            isProvincialAdmin ||
+                                                            isOpdAdmin ||
                                                             Boolean(
                                                                 ind.owner_organization?.id &&
-                                                                    accessibleOrgIds.includes(ind.owner_organization.id) &&
-                                                                    ind.owner_organization.id !== 1
+                                                                    accessibleOrgIds.includes(ind.owner_organization.id)
                                                             );
 
                                                         if (!canManageItem) {
-                                                            return <span className="text-xs text-muted-foreground">—</span>;
+                                                            return <span className="text-xs text-muted-foreground">-</span>;
                                                         }
 
                                                         return (

@@ -6,6 +6,7 @@ import { Input } from '@/Components/ui/input';
 import { SelectNative } from '@/Components/ui/select-native';
 import { EmptyState } from '@/Components/EmptyState';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 import InputError from '@/Components/InputError';
 import { Building2, Calendar, ChevronDown, ChevronRight, Filter, Layers, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { PageProps } from '@/types';
@@ -288,11 +289,18 @@ export default function GoalsIndex({
     };
 
     return (
-        <AuthenticatedLayout
-            header="RPJMD – Tujuan & Sasaran"
-        >
-            <Head title="Tujuan Strategis" />
-            <div className="w-full space-y-4">
+        <AuthenticatedLayout>
+            <Head title="Tujuan & Sasaran Strategis" />
+
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Tujuan & Sasaran Strategis"
+                    description="Kelola tujuan dan sasaran strategis Pemda dan Perangkat Daerah sesuai RPJMD dan Renstra."
+                    breadcrumbs={[
+                        { label: 'Perencanaan' },
+                        { label: 'Tujuan & Sasaran' },
+                    ]}
+                />
                     {flash?.success && (
                         <div className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
                             {flash.success}
@@ -766,7 +774,7 @@ export default function GoalsIndex({
                             <Card className="p-8">
                                 <EmptyState
                                     title="Belum Ada Tujuan Strategis"
-                                    description="Belum ada data tujuan strategis RPJMD untuk periode atau OPD yang dipilih."
+                                    description="Belum ada data tujuan strategis untuk periode atau OPD yang dipilih."
                                 />
                             </Card>
                         )}
@@ -796,7 +804,7 @@ export default function GoalsIndex({
                     <DialogHeader>
                         <DialogTitle>Edit Tujuan Strategis</DialogTitle>
                         <DialogDescription>
-                            Perbarui kode, nama, atau deskripsi tujuan strategis RPJMD.
+                            Perbarui kode, nama, atau deskripsi tujuan strategis.
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleUpdateGoal} className="space-y-4 pt-2">

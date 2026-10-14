@@ -19,8 +19,9 @@ import {
 } from '@/Components/ui/dialog';
 import { YouTubePlayer, YouTubeIcon } from '@/Components/YouTubePlayer';
 import { isYouTubeUrl } from '@/lib/video';
-import { Play } from 'lucide-react';
+import { Play, Plus, ExternalLink } from 'lucide-react';
 import TablePagination from '@/Components/TablePagination';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface DocumentItem {
     id: number;
@@ -104,75 +105,90 @@ export default function KnowledgeIndex({
     }, [search, type, category, status, perPage]);
 
     return (
-        <AuthenticatedLayout
-            header="Pusat Informasi"
-        >
+        <AuthenticatedLayout>
             <Head title="Basis Pengetahuan" />
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    {flash?.success && (
-                        <div className="mb-4 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
-                            {flash.success}
-                        </div>
-                    )}
 
-                    <Card className="mb-6">
-                        <CardContent className="flex flex-col gap-4 p-6 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="grid flex-1 gap-4 lg:grid-cols-4">
-                                <Input
-                                    type="text"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    placeholder="Cari judul / konten / tag..."
-                                />
-                                <SelectNative
-                                    value={type}
-                                    onChange={(e) => setType(e.target.value)}
-                                >
-                                    <option value="">Semua Tipe</option>
-                                    {Object.entries(typeLabels).map(([key, value]) => (
-                                        <option key={key} value={key}>
-                                            {value}
-                                        </option>
-                                    ))}
-                                </SelectNative>
-                                <SelectNative
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
-                                >
-                                    <option value="">Semua Kategori</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat} value={cat}>
-                                            {cat}
-                                        </option>
-                                    ))}
-                                </SelectNative>
-                                <SelectNative
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value)}
-                                >
-                                    <option value="">Semua Status</option>
-                                    <option value="draft">Draft</option>
-                                    <option value="published">Terbit</option>
-                                    <option value="archived">Arsip</option>
-                                </SelectNative>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                {canManage && (
-                                    <Button asChild>
-                                        <Link href={route('knowledge.create')}>
-                                            + Dokumen
-                                        </Link>
-                                    </Button>
-                                )}
-                                <Button variant="outline" asChild>
-                                    <Link href={route('knowledge.public.index')}>
-                                        Lihat Halaman Publik
+            <div className="space-y-6 p-6">
+                <PageHeader
+                    title="Basis Pengetahuan & Regulasi"
+                    description="Repositori dokumen pedoman, SOP, regulasi, video tutorial, dan materi pembelajaran SAKIP."
+                    breadcrumbs={[
+                        { label: 'Pusat Informasi' },
+                        { label: 'Basis Pengetahuan' },
+                    ]}
+                    actions={
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={route('knowledge.public.index')} className="gap-1.5">
+                                    <ExternalLink className="h-4 w-4" />
+                                    Halaman Publik
+                                </Link>
+                            </Button>
+                            {canManage && (
+                                <Button size="sm" asChild>
+                                    <Link href={route('knowledge.create')} className="gap-1.5">
+                                        <Plus className="h-4 w-4" />
+                                        Tambah Dokumen
                                     </Link>
                                 </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            )}
+                        </div>
+                    }
+                />
+
+                {flash?.success && (
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
+                        {flash.success}
+                    </div>
+                )}
+
+                <Card className="rounded-xl border border-slate-200/80 shadow-sm dark:border-slate-800">
+                    <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <Input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Cari judul, konten, atau tag..."
+                                className="h-9"
+                            />
+                            <SelectNative
+                                value={type}
+                                onChange={(e) => setType(e.target.value)}
+                                className="h-9"
+                            >
+                                <option value="">Semua Tipe</option>
+                                {Object.entries(typeLabels).map(([key, value]) => (
+                                    <option key={key} value={key}>
+                                        {value}
+                                    </option>
+                                ))}
+                            </SelectNative>
+                            <SelectNative
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="h-9"
+                            >
+                                <option value="">Semua Kategori</option>
+                                {categories.map((cat) => (
+                                    <option key={cat} value={cat}>
+                                        {cat}
+                                    </option>
+                                ))}
+                            </SelectNative>
+                            <SelectNative
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                                className="h-9"
+                            >
+                                <option value="">Semua Status</option>
+                                <option value="draft">Draft</option>
+                                <option value="published">Terbit</option>
+                                <option value="archived">Arsip</option>
+                            </SelectNative>
+                        </div>
+                    </CardContent>
+                </Card>
 
                     <div className="space-y-4">
                         {documents.data.map((doc) => (
@@ -320,7 +336,6 @@ export default function KnowledgeIndex({
                             filters={{ search, document_type: type, category, status, per_page: perPage }}
                         />
                     </div>
-                </div>
             </div>
 
             <Dialog

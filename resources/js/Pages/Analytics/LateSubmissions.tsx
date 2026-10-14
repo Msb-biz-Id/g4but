@@ -10,6 +10,7 @@ import { Badge } from '@/Components/ui/badge';
 import TablePagination from '@/Components/TablePagination';
 import { PageProps } from '@/types';
 import { cn, formatDate } from '@/lib/utils';
+import PageHeader from '@/Components/Dashboard/PageHeader';
 
 interface LateRow {
     organization_id: number;
@@ -55,30 +56,36 @@ export default function LateSubmissions({ lateRows, periods, totalLate, filters,
         <AuthenticatedLayout header="Monitoring Keterlambatan">
             <Head title="Monitoring Keterlambatan Realisasi" />
 
-            <div className="space-y-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-xl font-semibold">Monitoring Keterlambatan Pengiriman Realisasi</h1>
-                        <p className="text-sm text-muted-foreground">OPD yang melewati batas waktu pengiriman realisasi (FR-MSR-015)</p>
-                    </div>
-                    <SelectNative
-                        value={filters.measurement_period_id?.toString() ?? ''}
-                        onChange={(e) => router.get(route('analytics.late-submissions'), { measurement_period_id: e.target.value || undefined }, { preserveState: true })}
-                        className="w-full sm:w-52"
-                    >
-                        <option value="">Semua Periode Terlambat</option>
-                        {periods.filter((p) => p.status === 'open' && p.submission_deadline).map((p) => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                    </SelectNative>
-                </div>
+            <div className="space-y-6">
+                <PageHeader
+                    breadcrumbs={[
+                        { label: 'Analitik & Evaluasi', href: route('analytics.index') },
+                        { label: 'Monitoring Keterlambatan' },
+                    ]}
+                    title="Monitoring Keterlambatan Pengiriman Realisasi"
+                    description="Daftar perangkat daerah yang melewati batas waktu pengiriman berkas realisasi kinerja."
+                    actions={
+                        <SelectNative
+                            value={filters.measurement_period_id?.toString() ?? ''}
+                            onChange={(e) => router.get(route('analytics.late-submissions'), { measurement_period_id: e.target.value || undefined }, { preserveState: true })}
+                            className="w-full sm:w-56"
+                        >
+                            <option value="">Semua Periode Terlambat</option>
+                            {periods.filter((p) => p.status === 'open' && p.submission_deadline).map((p) => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                        </SelectNative>
+                    }
+                />
 
                 {/* Summary */}
-                <div className="grid grid-cols-3 gap-4">
-                    <Card className="border-rose-200 dark:border-rose-900/60">
-                        <CardContent className="pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Card className="border-rose-200 dark:border-rose-900/60 shadow-xs">
+                        <CardContent className="p-4 sm:p-5">
                             <div className="flex items-center gap-3">
-                                <AlertOctagon className="h-8 w-8 text-rose-500" />
+                                <div className="p-2.5 rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">
+                                    <AlertOctagon className="h-6 w-6" />
+                                </div>
                                 <div>
                                     <p className="text-2xl font-bold text-rose-700 dark:text-rose-400">{criticalCount}</p>
                                     <p className="text-xs text-muted-foreground">Kritis (≥14 hari)</p>
@@ -86,21 +93,25 @@ export default function LateSubmissions({ lateRows, periods, totalLate, filters,
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="border-amber-200 dark:border-amber-900/60">
-                        <CardContent className="pt-4">
+                    <Card className="border-amber-200 dark:border-amber-900/60 shadow-xs">
+                        <CardContent className="p-4 sm:p-5">
                             <div className="flex items-center gap-3">
-                                <AlertTriangle className="h-8 w-8 text-amber-500" />
+                                <div className="p-2.5 rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
+                                    <AlertTriangle className="h-6 w-6" />
+                                </div>
                                 <div>
                                     <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{warningCount}</p>
-                                    <p className="text-xs text-muted-foreground">Peringatan (7–13 hari)</p>
+                                    <p className="text-xs text-muted-foreground">Peringatan (7-13 hari)</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardContent className="pt-4">
+                    <Card className="border-border shadow-xs">
+                        <CardContent className="p-4 sm:p-5">
                             <div className="flex items-center gap-3">
-                                <Clock className="h-8 w-8 text-blue-500" />
+                                <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+                                    <Clock className="h-6 w-6" />
+                                </div>
                                 <div>
                                     <p className="text-2xl font-bold">{totalLate}</p>
                                     <p className="text-xs text-muted-foreground">Total OPD terlambat</p>

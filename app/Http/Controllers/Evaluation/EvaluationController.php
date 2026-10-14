@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Services\AuditService;
 use App\Services\AuthorizationService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,14 +31,11 @@ class EvaluationController extends Controller
         private readonly AuditService $audit,
     ) {}
 
-    public function canManageProvincialEvaluations(?User $user): bool
+    private function checkEvaluationAccess(User $user, int $orgId): void
     {
-        return false;
-    }
-
-    public function isProvinceOrganization(Organization|int|null $org): bool
-    {
-        return false;
+        if (! $user->isOpdAdmin() && ! $this->authorization->canAccessOrganization($user, $orgId)) {
+            abort(403, 'Di luar lingkup organisasi Anda.');
+        }
     }
 
     public function index(Request $request): Response
@@ -100,7 +98,7 @@ class EvaluationController extends Controller
             $sakipOpdData[] = $this->formatSakipItem($opd, $ev, $idx + 1);
         }
 
-        // PKO Pemda dihapus
+        // PKO agregat (tidak digunakan dalam Rumah Besar OPD)
         $pkoPemda = null;
 
         // PKO Unit (OPD / Sekretariat / Bidang)
@@ -145,7 +143,7 @@ class EvaluationController extends Controller
         ]);
     }
 
-    private function formatSakipItem(?Organization $org, ?Evaluation $eval, int $no): array
+    private function formatSakipItem(?object $org, ?Evaluation $eval, int $no): array
     {
         if (! $org) {
             return [];
@@ -171,12 +169,15 @@ class EvaluationController extends Controller
             default => 'D',
         };
 
+        /** @var FilesystemAdapter $publicDisk */
+        $publicDisk = Storage::disk('public');
+
         return [
             'no' => $no,
             'evaluation_id' => $eval?->id,
             'organization_id' => $org->id,
             'organization_code' => $org->code,
-            'organization_name' => $org->type === 'province' ? 'Pemerintah Provinsi' : $org->name,
+            'organization_name' => $org->name,
             'perencanaan' => $perencanaan,
             'pengukuran' => $pengukuran,
             'pelaporan' => $pelaporan,
@@ -185,7 +186,7 @@ class EvaluationController extends Controller
             'predikat' => $predikat,
             'status_evaluasi' => $hasScores ? ($eval?->evaluation_status ?? 'Final') : 'Belum Dievaluasi',
             'lhe_file_path' => $eval?->lhe_file_path,
-            'lhe_file_url' => $eval?->lhe_file_path ? Storage::disk('public')->url($eval->lhe_file_path) : null,
+            'lhe_file_url' => $eval?->lhe_file_path ? $publicDisk->url($eval->lhe_file_path) : null,
         ];
     }
 
@@ -219,13 +220,7 @@ class EvaluationController extends Controller
         $org = Organization::findOrFail($validated['organization_id']);
         $user = $request->user();
 
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk mengelola nilai SAKIP Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, $org->id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, $org->id);
 
         DB::transaction(function () use ($validated, $period, $org) {
             $evaluation = Evaluation::firstOrCreate(
@@ -296,13 +291,7 @@ class EvaluationController extends Controller
         $org = Organization::findOrFail($validated['organization_id']);
         $user = $request->user();
 
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk mengunggah dokumen LHE Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, $org->id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, $org->id);
 
         $path = $request->file('file')->store('lhe', 'public');
 
@@ -344,13 +333,7 @@ class EvaluationController extends Controller
         $org = Organization::findOrFail($validated['organization_id']);
         $user = $request->user();
 
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk mengelola indikator PKO Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, $org->id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, $org->id);
 
         $pkoEval = PkoEvaluation::firstOrCreate(
             [
@@ -437,12 +420,8 @@ class EvaluationController extends Controller
         $pkoEval = $indicator->pkoEvaluation;
         $org = $pkoEval?->organization ?? ($pkoEval?->organization_id ? Organization::find($pkoEval->organization_id) : null);
 
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk menghapus indikator PKO Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && $pkoEval && ! $this->authorization->canAccessOrganization($user, $pkoEval->organization_id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
+        if ($pkoEval) {
+            $this->checkEvaluationAccess($user, $pkoEval->organization_id);
         }
 
         $indicator->delete();
@@ -464,13 +443,7 @@ class EvaluationController extends Controller
         ]);
 
         $user = $request->user();
-        if ($this->isProvinceOrganization((int) $validated['organization_id'])) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk membuat evaluasi Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, (int) $validated['organization_id'])) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, (int) $validated['organization_id']);
 
         DB::transaction(function () use ($validated) {
             $evaluation = Evaluation::create([
@@ -490,15 +463,7 @@ class EvaluationController extends Controller
         $this->authorize('manage-evaluations');
 
         $user = request()->user();
-        $org = $evaluation->organization ?? Organization::find($evaluation->organization_id);
-
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk menghapus evaluasi Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, (int) $evaluation->organization_id);
 
         $orgId = $evaluation->organization_id;
         $evaluationId = $evaluation->id;
@@ -518,10 +483,9 @@ class EvaluationController extends Controller
         $this->authorize('view-evaluations');
 
         $user = request()->user();
-        $isProvincialAuditor = $user && ($user->hasRole('Super Admin') || $user->hasRole('Admin Provinsi') || $user->hasRole('Inspektorat') || $user->hasRole('Evaluator Provinsi') || $user->hasRole('Pimpinan Provinsi') || $user->hasRole('Auditor'));
-        $isPemda = $this->isProvinceOrganization($evaluation->organization ?? (int) $evaluation->organization_id);
+        $hasOpdWideAccess = $user && ($user->isOpdAdmin() || $user->isLeadership());
 
-        if (! $isProvincialAuditor && ! $isPemda) {
+        if (! $hasOpdWideAccess) {
             $accessibleOrgIds = $this->authorization->accessibleOrganizationIds($user);
             if (! in_array((int) $evaluation->organization_id, $accessibleOrgIds, true)) {
                 abort(403, 'Di luar lingkup organisasi Anda.');
@@ -559,15 +523,15 @@ class EvaluationController extends Controller
             'closed' => $recs->where('status', 'closed')->count(),
         ];
 
-        $isProvincialEvaluator = $this->canManageProvincialEvaluations($user);
+        $isOpdAdmin = $user && $user->isOpdAdmin();
 
         return Inertia::render('Evaluations/Show', [
             'evaluation' => $evaluation,
             'total_score' => round($weightedTotal, 2),
             'grade' => $grade,
             'rec_stats' => $recStats,
-            'can_manage' => $isProvincialEvaluator || (! $isPemda && $user->can('manage-evaluations') && $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)),
-            'can_score' => $isProvincialEvaluator || (! $isPemda && $user->can('score-evaluations') && $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)),
+            'can_manage' => $isOpdAdmin || ($user->can('manage-evaluations') && $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)),
+            'can_score' => $isOpdAdmin || ($user->can('score-evaluations') && $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)),
         ]);
     }
 
@@ -576,15 +540,7 @@ class EvaluationController extends Controller
         $this->authorize('score-evaluations');
 
         $user = $request->user();
-        $org = $evaluation->organization ?? Organization::find($evaluation->organization_id);
-
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk memberi skor evaluasi Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, (int) $evaluation->organization_id);
 
         $validated = $request->validate([
             'component' => ['required', 'string', 'max:100'],
@@ -613,15 +569,7 @@ class EvaluationController extends Controller
         $this->authorize('manage-evaluations');
 
         $user = $request->user();
-        $org = $evaluation->organization ?? Organization::find($evaluation->organization_id);
-
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk menambah rekomendasi Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, (int) $evaluation->organization_id);
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -684,15 +632,7 @@ class EvaluationController extends Controller
         $this->authorize('manage-evaluations');
 
         $user = $request->user();
-        $org = $evaluation->organization ?? Organization::find($evaluation->organization_id);
-
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk memverifikasi tindak lanjut Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, (int) $evaluation->organization_id);
 
         $validated = $request->validate([
             'verified' => ['required', 'boolean'],
@@ -726,15 +666,7 @@ class EvaluationController extends Controller
         $this->authorize('manage-evaluations');
 
         $user = $request->user();
-        $org = $evaluation->organization ?? Organization::find($evaluation->organization_id);
-
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk memperbarui rekomendasi Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, (int) $evaluation->organization_id);
 
         $validated = $request->validate([
             'status' => ['required', 'string', 'in:open,in_progress,submitted,verified,closed,rejected'],
@@ -752,15 +684,7 @@ class EvaluationController extends Controller
         $this->authorize('score-evaluations');
 
         $user = $request->user();
-        $org = $evaluation->organization ?? Organization::find($evaluation->organization_id);
-
-        if ($this->isProvinceOrganization($org)) {
-            if (! $this->canManageProvincialEvaluations($user)) {
-                abort(403, 'Anda tidak memiliki hak akses untuk mereview evidence Pemerintah Provinsi.');
-            }
-        } elseif (! $this->canManageProvincialEvaluations($user) && ! $this->authorization->canAccessOrganization($user, (int) $evaluation->organization_id)) {
-            abort(403, 'Di luar lingkup organisasi Anda.');
-        }
+        $this->checkEvaluationAccess($user, (int) $evaluation->organization_id);
 
         $validated = $request->validate([
             'evidence_id' => ['required', 'integer', 'exists:evidences,id'],

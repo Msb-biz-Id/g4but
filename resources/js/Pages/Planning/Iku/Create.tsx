@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { Label } from '@/Components/ui/label';
 import { SelectNative } from '@/Components/ui/select-native';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { ChevronRight, ChevronLeft, Check, AlertCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
+import { ChevronRight, ChevronLeft, Check, AlertCircle, ArrowLeft, Target, FileText, CheckCircle2 } from 'lucide-react';
+import { PageBreadcrumb } from '@/Components/Dashboard/PageBreadcrumb';
 import axios from 'axios';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -43,27 +44,45 @@ interface Props {
 
 // ── Step Indicators ────────────────────────────────────────────────────────────
 
-const STEPS = ['Identitas', 'Metadata', 'Target', 'Konfirmasi'];
+const STEPS = [
+    { title: 'Identitas', desc: 'OPD, Sasaran & Nama' },
+    { title: 'Metadata', desc: 'Definisi & Formula' },
+    { title: 'Target', desc: 'Target Capaian Tahunan' },
+    { title: 'Konfirmasi', desc: 'Validasi Akhir' },
+];
 
 function StepIndicator({ current }: { current: number }) {
     return (
-        <div className="flex items-center justify-center gap-0 mb-8">
-            {STEPS.map((label, i) => (
-                <React.Fragment key={i}>
-                    <div className="flex flex-col items-center">
-                        <div className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-semibold transition-all
-                            ${i < current ? 'border-green-500 bg-green-500 text-white'
-                            : i === current ? 'border-blue-600 bg-blue-600 text-white'
-                            : 'border-gray-300 bg-white text-gray-400'}`}>
-                            {i < current ? <Check className="h-4 w-4" /> : i + 1}
+        <div className="w-full mb-8">
+            <div className="flex items-center justify-between max-w-2xl mx-auto">
+                {STEPS.map((stepItem, i) => (
+                    <React.Fragment key={i}>
+                        <div className="flex flex-col items-center relative group">
+                            <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-all duration-200
+                                ${i < current 
+                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    : i === current 
+                                        ? 'bg-primary text-primary-foreground shadow-md ring-4 ring-primary/20 scale-105'
+                                        : 'bg-muted text-muted-foreground border border-border'}`}>
+                                {i < current ? <Check className="h-5 w-5 stroke-[2.5]" /> : i + 1}
+                            </div>
+                            <div className="text-center mt-2">
+                                <span className={`text-xs font-semibold block transition-colors
+                                    ${i === current ? 'text-primary' : i < current ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                    {stepItem.title}
+                                </span>
+                                <span className="hidden sm:block text-[11px] text-muted-foreground">
+                                    {stepItem.desc}
+                                </span>
+                            </div>
                         </div>
-                        <span className={`mt-1 text-xs ${i === current ? 'font-semibold text-blue-700' : 'text-gray-400'}`}>{label}</span>
-                    </div>
-                    {i < STEPS.length - 1 && (
-                        <div className={`h-0.5 w-16 mx-1 mb-5 transition-all ${i < current ? 'bg-green-500' : 'bg-gray-200'}`} />
-                    )}
-                </React.Fragment>
-            ))}
+                        {i < STEPS.length - 1 && (
+                            <div className={`flex-1 h-0.5 mx-2 -mt-6 transition-all duration-300
+                                ${i < current ? 'bg-emerald-500' : 'bg-muted'}`} />
+                        )}
+                    </React.Fragment>
+                ))}
+            </div>
         </div>
     );
 }
@@ -72,7 +91,7 @@ function StepIndicator({ current }: { current: number }) {
 
 function FieldError({ message }: { message?: string }) {
     if (!message) return null;
-    return <p className="mt-1 flex items-center gap-1 text-xs text-red-600"><AlertCircle className="h-3 w-3" />{message}</p>;
+    return <p className="mt-1 flex items-center gap-1 text-xs text-destructive"><AlertCircle className="h-3 w-3" />{message}</p>;
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
@@ -186,28 +205,46 @@ export default function IkuCreate({ iku, periods, organizations, units, officers
 
     return (
         <AuthenticatedLayout header={
-            <h2 className="text-xl font-semibold text-gray-800">
-                {isEdit ? 'Edit IKU' : 'Tambah IKU Baru'}
-            </h2>
+            <div className="flex items-center gap-3">
+                <Link href={route('planning.iku.index')}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                </Link>
+                <div>
+                    <h1 className="text-xl font-bold tracking-tight text-foreground">
+                        {isEdit ? 'Edit Indikator Kinerja Utama' : 'Tambah IKU Baru'}
+                    </h1>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        {isEdit ? 'Perbarui data dan target indikator kinerja' : 'Lengkapi tahapan formulir berikut untuk mendaftarkan IKU baru'}
+                    </p>
+                </div>
+            </div>
         }>
             <Head title={isEdit ? 'Edit IKU' : 'Tambah IKU'} />
 
-            <div className="py-6">
-                <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-
+            <div className="py-6 space-y-6">
+                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     {/* Breadcrumb */}
-                    <nav className="mb-4 text-sm text-gray-500">
-                        <span>Beranda</span> <span className="mx-1">›</span>
-                        <span>Perencanaan Kinerja</span> <span className="mx-1">›</span>
-                        <a href={route('planning.iku.index')} className="text-blue-600 hover:underline">IKU</a> <span className="mx-1">›</span>
-                        <span className="font-medium text-gray-800">{isEdit ? 'Edit' : 'Tambah Baru'}</span>
-                    </nav>
+                    <div className="mb-6">
+                        <PageBreadcrumb items={[
+                            { label: 'Perencanaan', href: route('planning.iku.index') },
+                            { label: 'Indikator Kinerja Utama', href: route('planning.iku.index') },
+                            { label: isEdit ? 'Edit IKU' : 'Tambah Baru' },
+                        ]} />
+                    </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{isEdit ? 'Edit Indikator Kinerja Utama' : 'Form Tambah IKU'}</CardTitle>
+                    <Card className="border border-border/80 shadow-sm bg-card rounded-xl">
+                        <CardHeader className="border-b border-border/60 pb-6">
+                            <CardTitle className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+                                <Target className="h-5 w-5 text-primary" />
+                                {isEdit ? 'Formulir Pembaruan IKU' : 'Formulir Pendaftaran IKU Multi-Tahap'}
+                            </CardTitle>
+                            <CardDescription className="text-xs text-muted-foreground">
+                                Tahap {step + 1} dari {STEPS.length}: {STEPS[step].title} - {STEPS[step].desc}
+                            </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-8">
                             <StepIndicator current={step} />
 
                             <div className="min-h-[320px]">
@@ -234,7 +271,7 @@ export default function IkuCreate({ iku, periods, organizations, units, officers
                                                 <FieldError message={errors.level} />
                                             </div>
 
-                                            {/* OPD — hanya untuk Perangkat Daerah */}
+                                            {/* OPD - hanya untuk Perangkat Daerah */}
                                             {data.level === 'perangkat_daerah' && (
                                                 <div className="sm:col-span-2">
                                                     <Label>Perangkat Daerah <span className="text-red-500">*</span></Label>
@@ -248,7 +285,7 @@ export default function IkuCreate({ iku, periods, organizations, units, officers
                                                     ) : (
                                                         <SelectNative value={data.owner_organization_id} onChange={e => setData('owner_organization_id', e.target.value)}>
                                                             <option value="">-- Pilih OPD --</option>
-                                                            {organizations.map(o => <option key={o.id} value={o.id}>{o.code} — {o.name}</option>)}
+                                                            {organizations.map(o => <option key={o.id} value={o.id}>{o.code} - {o.name}</option>)}
                                                         </SelectNative>
                                                     )}
                                                     <FieldError message={errors.owner_organization_id} />
@@ -354,6 +391,16 @@ export default function IkuCreate({ iku, periods, organizations, units, officers
                                                 <FieldError message={errors.frequency} />
                                             </div>
                                         </div>
+
+                                        {/* Polarisasi Helper Box */}
+                                        {data.polarization && (
+                                            <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center gap-2 text-xs text-foreground">
+                                                <span className="font-semibold text-primary">Petunjuk Polarisasi:</span>
+                                                {data.polarization === 'positif' && 'Semakin tinggi nilai capaian realisasi, semakin baik status kinerjanya.'}
+                                                {data.polarization === 'negatif' && 'Semakin rendah nilai capaian realisasi (misal: tingkat kemiskinan/stunting), semakin baik hasilnya.'}
+                                                {data.polarization === 'stabil' && 'Nilai realisasi diharapkan tepat stabil sesuai target yang ditetapkan.'}
+                                            </div>
+                                        )}
                                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                             <div>
                                                 <Label>Sumber Data <span className="text-red-500">*</span></Label>
@@ -379,34 +426,34 @@ export default function IkuCreate({ iku, periods, organizations, units, officers
                                 {step === 2 && (
                                     <div className="space-y-3">
                                         {years.length === 0 ? (
-                                            <p className="text-center text-gray-500 py-8">Pilih periode terlebih dahulu pada Langkah 1 untuk mengisi target tahunan.</p>
+                                            <p className="text-center text-muted-foreground py-8">Pilih periode terlebih dahulu pada Langkah 1 untuk mengisi target tahunan.</p>
                                         ) : (
                                             <>
-                                                <p className="text-sm text-gray-600">Isi target capaian indikator untuk setiap tahun dalam periode yang dipilih.</p>
-                                                <div className="rounded-lg border overflow-hidden">
+                                                <p className="text-xs text-muted-foreground">Isi target capaian indikator secara kuantitatif untuk setiap tahun rencana pembangunan.</p>
+                                                <div className="rounded-lg border border-border overflow-hidden bg-card">
                                                     <table className="w-full text-sm">
-                                                        <thead className="bg-gray-50">
+                                                        <thead className="bg-muted/50 border-b border-border">
                                                             <tr>
-                                                                <th className="px-4 py-3 text-left font-medium text-gray-700">Tahun</th>
-                                                                <th className="px-4 py-3 text-left font-medium text-gray-700">Target <span className="text-red-500">*</span></th>
-                                                                <th className="px-4 py-3 text-left font-medium text-gray-700 w-24">Satuan</th>
+                                                                <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase tracking-wider">Tahun</th>
+                                                                <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase tracking-wider">Target <span className="text-red-500">*</span></th>
+                                                                <th className="px-4 py-3 text-left font-semibold text-foreground text-xs uppercase tracking-wider w-24">Satuan</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody className="divide-y">
+                                                        <tbody className="divide-y divide-border">
                                                             {data.targets.map((t, i) => (
-                                                                <tr key={t.year}>
-                                                                    <td className="px-4 py-2 font-medium">{t.year}</td>
-                                                                    <td className="px-4 py-2">
+                                                                <tr key={t.year} className="hover:bg-muted/20">
+                                                                    <td className="px-4 py-2.5 font-medium text-foreground">{t.year}</td>
+                                                                    <td className="px-4 py-2.5">
                                                                         <Input
                                                                             type="number"
                                                                             step="0.01"
                                                                             value={t.target_value}
                                                                             onChange={e => updateTarget(i, e.target.value)}
                                                                             placeholder="0.00"
-                                                                            className="w-32"
+                                                                            className="w-36 font-semibold"
                                                                         />
                                                                     </td>
-                                                                    <td className="px-4 py-2 text-gray-500">{units.find(u => u.id.toString() === data.measurement_unit_id)?.symbol ?? '-'}</td>
+                                                                    <td className="px-4 py-2.5 text-muted-foreground">{units.find(u => u.id.toString() === data.measurement_unit_id)?.symbol ?? '-'}</td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>
@@ -420,35 +467,35 @@ export default function IkuCreate({ iku, periods, organizations, units, officers
                                 {/* ── Step 4: Konfirmasi ── */}
                                 {step === 3 && (
                                     <div className="space-y-4">
-                                        <p className="text-sm text-gray-600">Periksa kembali data di bawah sebelum menyimpan IKU.</p>
-                                        <div className="rounded-lg border overflow-hidden">
+                                        <p className="text-xs text-muted-foreground">Periksa kembali data di bawah ini sebelum menyimpan atau mengajukan IKU.</p>
+                                        <div className="rounded-lg border border-border overflow-hidden bg-card">
                                             <table className="w-full text-sm">
-                                                <tbody className="divide-y">
+                                                <tbody className="divide-y divide-border">
                                                     {confirmationRows.map(([label, value]) => (
                                                         <tr key={label}>
-                                                            <td className="px-4 py-2 w-44 font-medium text-gray-600 bg-gray-50">{label}</td>
-                                                            <td className="px-4 py-2">{value}</td>
+                                                            <td className="px-4 py-2.5 w-48 font-medium text-muted-foreground bg-muted/40 text-xs uppercase tracking-wider">{label}</td>
+                                                            <td className="px-4 py-2.5 text-foreground font-medium">{value}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
                                             </table>
                                         </div>
                                         {data.targets.length > 0 && (
-                                            <div className="rounded-lg border overflow-hidden">
+                                            <div className="rounded-lg border border-border overflow-hidden bg-card">
                                                 <table className="w-full text-sm">
-                                                    <thead className="bg-gray-50">
+                                                    <thead className="bg-muted/50 border-b border-border">
                                                         <tr>
-                                                            <th className="px-4 py-2 text-left font-medium">Tahun</th>
-                                                            <th className="px-4 py-2 text-left font-medium">Target</th>
-                                                            <th className="px-4 py-2 text-left font-medium">Satuan</th>
+                                                            <th className="px-4 py-2.5 text-left font-semibold text-foreground text-xs uppercase tracking-wider">Tahun</th>
+                                                            <th className="px-4 py-2.5 text-left font-semibold text-foreground text-xs uppercase tracking-wider">Target</th>
+                                                            <th className="px-4 py-2.5 text-left font-semibold text-foreground text-xs uppercase tracking-wider">Satuan</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y">
+                                                    <tbody className="divide-y divide-border">
                                                         {data.targets.map(t => (
                                                             <tr key={t.year}>
-                                                                <td className="px-4 py-2">{t.year}</td>
-                                                                <td className="px-4 py-2">{t.target_value || '-'}</td>
-                                                                <td className="px-4 py-2 text-gray-500">{unit?.symbol ?? '-'}</td>
+                                                                <td className="px-4 py-2.5 text-foreground font-semibold">{t.year}</td>
+                                                                <td className="px-4 py-2.5 text-primary font-bold">{t.target_value || '-'}</td>
+                                                                <td className="px-4 py-2.5 text-muted-foreground">{unit?.symbol ?? '-'}</td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -460,33 +507,48 @@ export default function IkuCreate({ iku, periods, organizations, units, officers
                             </div>
 
                             {/* Navigation Buttons */}
-                            <div className="mt-8 flex items-center justify-between border-t pt-4">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setStep(s => s - 1)}
-                                    disabled={step === 0}
-                                >
-                                    <ChevronLeft className="mr-2 h-4 w-4" /> Sebelumnya
-                                </Button>
+                            <div className="mt-8 flex items-center justify-between border-t border-border pt-5">
+                                {step === 0 ? (
+                                    <Link href={route('planning.iku.index')}>
+                                        <Button variant="outline" type="button" className="text-muted-foreground hover:text-foreground">
+                                            Batal
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <Button
+                                        variant="outline"
+                                        type="button"
+                                        onClick={() => setStep(s => s - 1)}
+                                    >
+                                        <ChevronLeft className="mr-1.5 h-4 w-4" /> Sebelumnya
+                                    </Button>
+                                )}
 
                                 {step < STEPS.length - 1 ? (
-                                    <Button onClick={() => setStep(s => s + 1)}>
-                                        Selanjutnya <ChevronRight className="ml-2 h-4 w-4" />
+                                    <Button 
+                                        type="button" 
+                                        onClick={() => setStep(s => s + 1)}
+                                        className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                                    >
+                                        Selanjutnya <ChevronRight className="ml-1.5 h-4 w-4" />
                                     </Button>
                                 ) : (
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2.5">
                                         <Button
                                             variant="outline"
+                                            type="button"
                                             onClick={submit}
                                             disabled={processing}
                                         >
                                             Simpan Draft
                                         </Button>
                                         <Button
+                                            type="button"
+                                            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                                             onClick={() => { setData('iku_status' as any, 'diajukan'); submit(); }}
                                             disabled={processing}
                                         >
-                                            <Check className="mr-2 h-4 w-4" />
+                                            <Check className="mr-1.5 h-4 w-4" />
                                             Simpan & Ajukan
                                         </Button>
                                     </div>

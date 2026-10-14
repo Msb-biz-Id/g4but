@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // =========================================================
-// Schema Validasi Zod — e-KASUARI
+// Schema Validasi Zod — e-SAKIP
 // Sesuai BRD.md FR codes & Business Rules
 // =========================================================
 

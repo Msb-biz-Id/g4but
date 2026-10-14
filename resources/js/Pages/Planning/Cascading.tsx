@@ -286,7 +286,7 @@ export default function Cascading({ relations, organizations, periods, trees, tr
  )}
  </TableCell>
  <TableCell className="text-gray-500">
- {relation.description || '—'}
+ {relation.description || '-'}
  </TableCell>
  <TableCell className="text-right">
  <Button
