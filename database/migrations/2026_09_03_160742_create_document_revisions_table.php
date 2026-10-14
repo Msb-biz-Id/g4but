@@ -15,6 +15,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('document_revisions');
+        Schema::enableForeignKeyConstraints();
+
         Schema::create('document_revisions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('planning_document_id')
@@ -24,7 +28,7 @@ return new class extends Migration
             $table->text('note')->comment('Isi catatan revisi dari Biro Organisasi ke OPD');
             $table->string('status', 20)->default('pending')
                 ->comment('pending | acknowledged | resolved');
-            $table->foreignId('created_by')
+            $table->foreignId('created_by')->nullable()
                 ->constrained('users')->nullOnDelete()
                 ->comment('User Biro/Super Admin yang mengirim catatan');
             $table->foreignId('acknowledged_by')->nullable()
