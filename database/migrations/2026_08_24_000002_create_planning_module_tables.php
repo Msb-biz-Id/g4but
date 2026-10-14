@@ -53,7 +53,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['organization_id', 'performance_period_id', 'type']);
+            $table->index(['organization_id', 'performance_period_id', 'type'], 'pdocs_org_period_type_idx');
         });
 
         // ─── planning_trees ───────────────────────────────────────────────────────
@@ -72,8 +72,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['organization_id', 'performance_period_id', 'code']);
-            $table->index(['organization_id', 'performance_period_id', 'parent_id']);
+            $table->unique(['organization_id', 'performance_period_id', 'code'], 'ptrees_org_period_code_unique');
+            $table->index(['organization_id', 'performance_period_id', 'parent_id'], 'ptrees_org_period_parent_idx');
         });
 
         // ─── cascading_relations ──────────────────────────────────────────────────
@@ -104,7 +104,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['indicator_id', 'performance_period_id']);
-            $table->index(['organization_id', 'related_organization_id']);
+            $table->index(['organization_id', 'related_organization_id'], 'crosscutting_org_related_idx');
         });
     }
 

@@ -64,7 +64,7 @@ return new class extends Migration
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['indicator_version_id', 'organization_id', 'planning_period_id']);
+            $table->unique(['indicator_version_id', 'organization_id', 'planning_period_id'], 'ind_targets_ver_org_period_unique');
             $table->foreign('approved_by')->references('id')->on('users')->nullOnDelete();
         });
     }

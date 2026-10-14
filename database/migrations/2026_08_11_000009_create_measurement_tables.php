@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['indicator_version_id', 'organization_id', 'measurement_period_id']);
+            $table->unique(['indicator_version_id', 'organization_id', 'measurement_period_id'], 'realizations_ver_org_period_unique');
             $table->foreign('submitted_by')->references('id')->on('users')->nullOnDelete();
             $table->foreign('approved_by')->references('id')->on('users')->nullOnDelete();
         });

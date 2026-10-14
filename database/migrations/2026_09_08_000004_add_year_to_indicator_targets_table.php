@@ -20,9 +20,16 @@ return new class extends Migration
 
         // Drop unique constraint lama IF EXISTS dengan aman
         if ($driver === 'sqlite') {
+            DB::statement('DROP INDEX IF EXISTS ind_targets_ver_org_period_unique');
             DB::statement('DROP INDEX IF EXISTS indicator_targets_indicator_version_id_organization_id_planning_period_id_unique');
             DB::statement('DROP INDEX IF EXISTS indicator_targets_version_org_period_year_unique');
         } else {
+            try {
+                Schema::table('indicator_targets', function (Blueprint $table) {
+                    $table->dropUnique('ind_targets_ver_org_period_unique');
+                });
+            } catch (Throwable $e) {
+            }
             try {
                 Schema::table('indicator_targets', function (Blueprint $table) {
                     $table->dropUnique(['indicator_version_id', 'organization_id', 'planning_period_id']);
