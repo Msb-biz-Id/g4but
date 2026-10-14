@@ -58,6 +58,38 @@ class Risk extends Model
         }
     }
 
+    public function setLikelihoodAttribute($value): void
+    {
+        if (is_string($value)) {
+            $map = [
+                'very_low' => 1,
+                'low' => 2,
+                'medium' => 3,
+                'high' => 4,
+                'critical' => 5,
+                'very_high' => 5,
+            ];
+            $value = $map[strtolower(trim($value))] ?? (is_numeric($value) ? (int) $value : 3);
+        }
+        $this->attributes['likelihood'] = max(1, min(5, (int) $value));
+    }
+
+    public function setImpactLevelAttribute($value): void
+    {
+        if (is_string($value)) {
+            $map = [
+                'very_low' => 1,
+                'low' => 2,
+                'medium' => 3,
+                'high' => 4,
+                'critical' => 5,
+                'very_high' => 5,
+            ];
+            $value = $map[strtolower(trim($value))] ?? (is_numeric($value) ? (int) $value : 3);
+        }
+        $this->attributes['impact_level'] = max(1, min(5, (int) $value));
+    }
+
     public function getRiskEventAttribute($value): string
     {
         return ! empty($value) ? (string) $value : (string) ($this->attributes['title'] ?? '');
