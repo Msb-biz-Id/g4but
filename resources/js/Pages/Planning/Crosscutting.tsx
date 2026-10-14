@@ -105,8 +105,8 @@ export default function Crosscutting({ relations, organizations, periods, indica
 
  <div className="space-y-6">
     <PageHeader
-        title="Crosscutting Kinerja Antar-Perangkat Daerah"
-        description="Pemetaan keterkaitan, kolaborasi, dan pembagian peran lintas sektor dalam pencapaian target kinerja daerah Pemerintah Provinsi Papua Barat."
+        title="Crosscutting Kinerja Lintas Bidang"
+        description="Pemetaan keterkaitan, kolaborasi, dan pembagian peran antar-bidang dan seksi dalam pencapaian target kinerja Dinas PUPR Kabupaten Mimika."
         breadcrumbs={[
             { label: 'Perencanaan' },
             { label: 'Crosscutting Kinerja' },

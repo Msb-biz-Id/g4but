@@ -197,7 +197,7 @@
         <div class="brand">
             <img src="{{ file_exists(public_path('logo.webp')) ? asset('logo.webp') : asset('logo.png') }}" alt="Logo PUPR Mimika">
             <span class="brand-title">e-SAKIP</span>
-            <span class="brand-badge">Pemprov Kabupaten Mimika</span>
+            <span class="brand-badge">Pemerintah Kabupaten Mimika</span>
         </div>
 
         <div class="code-display">@yield('code')</div>

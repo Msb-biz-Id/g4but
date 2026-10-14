@@ -205,7 +205,7 @@ export default function ActionPlans({ plans, organizations, periods, indicators,
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
                     <PageHeader
                         title="Rencana Aksi Kinerja"
-                        description="Pemantauan pelaksanaan aktivitas, jadwal kerja, dan progres capaian rencana aksi kinerja perangkat daerah Pemerintah Provinsi Papua Barat."
+                        description="Pemantauan pelaksanaan aktivitas, jadwal kerja, dan progres capaian rencana aksi kinerja Dinas PUPR Kabupaten Mimika."
                         breadcrumbs={[
                             { label: 'Perencanaan' },
                             { label: 'Rencana Aksi' },

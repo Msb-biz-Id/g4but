@@ -51,7 +51,7 @@ const phases = [
             'Perhitungan skor capaian otomatis berbasis formula resmi',
             'Penerbitan rekomendasi perbaikan dengan penanggung jawab (PIC) definitif',
             'Pelacakan status tindak lanjut rekomendasi secara real-time',
-            'Matriks perbandingan kinerja antar Perangkat Daerah se-Provinsi',
+            'Matriks perbandingan kinerja antar-bidang dan seksi di lingkungan Dinas',
         ],
     },
     {

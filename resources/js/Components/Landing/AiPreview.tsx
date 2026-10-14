@@ -10,9 +10,9 @@ const modes = [
         label: 'Ringkasan Eksekutif Pimpinan',
         badge: 'EXECUTIVE BRIEF',
         icon: FileSpreadsheet,
-        headline: 'Konsolidasi Kepatuhan & Capaian Kinerja 8 Kabupaten',
-        text: 'Capaian indikator kinerja utama (IKU) pada triwulan berjalan menunjukkan tingkat kepatuhan pelaporan tepat waktu sebesar 94.2% di seluruh Perangkat Daerah. Unit kerja bidang infrastruktur dan pendidikan dasar mencatatkan progres signifikan.',
-        actionNote: 'Siap diverifikasi Tim Evaluator SAKIP Provinsi Papua Tengah',
+        headline: 'Konsolidasi Kepatuhan & Capaian Kinerja Seluruh Bidang',
+        text: 'Capaian indikator kinerja pada triwulan berjalan menunjukkan tingkat kepatuhan pelaporan tepat waktu sebesar 94.2% di seluruh Unit Kerja. Bidang Bina Marga dan Cipta Karya mencatatkan progres signifikan.',
+        actionNote: 'Siap diverifikasi Tim Evaluator SAKIP Kabupaten Mimika',
         tags: ['Formula Resmi PermenPAN-RB', 'Format LKjIP Sah', 'Jejak Audit Permanen'],
     },
     {

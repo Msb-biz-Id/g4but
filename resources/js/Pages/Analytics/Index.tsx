@@ -2521,13 +2521,13 @@ export default function AnalyticsIndex({
                                         onClick={() => setSakipDocView('pemda')}
                                         className={`px-3 py-1 text-xs font-semibold rounded-md transition ${sakipDocView === 'pemda' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}
                                     >
-                                        Induk (13 Dok)
+                                        Induk Dinas (13 Dok)
                                     </button>
                                     <button
                                         onClick={() => setSakipDocView('opd')}
                                         className={`px-3 py-1 text-xs font-semibold rounded-md transition ${sakipDocView === 'opd' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}
                                     >
-                                        Level OPD (12 Dok)
+                                        Unit Kerja (12 Dok)
                                     </button>
                                 </div>
                             )}
@@ -2574,13 +2574,13 @@ export default function AnalyticsIndex({
                                             onClick={() => setPkoSubView('pemda')}
                                             className={`px-3 py-1 text-xs font-semibold rounded-md transition ${pkoSubView === 'pemda' ? 'bg-amber-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
                                         >
-                                            <Building2 className="w-3.5 h-3.5 inline mr-1.5" />PKO {instansiName}
+                                            <Building2 className="w-3.5 h-3.5 inline mr-1.5" />PKO Dinas PUPR
                                         </button>
                                         <button
                                             onClick={() => setPkoSubView('opd')}
                                             className={`px-3 py-1 text-xs font-semibold rounded-md transition ${pkoSubView === 'opd' ? 'bg-primary text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
                                         >
-                                            <Layers className="w-3.5 h-3.5 inline mr-1.5" />PKO OPD
+                                            <Layers className="w-3.5 h-3.5 inline mr-1.5" />PKO Bidang &amp; Seksi
                                         </button>
                                     </div>
                                     {pkoSubView === 'opd' && (
@@ -2722,7 +2722,7 @@ export default function AnalyticsIndex({
                                             <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                                 <tr>
                                                     <th className="px-4 py-3 font-semibold text-center w-12">No</th>
-                                                    <th className="px-4 py-3 font-semibold">Dokumen Pemerintah Daerah</th>
+                                                    <th className="px-4 py-3 font-semibold">Nama Dokumen SAKIP Induk Dinas</th>
                                                     <th className="px-4 py-3 font-semibold text-center w-36">Tahun / Periode</th>
                                                     <th className="px-4 py-3 font-semibold text-center w-28">Kelengkapan</th>
                                                     <th className="px-4 py-3 font-semibold text-center w-36">Status</th>
@@ -4211,7 +4211,7 @@ export default function AnalyticsIndex({
                                         }`}
                                     >
                                         <Building2 className="h-4 w-4" />
-                                        <span>PKO {instansiName} (Tingkat Makro)</span>
+                                        <span>PKO Dinas PUPR (Tingkat Dinas)</span>
                                     </button>
                                     <button
                                         type="button"
@@ -4223,34 +4223,34 @@ export default function AnalyticsIndex({
                                         }`}
                                     >
                                         <Trophy className="h-4 w-4" />
-                                        <span>PKO Perangkat Daerah (Seluruh OPD)</span>
+                                        <span>PKO Bidang &amp; Seksi (Seluruh Unit Kerja)</span>
                                     </button>
                                 </div>
 
                                 <span className="text-xs text-slate-500 dark:text-slate-400 font-mono hidden sm:inline">
-                                    Panduan Teknis Baris 4: Item 6 (Tren 5 Thn) &amp; Item 7 (Ranking OPD)
+                                    Panduan Teknis: Evaluasi Capaian Kinerja Unit Kerja Dinas PUPR
                                 </span>
                             </div>
 
                             {pkoSubView === 'pemda' ? (
                                 <div className="space-y-4">
-                                    {/* Callout Penjelasan Entitas Makro Sesuai Permintaan */}
+                                    {/* Callout Penjelasan Tingkat Dinas */}
                                     <div className="p-3.5 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-xs text-amber-900 dark:text-amber-200 flex items-start gap-3">
                                         <Building2 className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                                         <div className="space-y-1">
                                             <p className="font-bold text-sm">
-                                                Capaian Penilaian Kinerja Organisasi (PKO) {instansiName}
+                                                Capaian Penilaian Kinerja Organisasi (PKO) Dinas PUPR Kabupaten Mimika
                                             </p>
                                             <p className="text-amber-800 dark:text-amber-300 leading-relaxed">
-                                                Ini adalah capaian PKO <strong>{instansiName} secara makro</strong> (bukan masing-masing OPD). Data ditarik dari realisasi capaian PKO berdasarkan hasil evaluasi setiap tahun.
+                                                Ini adalah capaian PKO <strong>Dinas PUPR Kabupaten Mimika secara menyeluruh</strong>. Data dikonsolidasikan dari realisasi capaian kinerja tahunan seluruh bidang, subbagian, dan seksi.
                                             </p>
                                         </div>
                                     </div>
 
-                                    {/* 2 Kartu Utama PKO OPD */}
+                                    {/* 2 Kartu Utama PKO Dinas */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div className="rounded-lg border border-amber-300 bg-amber-50/80 dark:bg-amber-950/40 p-4 text-center shadow-2xs">
-                                            <p className="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">Nilai PKO Pemprov ({evalYear})</p>
+                                            <p className="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">Nilai PKO Dinas PUPR ({evalYear})</p>
                                             <p className="text-3xl font-black text-amber-900 dark:text-amber-100 mt-1">
                                                 {(pko_matrix?.pemda_pko?.nilai ?? 0).toFixed(2)}
                                             </p>
@@ -4258,7 +4258,7 @@ export default function AnalyticsIndex({
                                         </div>
 
                                         <div className="rounded-lg border border-slate-200 bg-white dark:bg-slate-800 p-4 text-center shadow-2xs">
-                                            <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Predikat PKO Pemprov</p>
+                                            <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Predikat PKO Dinas PUPR</p>
                                             <div className="mt-1.5 flex items-center justify-center">
                                                 <span className={`inline-flex px-3 py-1 rounded text-sm font-black border ${predikatBadgeCls(pko_matrix?.pemda_pko?.predikat ?? '-')}`}>
                                                     {pko_matrix?.pemda_pko?.predikat ?? '-'}
@@ -4274,9 +4274,9 @@ export default function AnalyticsIndex({
                                             <div>
                                                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                                     <TrendingUp className="h-4 w-4 text-amber-600" />
-                                                    Grafik Tren Capaian PKO {instansiName}
+                                                    Grafik Tren Capaian PKO Dinas PUPR Kabupaten Mimika
                                                 </h3>
-                                                <p className="text-[11px] text-slate-500">Visualisasi deret waktu capaian PKO gabungan: Realisasi baseline historis, tahun aktif, dan target proyeksi perencanaan 5 tahun.</p>
+                                                <p className="text-[11px] text-slate-500">Visualisasi deret waktu capaian PKO gabungan Dinas PUPR: Realisasi baseline historis, tahun aktif, dan target proyeksi perencanaan 5 tahun.</p>
                                             </div>
                                             <div className="flex items-center gap-2 text-xs">
                                                 <span className="inline-flex items-center gap-1 font-mono text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
@@ -4293,7 +4293,7 @@ export default function AnalyticsIndex({
                                             <div className="flex items-center gap-2">
                                                 <FileSpreadsheet className="h-4 w-4 text-amber-600" />
                                                 <span className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                                                    Matriks Capaian PKO {instansiName} per Tahun (Acuan Tampilan Detail)
+                                                    Matriks Capaian PKO Dinas PUPR Kabupaten Mimika per Tahun (Acuan Tampilan Detail)
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -4382,35 +4382,35 @@ export default function AnalyticsIndex({
                                     </div>
 
                                     {/* KETERANGAN PENILAIAN PREDIKAT PKO / NKO */}
-                                    <KeteranganPenilaianPkoAkip title={`Keterangan Penilaian Predikat PKO ${instansiName}`} />
+                                    <KeteranganPenilaianPkoAkip title={`Keterangan Penilaian Predikat PKO Dinas PUPR`} />
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {/* Banner Konteks Item 7: Pembanding Kinerja Seluruh OPD */}
+                                    {/* Banner Konteks Item 7: Pembanding Kinerja Seluruh Bidang & Seksi */}
                                     <div className="p-3.5 bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg text-xs text-blue-900 dark:text-blue-200 flex items-start gap-3">
                                         <Trophy className="h-5 w-5 text-blue-700 dark:text-blue-400 shrink-0 mt-0.5" />
                                         <div className="space-y-1">
                                             <p className="font-bold text-sm">
-                                                Capaian Penilaian Kinerja Organisasi (PKO) Perangkat Daerah (Seluruh OPD)
+                                                Capaian Penilaian Kinerja Organisasi (PKO) Bidang &amp; Seksi
                                             </p>
                                             <p className="text-blue-800 dark:text-blue-300 leading-relaxed">
-                                                Matriks ini digunakan untuk <strong>membandingkan kinerja organisasi seluruh Perangkat Daerah</strong> di lingkungan {instansiName}. Nilai Kinerja Organisasi (NKO / PKO) dihitung langsung dari capaian indikator kinerja secara transparan dan akuntabel sesuai standar PermenPANRB No. 22/2024.
+                                                Matriks ini digunakan untuk <strong>membandingkan kinerja seluruh Bidang, Seksi, dan Subbagian</strong> di lingkungan Dinas PUPR Kabupaten Mimika. Nilai Kinerja Organisasi (NKO / PKO) dihitung langsung dari capaian indikator kinerja secara transparan dan akuntabel sesuai standar PermenPANRB No. 22/2024.
                                             </p>
                                         </div>
                                     </div>
 
-                                    {/* 4 Kartu Ringkasan Eksekutif PKO OPD */}
+                                    {/* 4 Kartu Ringkasan Eksekutif PKO Unit Kerja */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                         <div className="rounded-lg border border-slate-200 bg-white dark:bg-slate-800 p-4 text-center shadow-2xs">
-                                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total OPD Dievaluasi</p>
+                                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Unit Kerja Dievaluasi</p>
                                             <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
                                                 {pko_matrix?.opd_pko?.total_opd ?? 0}
                                             </p>
-                                            <span className="text-[10px] text-slate-400 font-semibold mt-0.5 block">Perangkat Daerah Aktif</span>
+                                            <span className="text-[10px] text-slate-400 font-semibold mt-0.5 block">Bidang, Subbag &amp; Seksi Aktif</span>
                                         </div>
 
                                         <div className="rounded-lg border border-blue-200 bg-blue-50/70 dark:bg-blue-950/40 p-4 text-center shadow-2xs">
-                                            <p className="text-[11px] font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider">Rata-rata PKO OPD ({evalYear})</p>
+                                            <p className="text-[11px] font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider">Rata-rata PKO Unit Kerja ({evalYear})</p>
                                             <p className="text-3xl font-black text-blue-900 dark:text-blue-100 mt-1">
                                                 {((pko_matrix?.opd_pko?.rows?.reduce((acc, r) => acc + r.nilai_pko, 0) ?? 0) / (pko_matrix?.opd_pko?.rows?.length || 1)).toFixed(2)}
                                             </p>
@@ -4441,7 +4441,7 @@ export default function AnalyticsIndex({
                                             <p className="text-3xl font-black text-rose-900 dark:text-rose-100 mt-1">
                                                 {pko_matrix?.opd_pko?.attention_count ?? pko_matrix?.opd_pko?.rows?.filter((r) => ['C','D','KURANG','SANGAT KURANG'].includes((r.predikat||'').toUpperCase()) || (r.nilai_pko != null && r.nilai_pko <= 50))?.length ?? 0}
                                             </p>
-                                            <span className="text-[10px] text-rose-700 dark:text-rose-400 font-semibold mt-0.5 block">OPD dengan Nilai Terendah</span>
+                                            <span className="text-[10px] text-rose-700 dark:text-rose-400 font-semibold mt-0.5 block">Unit Kerja dengan Nilai Terendah</span>
                                         </div>
                                     </div>
 

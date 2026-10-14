@@ -379,7 +379,7 @@ class AnalyticsController extends Controller
                 'code' => $ind->code,
                 'name' => $ver?->name ?? $ind->code,
                 'organization_code' => $ind->organization?->code ?? '-',
-                'organization_name' => $ind->organization?->name ?? 'Pemerintah Provinsi',
+                'organization_name' => $ind->organization?->name ?? 'Dinas PUPR',
                 'unit' => $ver?->unit ?? '-',
                 'direction' => $direction,
                 'period' => $rel?->measurementPeriod?->name ?? 'Tahunan',

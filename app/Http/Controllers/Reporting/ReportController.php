@@ -57,17 +57,18 @@ class ReportController extends Controller
         $availableYears = array_values(array_unique(array_filter(array_merge([$defaultYear], $planningYears, $extraYears))));
         rsort($availableYears);
 
-        // Organisasi Induk
-        $provinsi = Organization::where('type', 'province')->first();
-        $provId = $provinsi?->id;
+        // Organisasi Induk Dinas PUPR
+        $induk = Organization::where('type', 'opd')->whereNull('parent_id')->first()
+            ?? Organization::where('type', 'opd')->first();
+        $indukId = $induk?->id;
 
         // Laporan induk OPD (tidak digunakan dalam Rumah Besar OPD)
         $pemdaDocuments = [];
 
-        // B. LKIP Perangkat Daerah (Seluruh OPD untuk tahun terpilih)
+        // B. LKIP Unit Kerja (Seluruh bidang & unit untuk tahun terpilih)
         $opds = Organization::query()
             ->where('is_active', true)
-            ->when($provId, fn ($q) => $q->where('id', '!=', $provId))
+            ->when($indukId, fn ($q) => $q->where('id', '!=', $indukId))
             ->orderBy('id')
             ->get(['id', 'code', 'name', 'type']);
 

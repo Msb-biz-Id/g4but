@@ -113,7 +113,7 @@ export default function OrganizationsIndex({ auth, organizations, filters }: Pro
                 {/* Standard Page Header */}
                 <PageHeader
                     title="Perangkat Daerah & Organisasi"
-                    description="Kelola struktur perangkat daerah, dinas, badan, dan unit kerja Pemerintah Provinsi Papua Barat."
+                    description="Kelola struktur organisasi, bidang, subbagian, dan seksi Dinas PUPR Kabupaten Mimika."
                     breadcrumbs={[
                         { label: 'Master Data' },
                         { label: 'Organisasi' },

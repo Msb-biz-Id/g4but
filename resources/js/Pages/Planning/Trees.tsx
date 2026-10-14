@@ -952,7 +952,7 @@ export default function Trees({
                                 </h1>
                                 {activeRootTree && (
                                     <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                                        {activeRootTree.organization?.name ?? 'Provinsi'} {activeRootTree.code ? `• Kode: ${activeRootTree.code}` : ''}
+                                        {activeRootTree.organization?.name ?? 'Dinas PUPR'} {activeRootTree.code ? `• Kode: ${activeRootTree.code}` : ''}
                                     </span>
                                 )}
                             </div>
@@ -961,7 +961,7 @@ export default function Trees({
                                 {allNodes.length} simpul
                             </span>
                             <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800">
-                                {isMacroView ? 'Pohon Makro Provinsi' : 'Model PermenPAN-RB 89/2021'}
+                                {isMacroView ? 'Pohon Kinerja Utama Dinas' : 'Model PermenPAN-RB 89/2021'}
                             </span>
 
                             {pendingRevisions.length > 0 && (

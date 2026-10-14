@@ -292,7 +292,7 @@ export default function TreesIndex({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2.5">
-                        {/* Tombol Visualisasi Makro Provinsi */}
+                        {/* Tombol Visualisasi Pohon Utama Dinas */}
                         <Button
                             variant="outline"
                             asChild
@@ -300,7 +300,7 @@ export default function TreesIndex({
                         >
                             <Link href={route('planning.trees.builder.macro')}>
                                 <Layers className="h-4 w-4 text-primary" />
-                                <span>Visualisasi Makro Provinsi</span>
+                                <span>Visualisasi Pohon Utama Dinas</span>
                             </Link>
                         </Button>
 
@@ -487,7 +487,7 @@ export default function TreesIndex({
                                                 <div className="flex items-center gap-1.5">
                                                     <Building2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                                                     <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                                                        {tree.organization?.name ?? 'Pemerintah Provinsi'}
+                                                        {tree.organization?.name ?? 'Dinas PUPR'}
                                                     </span>
                                                 </div>
                                             </TableCell>
@@ -853,7 +853,7 @@ export default function TreesIndex({
                                 {treeToDelete?.code} - {treeToDelete?.name}
                             </p>
                             <p className="text-slate-500 mt-1">
-                                Instansi: {treeToDelete?.organization?.name ?? 'Provinsi'}
+                                Instansi: {treeToDelete?.organization?.name ?? 'Dinas PUPR'}
                             </p>
                             <p className="text-slate-500">
                                 Total simpul turunan: <strong>{treeToDelete?.total_nodes} simpul</strong>

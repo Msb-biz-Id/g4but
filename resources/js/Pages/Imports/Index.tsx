@@ -117,9 +117,9 @@ export default function ImportsIndex({ auth, batches, filters }: Props) {
  <div className="grid gap-6 lg:grid-cols-2">
  <Card>
  <CardHeader>
- <CardTitle>Import OPD</CardTitle>
+ <CardTitle>Import Organisasi / Unit Kerja</CardTitle>
  <CardDescription>
- Kolom: code, name, type (opd/provinsi/unit)
+ Kolom: code, name, type (opd/sekretariat/bidang/seksi/subbag/uptd)
  </CardDescription>
  </CardHeader>
  <CardContent>

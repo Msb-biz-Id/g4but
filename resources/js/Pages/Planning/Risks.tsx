@@ -122,7 +122,7 @@ export default function Risks({ risks, organizations, periods, indicators, filte
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
                     <PageHeader
                         title="Manajemen Risiko Kinerja"
-                        description="Pemetaan, penilaian dampak, mitigasi, dan pengendalian risiko strategis pencapaian kinerja organisasi Pemerintah Provinsi Papua Barat."
+                        description="Pemetaan, penilaian dampak, mitigasi, dan pengendalian risiko strategis pencapaian kinerja organisasi Dinas PUPR Kabupaten Mimika."
                         breadcrumbs={[
                             { label: 'Perencanaan' },
                             { label: 'Manajemen Risiko' },

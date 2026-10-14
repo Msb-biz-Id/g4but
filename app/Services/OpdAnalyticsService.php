@@ -409,7 +409,7 @@ class OpdAnalyticsService
                 'no' => count($rows) + 1,
                 'id' => $ind->id,
                 'code' => $ind->code,
-                'sasaran' => $ind->strategicObjective?->name ?? 'Sasaran Pembangunan Provinsi',
+                'sasaran' => $ind->strategicObjective?->name ?? 'Sasaran Strategis Dinas',
                 'indikator' => $ind->name,
                 'satuan' => $unitName,
                 'karakter' => in_array(strtolower($pol), ['negatif', 'lower_is_better']) ? 'Semakin rendah semakin baik' : 'Semakin tinggi semakin baik',

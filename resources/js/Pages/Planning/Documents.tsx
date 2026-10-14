@@ -288,7 +288,7 @@ export default function Documents({
  <div className="space-y-6">
     <PageHeader
         title="Dokumen Perencanaan Kinerja"
-        description="Pusat integrasi tata kelola dokumen perencanaan: Renstra, Renja, Pohon Kinerja, Manajemen Risiko, dan Perjanjian Kinerja terpadu Pemerintah Provinsi Papua Barat."
+        description="Pusat integrasi tata kelola dokumen perencanaan: Renstra, Renja, Pohon Kinerja, Manajemen Risiko, dan Perjanjian Kinerja terpadu Dinas PUPR Kabupaten Mimika."
         breadcrumbs={[
             { label: 'Perencanaan' },
             { label: 'Dokumen Perencanaan' },
