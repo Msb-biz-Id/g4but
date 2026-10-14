@@ -188,9 +188,9 @@ class HandleInertiaRequests extends Middleware
                 }
 
                 return [
-                    'appName' => $configs['app_name'] ?? $configs['app.name'] ?? config('app.name', 'SIM Kinerja'),
-                    'appDescription' => $configs['app_description'] ?? 'Sistem Informasi Akuntabilitas Kinerja Terintegrasi',
-                    'instansiName' => $configs['instansi_name'] ?? config('app.instansi_name', 'Pemerintah Kabupaten Mimika'),
+                    'appName' => $configs['app_name'] ?? $configs['app.name'] ?? config('app.name', 'E-Sakip PUPR'),
+                    'appDescription' => $configs['app_description'] ?? 'Sistem Informasi Akuntabilitas Kinerja Dinas PUPR Kabupaten Mimika',
+                    'instansiName' => $configs['instansi_name'] ?? config('app.instansi_name', 'Kabupaten Mimika'),
                     'organizationName' => $configs['organization_name'] ?? config('app.organization_name', 'Dinas Pekerjaan Umum dan Penataan Ruang'),
                     'currentYear' => $currYear,
                     'activePeriodName' => $activePeriod?->name ?? ('Periode ' . $startYear . '–' . $endYear),

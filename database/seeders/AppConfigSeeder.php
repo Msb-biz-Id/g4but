@@ -17,8 +17,8 @@ class AppConfigSeeder extends Seeder
                 'label' => 'Nama Aplikasi',
                 'description' => 'Nama resmi aplikasi yang ditampilkan di header dan email.',
                 'type' => 'string',
-                'value' => 'e-SAKIP',
-                'default_value' => 'e-SAKIP',
+                'value' => 'E-Sakip PUPR',
+                'default_value' => 'E-Sakip PUPR',
                 'is_secret' => false,
             ],
             [
@@ -27,8 +27,8 @@ class AppConfigSeeder extends Seeder
                 'label' => 'Nama Aplikasi (Alias)',
                 'description' => 'Alias nama aplikasi untuk kompatibilitas template.',
                 'type' => 'string',
-                'value' => 'e-SAKIP',
-                'default_value' => 'e-SAKIP',
+                'value' => 'E-Sakip PUPR',
+                'default_value' => 'E-Sakip PUPR',
                 'is_secret' => false,
             ],
             [
@@ -47,8 +47,8 @@ class AppConfigSeeder extends Seeder
                 'label' => 'Nama Instansi / Pemerintah Daerah',
                 'description' => 'Nama resmi pemerintah daerah atau instansi induk.',
                 'type' => 'string',
-                'value' => 'Pemerintah Kabupaten Mimika',
-                'default_value' => 'Pemerintah Kabupaten Mimika',
+                'value' => 'Kabupaten Mimika',
+                'default_value' => 'Kabupaten Mimika',
                 'is_secret' => false,
             ],
             [

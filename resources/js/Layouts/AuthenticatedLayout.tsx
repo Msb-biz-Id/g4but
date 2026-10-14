@@ -233,7 +233,7 @@ export default function Authenticated({
     const { auth, appConfig } = usePage<PageProps>().props;
     const { url: currentUrl } = usePage();
     const user = auth?.user;
-    const appName = appConfig?.appName || 'e-SAKIP';
+    const appName = appConfig?.appName || 'E-Sakip PUPR';
 
     const permissions = user?.permissions ?? [];
     const canViewUsers = permissions.includes('user:view');
@@ -867,7 +867,7 @@ export default function Authenticated({
                                 {appName}
                             </span>
                             <span className="block text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
-                                {appConfig?.instansiName || 'Pemerintah Kabupaten Mimika'}
+                                {appConfig?.instansiName || 'Kabupaten Mimika'}
                             </span>
                         </div>
                     )}
@@ -996,7 +996,7 @@ export default function Authenticated({
                                             {appName}
                                         </span>
                                         <span className="block text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
-                                            {appConfig?.instansiName || 'Pemerintah Kabupaten Mimika'}
+                                            {appConfig?.instansiName || 'Kabupaten Mimika'}
                                         </span>
                                     </div>
                                 </div>

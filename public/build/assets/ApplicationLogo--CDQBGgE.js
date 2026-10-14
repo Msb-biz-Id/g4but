@@ -1,1 +1,0 @@
-import{u as i,j as p}from"./app-DgjsY2nA.js";import{c}from"./utils-D0EtOKoh.js";function g({className:s,alt:r,src:t,...a}){const{appConfig:o}=i().props,n=t||o?.logoUrl||"/logo.webp",e=r||`Logo ${o?.appName||"SIM Kinerja"} ${o?.instansiName||""}`.trim();return p.jsx("img",{src:n,alt:e,className:c("object-contain shrink-0",s),...a})}export{g as A};
