@@ -1,25 +1,33 @@
-# Bypass Imunify360 Anti-bot JS Challenge
+# 1. Tetapkan DirectoryIndex agar LiteSpeed & Apache memuat index.php dan tidak menampilkan Index of /
+DirectoryIndex index.php public/index.php index.html
+
+# 2. Nonaktifkan directory listing (harus di luar mod_negotiation agar terbaca oleh LiteSpeed)
+Options -Indexes -MultiViews
+
+# 3. Bypass Imunify360 Anti-bot JS Challenge jika ada
 <IfModule mod_headers.c>
     Header always set X-Imunify-Disable "true"
     Header always unset X-Imunify360-Check-Status
 </IfModule>
 
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
-
     RewriteEngine On
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Arahkan asset Vite (build/) dan storage ke folder public/
-    RewriteRule ^(build|storage|favicon\.ico)(.*) public/$1$2 [L]
+    # Arahkan asset Vite (build/), storage, dan favicon ke folder public/
+    RewriteRule ^(build|storage|favicon\.ico|robots\.txt)(.*)$ public/$1$2 [L]
 
-    # Semua request lainnya ke index.php (Laravel bootstrap)
-    # Catatan: !-d dihapus agar root / juga diarahkan ke index.php
+    # Lindungi file konfigurasi sensitif agar tidak bisa diunduh langsung lewat web
+    RewriteRule ^(\.env|\.git|composer\.(json|lock)|package(-lock)?\.json) - [F,L]
+
+    # Eksekusi root URL langsung ke index.php
+    RewriteRule ^$ index.php [L]
+
+    # Semua route Laravel yang bukan file fisik diarahkan ke index.php
     RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [L]
 </IfModule>
