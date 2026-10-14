@@ -17,11 +17,15 @@ Options -Indexes -MultiViews
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Arahkan asset Vite (build/), storage, dan favicon ke folder public/
-    RewriteRule ^(build|storage|favicon\.ico|robots\.txt)(.*)$ public/$1$2 [L]
-
     # Lindungi file konfigurasi sensitif agar tidak bisa diunduh langsung lewat web
     RewriteRule ^(\.env|\.git|composer\.(json|lock)|package(-lock)?\.json) - [F,L]
+
+    # Arahkan asset statis ke folder public/
+    RewriteRule ^(build|storage|images|favicon.*|logo.*|android-chrome.*|apple-touch.*|robots\.txt|site\.webmanifest)(.*)$ public/$1$2 [L]
+
+    # Jika file fisik ada di dalam folder public/, arahkan langsung ke sana
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+    RewriteRule ^(.*)$ public/$1 [L]
 
     # Eksekusi root URL langsung ke index.php
     RewriteRule ^$ index.php [L]
