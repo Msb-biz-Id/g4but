@@ -22,7 +22,7 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
-            'showDemoHelper' => app()->environment('local', 'testing', 'development') || (bool) env('SHOW_DEMO_LOGIN', false),
+            'showDemoHelper' => filter_var(env('SHOW_DEMO_LOGIN', true), FILTER_VALIDATE_BOOLEAN),
         ]);
     }
 
