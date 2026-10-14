@@ -1,131 +1,119 @@
-# PANDUAN RUNNING & MIGRASI E-SAKIP DI CPANEL MENGGUNAKAN GITHUB
+# PANDUAN RUNNING & DEPLOYMENT E-SAKIP DI CPANEL
+## Domain: `https://pupr.msb.biz.id`
+### Repositori: `https://github.com/Msb-biz-Id/g4but.git`
 
-Panduan ini mendokumentasikan langkah demi langkah proses *deployment*, konfigurasi lingkungan produksi, migrasi basis data, dan otomatisasi sinkronisasi dari repositori GitHub ke server hosting cPanel (Shared Hosting / Cloud Hosting / VPS cPanel).
+Dokumen ini adalah panduan komprehensif langkah demi langkah untuk melakukan instalasi, konfigurasi, migrasi database, dan pemeliharaan sistem **e-SAKIP Dinas PUPR** pada server hosting cPanel dengan domain **`pupr.msb.biz.id`**.
 
 ---
 
 ## 1. SPESIFIKASI & PRASYARAT SERVER CPANEL
 
-Pastikan paket hosting cPanel memenuhi kriteria berikut:
-
-| Komponen | Spesifikasi Minimum / Rekomendasi |
+| Komponen | Spesifikasi & Pengaturan |
 |---|---|
+| **Domain Aplikasi** | `https://pupr.msb.biz.id` |
+| **Repositori GitHub** | `https://github.com/Msb-biz-Id/g4but.git` |
 | **Versi PHP** | **PHP 8.2** atau **PHP 8.3** (Aktifkan via menu **MultiPHP Manager** di cPanel) |
 | **Ekstensi PHP Wajib** | `bcmath`, `ctype`, `curl`, `dom`, `fileinfo`, `gd`, `intl`, `json`, `mbstring`, `openssl`, `pdo_mysql`, `tokenizer`, `xml`, `zip` |
-| **Database Server** | MySQL 8.0+ atau MariaDB 10.4+ |
-| **Akses Fitur cPanel** | - **Terminal (SSH)** (sangat direkomendasikan)<br>- **Git™ Version Control**<br>- **MySQL® Database Wizard**<br>- **Cron Jobs** |
-| **Aset Frontend (Vite)** | Dibangun (*compiled*) di lokal/CI-CD (`npm run build`) sebelum dipush ke GitHub |
+| **PHP Settings** | `memory_limit = 256M` (atau 512M), `upload_max_filesize = 50M`, `post_max_size = 50M`, `max_execution_time = 300` |
+| **Database Engine** | MySQL 8.0+ / MariaDB 10.4+ (Default Engine: `InnoDB`, Collation: `utf8mb4_unicode_ci`) |
+| **Akses Fitur cPanel** | - **Terminal (SSH)**<br>- **Git™ Version Control**<br>- **Domains / Subdomains**<br>- **MySQL® Database Wizard**<br>- **SSL/TLS Status (AutoSSL)**<br>- **Cron Jobs** |
+| **Build Frontend** | Bundel Vite (`public/build`) sudah ter-compile dan tersedia langsung di repositori GitHub `main`. |
 
 ---
 
 ## 2. ARSITEKTUR STRUKTUR DIREKTORI DI CPANEL
 
-Untuk keamanan tingkat instansi pemerintah, **JANGAN MENYIMPAN SOURCE CODE LANGSUNG DI DALAM `public_html`**. File sensitif seperti `.env`, berkas kode controller, dan vendor tidak boleh dapat diakses langsung oleh browser.
+Karena Anda menggunakan subdomain **`pupr.msb.biz.id`**, cPanel memungkinkan Anda menentukan **Document Root** langsung ke folder `public/` Laravel tanpa perlu symlink manual atau memindahkan file.
 
-Gunakan struktur direktori terpisah:
+Struktur folder yang direkomendasikan di cPanel (`/home/USERNAME/`):
 
 ```text
-/home/cpanelusername/
+/home/USERNAME/
 │
-├── ekasuarirepack/                <-- [DI LUAR public_html] Repositori Git Laravel (Aman)
+├── ekasuarirepack/                <-- [DI LUAR public_html] Repositori Git Laravel (Aman & Terlindungi)
 │   ├── app/
 │   ├── bootstrap/
 │   ├── config/
 │   ├── database/
-│   ├── public/                    <-- Berkas publik Laravel (index.php, build/, favicon)
+│   ├── public/                    <-- DOCUMENT ROOT SUBDOMAIN: pupr.msb.biz.id
+│   │   ├── build/                 <-- Aset Vite JavaScript & CSS
+│   │   ├── index.php              <-- Entry point Laravel
+│   │   ├── .htaccess              <-- Routing Apache & security headers
+│   │   └── storage -> ../storage/app/public
 │   ├── resources/
 │   ├── routes/
-│   ├── storage/
-│   ├── vendor/
-│   ├── .env                       <-- Konfigurasi rahasia produksi (Terlindung)
+│   ├── storage/                   <-- File upload evidence & logs
+│   ├── vendor/                    <-- Dependency Composer
+│   ├── .cpanel.yml                <-- Skrip deployment otomatis cPanel Git
+│   ├── .env                       <-- Konfigurasi rahasia produksi (Terproteksi dari web)
 │   └── artisan
 │
-└── public_html/                   <-- Root web publik (dihubungkan via Symlink ke folder public)
+└── public_html/                   <-- Folder domain utama (tidak terganggu)
 ```
 
 ---
 
-## 3. LANGKAH 1: PERSIAPAN REPOSITORI GITHUB
+## 3. LANGKAH 1: MEMBUAT SUBDOMAIN DI CPANEL
 
-### A. Pastikan Aset Frontend (Build) Tersedia
-Karena kebanyakan shared hosting cPanel tidak memiliki Node.js versi terbaru, lakukan build aset frontend di lokal terlebih dahulu:
+1. Masuk ke **cPanel** akun Anda (`msb.biz.id`).
+2. Masuk ke menu **Domains** (atau **Subdomains** pada cPanel versi klasik).
+3. Klik tombol **Create A New Domain**:
+   - **Domain:** `pupr.msb.biz.id`
+   - **Share document root with "msb.biz.id":** Pastikan **TIDAK DICENTANG (Uncheck)**.
+   - **Document Root:** Isi tepat ke arah folder public Laravel:
+     ```text
+     /home/USERNAME/ekasuarirepack/public
+     ```
+     *(Ganti `USERNAME` dengan username login cPanel Anda, misalnya: `msb` atau `msbbiz`)*.
+4. Klik **Submit**.
 
-```bash
-# Di komputer lokal Anda:
-npm run build
-```
-Pastikan folder `public/build/` telah ter-generate (berisi file JavaScript, CSS, dan `manifest.json`).
-
-### B. Push Kode ke Repositori GitHub
-Pastikan branch `main` sudah terdorong ke GitHub:
-```bash
-git add .
-git commit -m "chore: prepare production build for cpanel deployment"
-git push origin main
-```
+> **Catatan SSL:** Masuk ke menu **SSL/TLS Status** di cPanel ➔ centang `pupr.msb.biz.id` ➔ klik **Run AutoSSL** agar subdomain langsung mendapatkan sertifikat HTTPS gratis (Let's Encrypt / cPanel Sectigo).
 
 ---
 
-## 4. LANGKAH 2: SETUP GIT VERSION CONTROL DI CPANEL
+## 4. LANGKAH 2: SETUP DATABASE MYSQL DI CPANEL
 
-### A. Generate SSH Key di cPanel
-1. Masuk ke **cPanel** ➔ pilih menu **SSH Access** (atau **Manage SSH Keys**).
-2. Klik **Generate a New Key**:
-   - **Key Name:** `id_rsa_github`
-   - **Key Password:** Kosongkan (atau isi jika ingin mengamankan passphrase)
-   - **Key Type:** RSA (Ukuran 4096)
-3. Klik **Generate Key**.
-4. Di bagian *Public Keys*, klik **Manage** pada key yang baru dibuat ➔ klik **Authorize**.
-5. Klik **View/Download** pada Public Key, lalu **Salin (Copy)** seluruh teks kunci publik tersebut.
+1. Buka menu **MySQL® Database Wizard** di cPanel:
+   - **Langkah 1 (Buat Database):** Masukkan nama, misalnya: `sakip_pupr`
+     *(Hasil nama database lengkap menjadi: `USERNAME_sakip_pupr`)*.
+   - **Langkah 2 (Buat User Database):** Masukkan username, misalnya: `sakip_user`
+     - Generate password yang kuat (contoh: `P@ssw0rdPUPR2026!#`)
+     *(Hasil username lengkap menjadi: `USERNAME_sakip_user`)*.
+   - **Langkah 3 (Hak Akses):** Centang **ALL PRIVILEGES** ➔ klik **Make Changes**.
+2. Simpan ketiga informasi tersebut untuk dimasukkan ke file `.env`:
+   - **DB_DATABASE:** `USERNAME_sakip_pupr`
+   - **DB_USERNAME:** `USERNAME_sakip_user`
+   - **DB_PASSWORD:** `[Password yang dibuat tadi]`
 
-### B. Pasang Deploy Key di GitHub
-1. Buka repositori proyek Anda di **GitHub**.
-2. Masuk ke tab **Settings** ➔ pilih **Deploy Keys** di sidebar kiri.
-3. Klik tombol **Add deploy key**:
-   - **Title:** `cPanel Server e-SAKIP`
-   - **Key:** Tempel (*Paste*) Public Key yang disalin dari cPanel tadi.
-   - Centang *"Allow write access"* jika ingin cPanel dapat push ke repo (opsional, untuk deploy cukup read access).
-4. Klik **Add Key**.
+---
 
-### C. Clone Repositori ke cPanel
-Buka menu **Terminal** di cPanel (atau gunakan SSH client seperti PuTTY / Terminal macOS):
+## 5. LANGKAH 3: CLONE REPOSITORI GITHUB KE CPANEL
+
+### Opsi A: Menggunakan Terminal SSH (Paling Cepat)
+1. Buka menu **Terminal** di cPanel.
+2. Jalankan perintah untuk meng-clone repositori langsung dari GitHub:
 
 ```bash
-# Masuk ke direktori home
 cd ~
-
-# Uji koneksi SSH ke GitHub
-ssh -T git@github.com
-# Ketik 'yes' jika muncul prompt fingerprint host
-
-# Clone repositori ke folder di luar public_html
-git clone git@github.com:USERNAME/REPO_NAME.git ekasuarirepack
-
-# Masuk ke direktori proyek
+git clone https://github.com/Msb-biz-Id/g4but.git ekasuarirepack
 cd ekasuarirepack
 ```
 
-> **Alternatif GUI:** Anda juga dapat menggunakan antarmuka **Git™ Version Control** di cPanel:
-> - Klik **Create**
-> - Masukkan Clone URL: `git@github.com:USERNAME/REPO_NAME.git`
-> - Repository Path: `ekasuarirepack`
-> - Klik **Create**.
+*(Jika repositori bersifat **Private**, gunakan SSH Key cPanel yang dipasang ke Deploy Keys GitHub, atau gunakan Personal Access Token GitHub saat diminta).*
 
----
-
-## 5. LANGKAH 3: SETUP DATABASE MYSQL DI CPANEL
-
-1. Buka menu **MySQL® Database Wizard** di cPanel:
-   - **Step 1:** Buat Database baru, misalnya: `cpaneluser_esakip`
-   - **Step 2:** Buat User Database, misalnya: `cpaneluser_sakipadm` dengan password yang kuat.
-   - **Step 3:** Tambahkan User ke Database dan centang **ALL PRIVILEGES**.
-   - Catat: **Nama Database**, **Username**, dan **Password**.
+### Opsi B: Menggunakan Fitur Git™ Version Control di cPanel
+1. Masuk ke cPanel ➔ menu **Git™ Version Control**.
+2. Klik tombol **Create**:
+   - **Clone URL:** `https://github.com/Msb-biz-Id/g4but.git`
+   - **Repository Path:** `ekasuarirepack`
+   - **Repository Name:** `ekasuarirepack`
+3. Klik **Create**.
 
 ---
 
 ## 6. LANGKAH 4: KONFIGURASI FILE `.env` DI CPANEL
 
-Salin template konfigurasi dan sesuaikan untuk environment produksi:
+Di dalam Terminal cPanel, masuk ke folder proyek dan buat file `.env`:
 
 ```bash
 cd ~/ekasuarirepack
@@ -133,27 +121,33 @@ cp .env.example .env
 nano .env
 ```
 
-Sesuaikan baris-baris kunci berikut di dalam `.env`:
+Sesuaikan nilai-nilai kunci berikut di file `.env`:
 
 ```ini
-APP_NAME=e-SAKIP
+APP_NAME="e-SAKIP Dinas PUPR"
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
-APP_URL=https://sakip.mimikakab.go.id
+APP_URL=https://pupr.msb.biz.id
+
+APP_LOCALE=id
+APP_FALLBACK_LOCALE=id
+APP_TIMEZONE=Asia/Jayapura
+DB_TIMEZONE=+09:00
 
 LOG_CHANNEL=daily
-LOG_LEVEL=error
+LOG_LEVEL=warning
+LOG_DAILY_DAYS=30
 
 # ── Konfigurasi Database MySQL cPanel ──
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=cpaneluser_esakip
-DB_USERNAME=cpaneluser_sakipadm
-DB_PASSWORD=PasswordDatabaseKuatAnda123!
+DB_DATABASE=USERNAME_sakip_pupr
+DB_USERNAME=USERNAME_sakip_user
+DB_PASSWORD=P@ssw0rdPUPR2026!#
 
-# ── Konfigurasi Sesi, Cache, & Antrian ──
+# ── Konfigurasi Driver & Storage ──
 BROADCAST_CONNECTION=log
 FILESYSTEM_DISK=public
 QUEUE_CONNECTION=database
@@ -162,44 +156,44 @@ SESSION_DRIVER=file
 SESSION_LIFETIME=120
 SESSION_ENCRYPT=false
 
-# ── Pengaturan Mail Server (SMTP cPanel) ──
+# ── Email Notifikasi (Email Domain cPanel) ──
 MAIL_MAILER=smtp
-MAIL_HOST=mail.mimikakab.go.id
+MAIL_HOST=mail.msb.biz.id
 MAIL_PORT=465
-MAIL_USERNAME=notifikasi@mimikakab.go.id
-MAIL_PASSWORD=PasswordEmailAnda
+MAIL_USERNAME=pupr@msb.biz.id
+MAIL_PASSWORD=PasswordEmailAkunAnda
 MAIL_ENCRYPTION=ssl
-MAIL_FROM_ADDRESS="notifikasi@mimikakab.go.id"
-MAIL_FROM_NAME="e-SAKIP PUPR Mimika"
+MAIL_FROM_ADDRESS="pupr@msb.biz.id"
+MAIL_FROM_NAME="e-SAKIP Dinas PUPR"
 ```
 
-Simpan file (`Ctrl + O`, lalu `Enter`, kemudian `Ctrl + X` untuk nano).
+Simpan file dengan menekan `Ctrl + O` ➔ `Enter` ➔ lalu keluar dengan `Ctrl + X`.
 
 ---
 
-## 7. LANGKAH 5: INSTALASI DEPENDENCY & MIGRASI DATA
+## 7. LANGKAH 5: EKSEKUSI DEPENDENSI, KUNCI, & MIGRASI DATA
 
-Jalankan perintah-perintah berikut di Terminal cPanel:
+Jalankan rangkaian perintah berikut di Terminal cPanel:
 
 ```bash
 cd ~/ekasuarirepack
 
-# 1. Install dependensi PHP untuk produksi (tanpa dev package)
+# 1. Pasang dependensi PHP produksi (tanpa package dev)
 composer install --no-dev --optimize-autoloader
 
-# 2. Generate Application Encryption Key
+# 2. Buat App Encryption Key
 php artisan key:generate --force
 
-# 3. Jalankan Migrasi Database MySQL
+# 3. Jalankan Migrasi Database MySQL (Semua 74 tabel InnoDB)
 php artisan migrate --force
 
-# 4. Jalankan Seeder Komprehensif (Multi-Tahun 2024-2026 & Master Data PUPR Mimika)
+# 4. Jalankan Seeder Komprehensif (Multi-tahun 2024-2026, Akun Dinas PUPR, Cascading, IKU)
 php artisan db:seed --force
 
-# 5. Buat tautan simbolik direktori storage ke public
+# 5. Hubungkan direktori storage file upload ke public
 php artisan storage:link
 
-# 6. Optimasi Cache Laravel untuk Kecepatan Produksi Maksimal
+# 6. Optimasi Cache Laravel untuk Kecepatan Maksimal
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -208,45 +202,9 @@ php artisan event:cache
 
 ---
 
-## 8. LANGKAH 6: MENGHUBUNGKAN KE `public_html`
+## 8. LANGKAH 6: SETTING PERMISSION DIREKTORI STORAGE & CACHE
 
-Agar domain Anda menampilkan aplikasi Laravel yang berada di `~/ekasuarirepack/public`:
-
-### Opsi A: Menggunakan Symlink (Sangat Direkomendasikan)
-Di terminal cPanel:
-
-```bash
-cd ~
-
-# Backup atau hapus public_html lama (pastikan isinya kosong/sudah dibackup)
-mv public_html public_html_backup
-
-# Buat symbolic link dari folder public proyek menjadi public_html
-ln -s /home/cpanelusername/ekasuarirepack/public public_html
-```
-
-### Opsi B: Jika Menggunakan Subdomain / Addon Domain
-1. Masuk ke cPanel ➔ **Domains** (atau **Subdomains**).
-2. Ubah **Document Root** domain tersebut langsung mengarah ke:
-   `/home/cpanelusername/ekasuarirepack/public`
-3. Klik **Save**.
-
-### Opsi C: Menggunakan `.htaccess` di dalam `public_html` (Jika Symlink Dilarang)
-Jika penyedia hosting Anda menonaktifkan symlink, letakkan file `.htaccess` di dalam folder `public_html` dengan isi berikut:
-
-```apache
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^$ ../ekasuarirepack/public/ [L]
-    RewriteRule (.*) ../ekasuarirepack/public/$1 [L]
-</IfModule>
-```
-
----
-
-## 9. LANGKAH 7: ATUR PERMISSION DIREKTORI
-
-Pastikan web server Apache dapat menulis ke folder cache dan upload:
+Pastikan server web Apache cPanel memiliki izin menulis pada folder penyimpanan file dan cache:
 
 ```bash
 cd ~/ekasuarirepack
@@ -257,31 +215,29 @@ chmod -R 775 storage/logs
 
 ---
 
-## 10. LANGKAH 8: SETUP CRON JOB OTOMATIS DI CPANEL
+## 9. LANGKAH 7: SETUP CRON JOB DI CPANEL (PENTING)
 
-Laravel membutuhkan Scheduler untuk menjalankan Early Warning System (EWS), notifikasi batas waktu pelaporan, dan evaluasi otomatis.
+Fitur Early Warning System (EWS), pengingat deadline pelaporan triwulan, dan rekalkulasi kinerja otomatis memerlukan scheduler Laravel yang aktif setiap menit.
 
 1. Buka menu **Cron Jobs** di cPanel.
-2. Di bagian **Common Settings**, pilih: `* * * * * (Once Per Minute)`.
-3. Di kolom **Command**, masukkan baris berikut (sesuaikan path username cPanel Anda):
-
-```bash
-/usr/local/bin/php /home/cpanelusername/ekasuarirepack/artisan schedule:run >> /dev/null 2>&1
-```
-*(Ganti `/usr/local/bin/php` dengan path PHP 8.2/8.3 sesuai informasi di menu Server Information cPanel).*
+2. Pada **Common Settings**, pilih: `* * * * * (Once Per Minute)`.
+3. Di kolom **Command**, masukkan:
+   ```bash
+   /usr/local/bin/php /home/USERNAME/ekasuarirepack/artisan schedule:run >> /dev/null 2>&1
+   ```
+   *(Ganti `USERNAME` dengan nama akun cPanel Anda. Sesuaikan path binary PHP jika menggunakan PHP versi khusus, misalnya `/usr/local/bin/ea-php82`)*.
 4. Klik **Add New Cron Job**.
 
 ---
 
-## 11. LANGKAH 9: OTOMATISASI UPDATE DARI GITHUB (CI/CD)
+## 10. CARA PEMBARUAN (UPDATE KODE DARI GITHUB DI MASA DEPAN)
 
-Saat ada pembaruan kode baru di masa mendatang, Anda dapat melakukan update dengan mudah:
+Ketika Anda melakukan update kode di lokal dan telah melakukan `git push origin main`, Anda cukup memperbarui server cPanel dengan salah satu cara berikut:
 
-### Metode 1: Pull Manual via Terminal cPanel
+### Cara 1: Sekali Perintah di Terminal cPanel
 ```bash
 cd ~/ekasuarirepack
 git pull origin main
-composer install --no-dev --optimize-autoloader
 php artisan migrate --force
 php artisan optimize:clear
 php artisan config:cache
@@ -289,97 +245,31 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-### Metode 2: Menggunakan `.cpanel.yml` (Deploy via cPanel Git UI)
-Buat file bernama `.cpanel.yml` di root proyek repositori Anda:
-
-```yaml
----
-deployment:
-  tasks:
-    - export DEPLOYPATH=/home/cpanelusername/ekasuarirepack
-    - /bin/cp -R * $DEPLOYPATH
-    - cd $DEPLOYPATH
-    - php artisan migrate --force
-    - php artisan config:cache
-    - php artisan route:cache
-    - php artisan view:cache
-```
-Setiap kali Anda menekan tombol **Update from Remote** lalu **Deploy Head Commit** di menu **Git Version Control** cPanel, proses di atas akan dieksekusi otomatis.
-
-### Metode 3: GitHub Actions Auto Deploy via SSH (Paling Modern)
-Buat file `.github/workflows/deploy.yml` di repositori GitHub Anda:
-
-```yaml
-name: Deploy to cPanel
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-
-    - name: Build Frontend Assets
-      run: |
-        npm ci
-        npm run build
-
-    - name: Deploy via SSH to cPanel
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.CPANEL_HOST }}
-        username: ${{ secrets.CPANEL_USERNAME }}
-        key: ${{ secrets.CPANEL_SSH_KEY }}
-        port: ${{ secrets.CPANEL_PORT || 22 }}
-        script: |
-          cd ~/ekasuarirepack
-          git pull origin main
-          composer install --no-dev --optimize-autoloader
-          php artisan migrate --force
-          php artisan optimize:clear
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
-```
+### Cara 2: 1-Klik Melalui Menu cPanel Git™ Version Control
+File `.cpanel.yml` telah disediakan di repositori ini. Di antarmuka cPanel:
+1. Buka menu **Git™ Version Control**.
+2. Klik **Manage** pada `ekasuarirepack`.
+3. Masuk ke tab **Pull or Deploy**.
+4. Klik **Update from Remote**, lalu klik **Deploy Head Commit**.
 
 ---
 
-## 12. PANDUAN PENANGANAN MASALAH (TROUBLESHOOTING)
+## 11. AKUN OPERASIONAL STANDAR UNTUK PENGUJIAN
 
-| Masalah / Error | Penyebab | Solusi |
-|---|---|---|
-| **Error 500 (Internal Server Error)** | Permission folder `storage` atau file `.env` salah | Jalankan: `chmod -R 775 storage bootstrap/cache` dan pastikan `.env` memiliki `APP_KEY`. |
-| **Vite manifest not found at: .../manifest.json** | Folder `public/build` belum diunggah | Jalankan `npm run build` di lokal, pastikan folder `public/build` ter-commit dan ter-push ke GitHub, lalu pull di cPanel. |
-| **Mixed Content / HTTP vs HTTPS** | Skema URL tidak sesuai sertifikat SSL | Buka `.env`, pastikan `APP_URL=https://domainanda.com` dan aktifkan `Force HTTPS Redirect` di menu **Domains** cPanel. |
-| **Database Connection Refused** | Host, nama DB, atau password salah | Periksa `.env`. Di cPanel, host umumnya adalah `127.0.0.1` atau `localhost`. Pastikan user database sudah diberikan **ALL PRIVILEGES**. |
-| **PDF Cetak Error / Font Tidak Muncul** | Folder temporary PDF belum ada | Pastikan direktori `storage/fonts` dan `storage/app` ada dan memiliki permission `775`. |
+Setelah seeder dijalankan, sistem langsung siap digunakan dengan akun dinas:
 
----
-
-## 13. DAFTAR AKUN STANDAR SETELAH MIGRASI SEEDER
-
-Setelah perintah `php artisan db:seed --force` selesai, sistem langsung memiliki akun operasional standar:
-
+- **URL Login:** `https://pupr.msb.biz.id/login`
 - **Password Default Seluruh Akun:** `Password@123`
-- **Super Administrator Sistem:** `superadmin@esakip.local`
-- **Kepala Dinas PUPR (Checker OPD):** `kepala.opd@esakip.local`
-- **Admin Dinas PUPR (Maker OPD):** `admin.opd@esakip.local`
-- **Sekretaris Dinas PUPR:** `sekretaris@esakip.local`
-- **Kepala Bidang Bina Marga:** `kabid.binamarga@esakip.local`
-- **Kepala Bidang Cipta Karya:** `kabid.ciptakarya@esakip.local`
 
-*(Wajib mengganti password default melalui menu Profil Akun setelah pertama kali login di lingkungan produksi).*
+| Peran (Role) | Akun Email | Keterangan / Wewenang |
+|---|---|---|
+| **Super Admin** | `superadmin@esakip.local` | Akses teknis penuh, konfigurasi aplikasi & audit log |
+| **Kepala Dinas PUPR** | `kepala.opd@esakip.local` | Pimpinan OPD, pengesahan dokumen perencanaan & PK |
+| **Admin Dinas PUPR** | `admin.opd@esakip.local` | Penginputan master data, pohon kinerja, & target IKU |
+| **Sekretaris Dinas** | `sekretaris@esakip.local` | Verifikator administrasi, SAKIP sekretariat |
+| **Kabid Bina Marga** | `kabid.binamarga@esakip.local` | Pengampu program jalan & jembatan |
+| **Kabid Cipta Karya** | `kabid.ciptakarya@esakip.local` | Pengampu program gedung & air minum |
+| **Kabid Sumber Daya Air** | `kabid.sda@esakip.local` | Pengampu program irigasi & drainase |
+| **Kabid Penataan Ruang** | `kabid.penataanruang@esakip.local` | Pengampu tata ruang & jasa konstruksi |
+
+> 🔒 **Keamanan:** Segera ubah password default melalui menu **Profil Akun** setelah pertama kali login di server live.
