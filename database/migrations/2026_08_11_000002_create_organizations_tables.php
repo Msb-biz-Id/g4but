@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('code', 50)->unique();
             $table->string('name', 200);
+            $table->string('short_name', 100)->nullable();
             $table->string('type', 30)->default('opd')->index(); // province, opd, biro, inspektorat, unit
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->string('address')->nullable();
