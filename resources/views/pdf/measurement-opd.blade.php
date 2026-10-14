@@ -50,7 +50,7 @@ table.matrix td { padding:2.5px 2px; border:1px solid #cbd5e1; vertical-align:to
   <tr>
     <td class="hdr-logo-cell"><img src="{{ $logoBase64 ?? public_path('logo.png') }}" alt="Logo"></td>
     <td class="hdr-title-cell">
-      <div class="instansi">Pemerintah Provinsi Papua Barat</div>
+      <div class="instansi">Pemerintah Kabupaten Mimika</div>
       <div class="doc-title">LAPORAN REALISASI KINERJA PERANGKAT DAERAH (PD)</div>
       <div class="doc-sub">Pengukuran Kinerja &nbsp;|&nbsp; Tahun {{ $currentYear }} &nbsp;|&nbsp;
         @if($organization) {{ $organization->name }} @else Semua Perangkat Daerah @endif &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
@@ -462,7 +462,7 @@ table.matrix td { padding:2.5px 2px; border:1px solid #cbd5e1; vertical-align:to
 @endif
 
 <div class="footer">
-  <div class="fl">Sistem e-SAKIP — SAKIP Provinsi Papua Barat</div>
+  <div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div>
   <div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div>
 </div>
 </body>

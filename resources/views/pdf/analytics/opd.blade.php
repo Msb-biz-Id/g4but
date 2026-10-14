@@ -24,7 +24,7 @@ tr:nth-child(even) td { background:#f8fafc; }
   <tr>
     <td class="hdr-logo-cell"><img src="{{ $logoBase64 ?? public_path('logo.png') }}" alt="Logo"></td>
     <td class="hdr-title-cell">
-      <div class="instansi">Pemerintah Provinsi Papua Barat</div>
+      <div class="instansi">Pemerintah Kabupaten Mimika</div>
 <div class="doc-title">PERBANDINGAN KINERJA PERANGKAT DAERAH</div>
 <div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
     </td>
@@ -41,5 +41,5 @@ tr:nth-child(even) td { background:#f8fafc; }
 @endforeach
 </tbody></table>
 @else<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data perbandingan OPD.</p>@endif
-<div class="footer"><div class="fl">Sistem e-SAKIP — SAKIP Provinsi Papua Barat</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
+<div class="footer"><div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
 </body></html>

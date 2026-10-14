@@ -63,7 +63,7 @@
                 @endif
             </td>
             <td class="hdr-title-cell">
-                <div class="instansi">Pemerintah Provinsi Papua Barat</div>
+                <div class="instansi">Pemerintah Kabupaten Mimika</div>
                 <div class="instansi-sub">Sistem Akuntabilitas Kinerja Instansi Pemerintah (SAKIP)</div>
                 <div class="doc-title">LEMBAR PENGESAHAN DOKUMEN SAKIP</div>
                 <div class="doc-sub">Sistem Informasi e-SAKIP LITE &bull; Cetak Otomatis Dashboard Analitik</div>
@@ -75,7 +75,7 @@
     <div class="banner">
         <div class="banner-title">&check; Dokumen Terdaftar Resmi dalam Matriks Evaluasi SAKIP</div>
         <div class="banner-desc">
-            Dokumen ini telah diverifikasi dan memenuhi standar kelengkapan dokumen SAKIP Pemerintah Provinsi Papua Barat.
+            Dokumen ini telah diverifikasi dan memenuhi standar kelengkapan dokumen SAKIP Pemerintah Kabupaten Mimika.
         </div>
     </div>
 
@@ -103,7 +103,7 @@
             <td class="meta-label">Perangkat Daerah / Instansi</td>
             <td class="meta-sep">:</td>
             <td class="meta-value">
-                <strong>{{ $doc->organization?->name ?: 'Pemerintah Provinsi Papua Barat' }}</strong>
+                <strong>{{ $doc->organization?->name ?: 'Pemerintah Kabupaten Mimika' }}</strong>
                 @if($doc->organization?->code)
                     ({{ $doc->organization->code }})
                 @endif
@@ -138,7 +138,7 @@
             <td class="meta-label">Diverifikasi Oleh</td>
             <td class="meta-sep">:</td>
             <td class="meta-value">
-                {{ $doc->approver?->name ?: 'Administrator SAKIP Papua Barat' }}
+                {{ $doc->approver?->name ?: 'Administrator SAKIP Kabupaten Mimika' }}
             </td>
         </tr>
         @if($doc->description)
@@ -153,7 +153,7 @@
     <div class="seal-box">
         <div class="seal-title">Keterangan Keabsahan Dokumen Digital</div>
         <div class="seal-desc">
-            Dokumen ini diakui secara sah dalam Sistem e-SAKIP Provinsi Papua Barat sebagai bagian dari pemenuhan parameter evaluasi akuntabilitas kinerja SAKIP (12 Dokumen OPD). Apabila OPD bersangkutan mengunggah lampiran berkas lengkap (PDF/XLSX), sistem akan secara otomatis menyediakan berkas asli tersebut pada tautan unduh.
+            Dokumen ini diakui secara sah dalam Sistem e-SAKIP Kabupaten Mimika sebagai bagian dari pemenuhan parameter evaluasi akuntabilitas kinerja SAKIP (12 Dokumen OPD). Apabila OPD bersangkutan mengunggah lampiran berkas lengkap (PDF/XLSX), sistem akan secara otomatis menyediakan berkas asli tersebut pada tautan unduh.
         </div>
     </div>
 
@@ -162,10 +162,10 @@
             <td class="sig-col">
                 <div class="sig-title">
                     Divalidasi di Manokwari,<br>
-                    Pengelola SAKIP Provinsi Papua Barat
+                    Pengelola SAKIP Kabupaten Mimika
                 </div>
                 <div class="sig-name">{{ $doc->approver?->name ?: 'Tim Evaluator SAKIP' }}</div>
-                <div class="sig-nip">Pemerintah Provinsi Papua Barat</div>
+                <div class="sig-nip">Pemerintah Kabupaten Mimika</div>
             </td>
             <td class="sig-col">
                 <div class="sig-title">

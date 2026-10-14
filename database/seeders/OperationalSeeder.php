@@ -32,6 +32,8 @@ class OperationalSeeder extends Seeder
         $bidangBM = Organization::where('code', 'BIDANG-BM')->firstOrFail();
         $bidangCK = Organization::where('code', 'BIDANG-CK')->firstOrFail();
         $bidangSDA = Organization::where('code', 'BIDANG-SDA')->firstOrFail();
+        $bidangTR = Organization::where('code', 'BIDANG-TR')->firstOrFail();
+        $uptd = Organization::where('code', 'UPTD-PUPR')->first() ?? $rootOpd;
 
         $pp2026 = PlanningPeriod::where('code', 'TA-2026')->firstOrFail();
 
@@ -143,6 +145,48 @@ class OperationalSeeder extends Seeder
                 'owner' => 'Sekretaris Dinas PUPR',
                 'status' => 'identified',
                 'organization_id' => $rootOpd->id,
+            ],
+            [
+                'title' => 'Limpasan Debit Air Ekstrem Sungai Wania Merusak Tanggul Sementara (Cofferdam)',
+                'risk_event' => 'Banjir kiriman dari hulu pegunungan menerjang galian fondasi parapet beton',
+                'description' => 'Fluktuasi debit air sungai yang cepat saat hujan lebat di kawasan hulu Tembagapura.',
+                'cause' => 'Curah hujan hulu sangat tinggi melebihi kapasitas bendung sementara',
+                'impact' => 'Kerusakan pekerjaan fondasi awal dan peralatan pompa tergenang',
+                'likelihood' => 'medium',
+                'impact_level' => 'high',
+                'risk_level' => 'high',
+                'mitigation' => 'Pemasangan sistem peringatan dini sensor ketinggian air hulu dan penguatan dewatering otomatis.',
+                'owner' => 'Kepala Bidang Sumber Daya Air',
+                'status' => 'mitigated',
+                'organization_id' => $bidangSDA->id,
+            ],
+            [
+                'title' => 'Keterlambatan Integrasi Peta RDTR Skala 1:5000 ke Sistem OSS Kementerian Investasi',
+                'risk_event' => 'Format geodatabase RDTR memerlukan sinkronisasi standar atribut nasional',
+                'description' => 'Kendala teknis interoperabilitas sistem GIS daerah dengan server pusat.',
+                'cause' => 'Perubahan skema schema database spasial pada portal pusat',
+                'impact' => 'Pelayanan persetujuan KKPR otomatis tertunda sementara waktu',
+                'likelihood' => 'low',
+                'impact_level' => 'medium',
+                'risk_level' => 'low',
+                'mitigation' => 'Asistensi intensif bersama Tim GIS Kementerian ATR/BPN dan validasi topologi berkala.',
+                'owner' => 'Kepala Bidang Penataan Ruang',
+                'status' => 'mitigated',
+                'organization_id' => $bidangTR->id,
+            ],
+            [
+                'title' => 'Kerusakan Komponen Hidrolik Alat Berat Akibat Beban Kerja Ekstrem di Lapangan',
+                'risk_event' => 'Ekskavator operasional UPTD mengalami kebocoran seal silinder boom',
+                'description' => 'Kondisi medan galian berbatuan tajam dan sedimen tebal mempercepat keausan komponen.',
+                'cause' => 'Keterlambatan suku cadang spesifik alat berat dari dealer di Jayapura/Surabaya',
+                'impact' => 'Penanganan tanggap darurat normalisasi saluran terhambat 3-5 hari',
+                'likelihood' => 'medium',
+                'impact_level' => 'medium',
+                'risk_level' => 'medium',
+                'mitigation' => 'Pengadaan fast-moving spare parts kit di gudang bengkel UPTD dan jadwal servis berkala ketat.',
+                'owner' => 'Kepala UPTD PUPR',
+                'status' => 'mitigated',
+                'organization_id' => $uptd->id,
             ],
         ];
 

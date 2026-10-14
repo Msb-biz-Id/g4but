@@ -59,10 +59,10 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 <div class="hdr-center">
   @if(!empty($logoBase64))
     <div class="hdr-logo-wrap">
-      <img src="{{ $logoBase64 }}" class="hdr-logo-img" alt="Logo Papua Barat">
+      <img src="{{ $logoBase64 }}" class="hdr-logo-img" alt="Logo PUPR Mimika">
     </div>
   @endif
-  <div class="instansi">PEMERINTAH {{ strtoupper($provinceName ?? 'PROVINSI PAPUA BARAT') }}</div>
+  <div class="instansi">{{ strtoupper($provinceName ?? \App\Services\PdfService::getProvinceName()) }}</div>
   <div class="doc-title">LAPORAN DETAIL PENCAPAIAN KINERJA PERANGKAT DAERAH</div>
   <div class="doc-sub">
     <strong>{{ $organization->name }}</strong> ({{ $organization->code }}) &nbsp;|&nbsp;
@@ -195,7 +195,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 </div>
 
 <div class="footer">
-  <div class="fl">Sistem e-SAKIP — SAKIP Terintegrasi Pemerintah Provinsi Papua Barat</div>
+  <div class="fl">Sistem e-SAKIP — SAKIP Terintegrasi Pemerintah Kabupaten Mimika</div>
   <div class="fr">Dicetak otomatis: {{ $generatedAt }} WIT</div>
 </div>
 

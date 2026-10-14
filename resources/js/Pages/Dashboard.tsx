@@ -1228,38 +1228,6 @@ export default function Dashboard({
                     </div>
                 </Link>
 
-                {/* 4. Capaian IKU */}
-                <Link
-                    href={route('planning.iku.index')}
-                    className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 flex flex-col justify-between hover:border-blue-400 hover:shadow-md transition group select-none relative"
-                    title="Capaian Indikator Kinerja Utama. Klik untuk rincian."
-                >
-                    <div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                                <span className="text-lg sm:text-xl">👤</span>
-                                <p className="text-xs sm:text-[10px] lg:text-xs font-semibold text-gray-500 uppercase leading-tight line-clamp-2">Capaian IKU OPD</p>
-                            </div>
-                            <span className="text-xs sm:text-[10px] text-blue-600 font-semibold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition flex items-center">
-                                Detail �-
-                            </span>
-                        </div>
-                        <div className="mt-1">
-                            <p className="text-xl sm:text-2xl font-extrabold text-gray-800">{kpi.capaian_iku_pemda.pct.toFixed(2)}%</p>
-                            <div className="mt-1 flex items-center justify-between">
-                                <StatusBadge status={kpi.capaian_iku_pemda.status} />
-                                <span className="text-xs sm:text-[10px] text-gray-400 font-medium">
-                                    {iku_status.tercapai}/{iku_status.total} Tercapai
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="text-xs sm:text-[10px] text-blue-600 font-medium flex items-center gap-1 group-hover:underline pt-0.5 border-t border-gray-50">
-                        <TableProperties className="w-3 h-3" />
-                        <span>Klik Detail Capaian IKU</span>
-                    </div>
-                </Link>
-
                 {/* 5. Rata-rata Capaian Kinerja OPD */}
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 flex flex-col justify-between gap-1.5">
                     <div className="flex items-center gap-1.5 sm:gap-2">
@@ -1298,7 +1266,7 @@ export default function Dashboard({
                             <span className={`inline-flex self-start px-2 py-0.5 rounded text-xs font-bold ${predikatCls(kpi.nilai_sakip_pemda?.predikat ?? 'BELUM DINILAI')}`}>
                                 {kpi.nilai_sakip_pemda?.predikat ?? 'BELUM DINILAI'}
                             </span>
-                            <span className="text-xs sm:text-[10px] text-gray-400 font-medium">Pemprov PB</span>
+                            <span className="text-xs sm:text-[10px] text-gray-400 font-medium">Dinas PUPR</span>
                         </div>
                     </div>
                 </Link>
@@ -1341,7 +1309,7 @@ export default function Dashboard({
                             <span className={`inline-flex self-start px-2 py-0.5 rounded text-xs font-bold ${predikatCls(kpi.nilai_pko_pemda.predikat)}`}>
                                 {kpi.nilai_pko_pemda.predikat}
                             </span>
-                            <span className="text-xs sm:text-[10px] text-gray-400 font-medium">Pemprov PB</span>
+                            <span className="text-xs sm:text-[10px] text-gray-400 font-medium">Dinas PUPR</span>
                         </div>
                     </div>
                 </div>
@@ -1373,21 +1341,8 @@ export default function Dashboard({
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-3">
-                <Card
-                    title={`Status IKU OPD (${iku_status.total} IKU)`}
-                    action="Lihat Detail"
-                    actionHref={route('planning.iku.index')}
-                >
-                    <Link
-                        href={route('planning.iku.index')}
-                        className="block cursor-pointer"
-                        title="Klik untuk membuka detail IKU"
-                    >
-                        <DonutChart data={iku_status} label="IKU" />
-                    </Link>
-                </Card>
-                <Card title={`Status Kinerja OPD (${opd_status.total} OPD)`} action="Lihat Detail" actionHref={`${route('analytics.index')}?tab=opd`}>
-                    <DonutChart data={opd_status} label="OPD" />
+                <Card title={`Status Kinerja Bidang & Seksi (${opd_status.total} Unit)`} action="Lihat Detail" actionHref={`${route('analytics.index')}?tab=opd`}>
+                    <DonutChart data={opd_status} label="Unit" />
                 </Card>
             </div>
 
@@ -1397,20 +1352,7 @@ export default function Dashboard({
              * ─────────────────────────────────────────────────────────────────
              */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-3">
-                <Card
-                    title="Tren IKU OPD"
-                    action="Lihat Detail"
-                    actionHref={route('planning.iku.index')}
-                >
-                    <Link
-                        href={route('planning.iku.index')}
-                        className="block cursor-pointer"
-                        title="Klik untuk membuka detail IKU"
-                    >
-                        <TrendChart data={iku_trend} />
-                    </Link>
-                </Card>
-                <Card title="Tren Nilai PKO OPD" action="Lihat Detail" actionHref={`${route('analytics.index')}?tab=pko`}>
+                <Card title="Tren Nilai PKO Dinas PUPR" action="Lihat Detail" actionHref={`${route('analytics.index')}?tab=pko`}>
                     <PkoTrendChart data={pko_trend} />
                 </Card>
             </div>
@@ -1423,13 +1365,13 @@ export default function Dashboard({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 mb-3">
 
                 {/* Top 10 OPD - col-span-7 agar leluasa dan tidak terpotong */}
-                <Card title={`Top 10 Capaian Kinerja OPD Tahun ${tahun_evaluasi}`} className="lg:col-span-7" noPad>
+                <Card title={`Peringkat Capaian Kinerja Bidang & Seksi Tahun ${tahun_evaluasi}`} className="lg:col-span-7" noPad>
                     <div className="overflow-x-auto w-full">
                         <table className="w-full text-xs min-w-[480px]">
                             <thead>
                                 <tr className="bg-blue-50 text-gray-600">
                                     <th className="px-2.5 py-2 text-center font-semibold w-10">Rank</th>
-                                    <th className="px-2.5 py-2 text-left font-semibold">Perangkat Daerah</th>
+                                    <th className="px-2.5 py-2 text-left font-semibold">Unit Kerja / Bidang</th>
                                     <th className="px-2 py-2 text-center font-semibold hidden sm:table-cell w-12">Ind.</th>
                                     <th className="px-2.5 py-2 text-right font-semibold w-16">Capaian</th>
                                     <th className="px-2 py-2 text-center font-semibold text-amber-600 hidden md:table-cell w-14">Perhatian</th>
@@ -1492,7 +1434,7 @@ export default function Dashboard({
 
                 {/* PKO Perangkat Daerah - col-span-5 */}
                 <Card
-                    title="Capaian PKO Perangkat Daerah"
+                    title="Capaian PKO Bidang & Seksi"
                     extraHeader={
                         <div className="flex gap-1">
                             <button
@@ -1529,7 +1471,7 @@ export default function Dashboard({
                             <thead>
                                 <tr className="bg-blue-50 text-gray-600">
                                     <th className="px-2.5 py-2 text-center font-semibold w-10">Rank</th>
-                                    <th className="px-2.5 py-2 text-left font-semibold">Perangkat Daerah</th>
+                                    <th className="px-2.5 py-2 text-left font-semibold">Unit Kerja / Bidang</th>
                                     <th className="px-2.5 py-2 text-right font-semibold w-20">Nilai PKO</th>
                                     <th className="px-2.5 py-2 text-center font-semibold w-24">Predikat</th>
                                 </tr>
@@ -1586,7 +1528,7 @@ export default function Dashboard({
                             <thead>
                                 <tr className="bg-gray-50 text-gray-600">
                                     <th className="px-2.5 py-2 text-left font-semibold w-10">No</th>
-                                    <th className="px-2.5 py-2 text-left font-semibold">Perangkat Daerah</th>
+                                    <th className="px-2.5 py-2 text-left font-semibold">Unit Kerja / Bidang</th>
                                     <th className="px-2 py-2 text-right font-semibold">Target {renaks_summary.triwulan}</th>
                                     <th className="px-2 py-2 text-right font-semibold">Realisasi {renaks_summary.triwulan}</th>
                                     <th className="px-2.5 py-2 text-right font-semibold">Capaian</th>
@@ -1666,7 +1608,7 @@ export default function Dashboard({
                             <thead>
                                 <tr className="bg-gray-50 text-gray-600">
                                     <th className="px-2.5 py-2 text-left font-semibold w-10">No</th>
-                                    <th className="px-2.5 py-2 text-left font-semibold">Perangkat Daerah</th>
+                                    <th className="px-2.5 py-2 text-left font-semibold">Unit Kerja / Bidang</th>
                                     <th className="px-2 py-2 text-right font-semibold">Pagu {budget_summary?.triwulan ?? renaks_summary.triwulan}</th>
                                     <th className="px-2 py-2 text-right font-semibold">Realisasi {budget_summary?.triwulan ?? renaks_summary.triwulan}</th>
                                     <th className="px-2.5 py-2 text-right font-semibold">Serapan</th>

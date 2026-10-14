@@ -36,6 +36,23 @@ class MasterIndicatorSeeder extends Seeder
         $dokUnit = MeasurementUnit::where('code', 'DOK')->firstOrFail();
         $nilaiUnit = MeasurementUnit::where('code', 'NILAI')->firstOrFail();
         $kmUnit = MeasurementUnit::where('code', 'KM')->first() ?? $pctUnit;
+        $unitUnit = MeasurementUnit::where('code', 'UNIT')->first() ?? $dokUnit;
+        $haUnit = MeasurementUnit::where('code', 'HA')->first() ?? $dokUnit;
+
+        // Seksi Organizations
+        $seksiBM1 = Organization::where('code', 'SEKSI-BM-1')->first();
+        $seksiBM2 = Organization::where('code', 'SEKSI-BM-2')->first();
+        $seksiBM3 = Organization::where('code', 'SEKSI-BM-3')->first();
+        $seksiCK1 = Organization::where('code', 'SEKSI-CK-1')->first();
+        $seksiCK2 = Organization::where('code', 'SEKSI-CK-2')->first();
+        $seksiCK3 = Organization::where('code', 'SEKSI-CK-3')->first();
+        $seksiSDA1 = Organization::where('code', 'SEKSI-SDA-1')->first();
+        $seksiSDA2 = Organization::where('code', 'SEKSI-SDA-2')->first();
+        $seksiSDA3 = Organization::where('code', 'SEKSI-SDA-3')->first();
+        $seksiTR1 = Organization::where('code', 'SEKSI-TR-1')->first();
+        $seksiTR2 = Organization::where('code', 'SEKSI-TR-2')->first();
+        $seksiTR3 = Organization::where('code', 'SEKSI-TR-3')->first();
+        $uptd = Organization::where('code', 'UPTD-PUPR')->first();
 
         $pp2024 = PlanningPeriod::where('code', 'TA-2024')->first();
         $pp2025 = PlanningPeriod::where('code', 'TA-2025')->first();
@@ -266,7 +283,222 @@ class MasterIndicatorSeeder extends Seeder
                 'realizations' => [2024 => 93.4, 2025 => 96.2, 2026 => 97.5],
             ],
 
-            // ══ 7. ALIAS KOMPATIBILITAS SEEDER / TEST LAMA ═══════════════════
+            // ══ 7. IKU LEVEL SEKSI & UPTD TEKNIS PUPR MIMIKA ══════════════
+            // Seksi Bidang Bina Marga
+            [
+                'code' => 'IKU-S-BM-01',
+                'name' => 'Panjang Rekonstruksi dan Peningkatan Jalan Poros Sp 2 - Sp 5',
+                'definition' => 'Panjang penanganan jalan poros distrik dengan standar aspal hotmix.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $kmUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiBM1?->id ?? $bidangBM->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 8.0,
+                'targets' => [2024 => 10.0, 2025 => 12.5, 2026 => 15.0],
+                'realizations' => [2024 => 10.2, 2025 => 12.8, 2026 => 9.5],
+            ],
+            [
+                'code' => 'IKU-S-BM-02',
+                'name' => 'Persentase Penanganan Pemeliharaan Rutin Ruas Jalan Rusak Ringan',
+                'definition' => 'Rasio perbaikan tambal lubang dan pembersihan bahu jalan kabupaten tepat waktu.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $pctUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiBM2?->id ?? $bidangBM->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 82.0,
+                'targets' => [2024 => 86.0, 2025 => 90.0, 2026 => 94.0],
+                'realizations' => [2024 => 87.5, 2025 => 91.0, 2026 => 93.0],
+            ],
+            [
+                'code' => 'IKU-S-BM-03',
+                'name' => 'Persentase Dokumen Detail Engineering Design (DED) Jalan Siap Lelang',
+                'definition' => 'Ketersediaan dokumen teknis perencanaan konstruksi jalan dan jembatan.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $pctUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiBM3?->id ?? $bidangBM->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 90.0,
+                'targets' => [2024 => 95.0, 2025 => 98.0, 2026 => 100.0],
+                'realizations' => [2024 => 95.0, 2025 => 100.0, 2026 => 100.0],
+            ],
+            // Seksi Bidang Cipta Karya
+            [
+                'code' => 'IKU-S-CK-01',
+                'name' => 'Persentase Pembangunan Gedung Pelayanan Publik Sesuai Standar K3',
+                'definition' => 'Kepatuhan pelaksanaan proyek konstruksi gedung kantor dan fasilitas publik pada standar keselamatan.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $pctUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiCK1?->id ?? $bidangCK->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 85.0,
+                'targets' => [2024 => 90.0, 2025 => 93.0, 2026 => 96.0],
+                'realizations' => [2024 => 91.0, 2025 => 94.2, 2026 => 95.5],
+            ],
+            [
+                'code' => 'IKU-S-CK-02',
+                'name' => 'Luas Kawasan Permukiman Kumuh Perkotaan Timika yang Tertangani',
+                'definition' => 'Total luas hektar kawasan permukiman yang diperbaiki drainase lingkungan dan sanitasi komunalnya.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $haUnit->id,
+                'frequency' => 'annual',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiCK2?->id ?? $bidangCK->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 10.0,
+                'targets' => [2024 => 15.0, 2025 => 20.0, 2026 => 25.0],
+                'realizations' => [2024 => 15.8, 2025 => 21.0, 2026 => 18.2],
+            ],
+            [
+                'code' => 'IKU-S-CK-03',
+                'name' => 'Jumlah Sambungan Rumah (SR) Jaringan Air Bersih Perpipaan Terbangun',
+                'definition' => 'Realisasi pemasangan sambungan air minum ke rumah tangga masyarakat berpenghasilan rendah.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $unitUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiCK3?->id ?? $bidangCK->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 500,
+                'targets' => [2024 => 800, 2025 => 1200, 2026 => 1500],
+                'realizations' => [2024 => 840, 2025 => 1250, 2026 => 980],
+            ],
+            // Seksi Bidang Sumber Daya Air
+            [
+                'code' => 'IKU-S-SDA-01',
+                'name' => 'Panjang Saluran Drainase Perkotaan dan Pengendali Banjir Terbangun',
+                'definition' => 'Pembangunan drainase primer dan sekunder untuk mengurangi titik genangan di perkotaan Timika.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $kmUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiSDA1?->id ?? $bidangSDA->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 6.0,
+                'targets' => [2024 => 9.0, 2025 => 12.0, 2026 => 15.0],
+                'realizations' => [2024 => 9.4, 2025 => 12.6, 2026 => 8.8],
+            ],
+            [
+                'code' => 'IKU-S-SDA-02',
+                'name' => 'Persentase Saluran Drainase Bebas Sedimen dan Sampah',
+                'definition' => 'Tingkat kebersihan dan kelancaran aliran air pada jaringan saluran pembuang perkotaan.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $pctUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiSDA2?->id ?? $bidangSDA->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 75.0,
+                'targets' => [2024 => 82.0, 2025 => 86.0, 2026 => 90.0],
+                'realizations' => [2024 => 83.0, 2025 => 87.4, 2026 => 89.0],
+            ],
+            [
+                'code' => 'IKU-S-SDA-03',
+                'name' => 'Rasio Rekomendasi Teknis Pemanfaatan Sumber Air Baku Diterbitkan',
+                'definition' => 'Ketepatan waktu penerbitan rekomendasi teknis izin pengambilan air tanah dan air permukaan.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $pctUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiSDA3?->id ?? $bidangSDA->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 92.0,
+                'targets' => [2024 => 96.0, 2025 => 98.0, 2026 => 100.0],
+                'realizations' => [2024 => 96.5, 2025 => 100.0, 2026 => 100.0],
+            ],
+            // Seksi Bidang Penataan Ruang
+            [
+                'code' => 'IKU-S-TR-01',
+                'name' => 'Persentase Dokumen Rencana Rinci Tata Ruang (RDTR) Tersusun',
+                'definition' => 'Progres penyusunan materi teknis dan rancangan peraturan kepala daerah tentang RDTR koridor prioritas.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $pctUnit->id,
+                'frequency' => 'annual',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiTR1?->id ?? $bidangTR->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 70.0,
+                'targets' => [2024 => 80.0, 2025 => 90.0, 2026 => 100.0],
+                'realizations' => [2024 => 82.0, 2025 => 91.5, 2026 => 94.0],
+            ],
+            [
+                'code' => 'IKU-S-TR-02',
+                'name' => 'Tingkat Kesesuaian Lokasi Usaha dengan Pola Ruang RTRW Mimika',
+                'definition' => 'Persentase verifikasi spasial lokasi berusaha yang sesuai dengan ketentuan zonasi rencana tata ruang.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $pctUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiTR2?->id ?? $bidangTR->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 88.0,
+                'targets' => [2024 => 92.0, 2025 => 95.0, 2026 => 98.0],
+                'realizations' => [2024 => 93.0, 2025 => 96.0, 2026 => 97.2],
+            ],
+            [
+                'code' => 'IKU-S-TR-03',
+                'name' => 'Persentase Pengawasan dan Penertiban Pemanfaatan Ruang',
+                'definition' => 'Tingkat penanganan laporan pelanggaran pemanfaatan sempadan jalan dan sempadan sungai.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $pctUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $seksiTR3?->id ?? $bidangTR->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 80.0,
+                'targets' => [2024 => 85.0, 2025 => 90.0, 2026 => 94.0],
+                'realizations' => [2024 => 85.0, 2025 => 90.5, 2026 => 92.0],
+            ],
+            // UPTD PUPR
+            [
+                'code' => 'IKU-UPTD-01',
+                'name' => 'Tingkat Kesiapan Operasional Alat Berat Workshop dan Reaksi Cepat',
+                'definition' => 'Rasio unit excavator, motor grader, dan dump truck yang siap operasi untuk penanganan darurat.',
+                'type' => 'output',
+                'direction' => 'higher_is_better',
+                'measurement_unit_id' => $pctUnit->id,
+                'frequency' => 'quarterly',
+                'level' => 'perangkat_daerah',
+                'polarization' => 'positif',
+                'owner_organization_id' => $uptd?->id ?? $rootOpd->id,
+                'baseline_year' => 2023,
+                'baseline_value' => 86.0,
+                'targets' => [2024 => 90.0, 2025 => 93.0, 2026 => 96.0],
+                'realizations' => [2024 => 91.0, 2025 => 94.0, 2026 => 95.5],
+            ],
+
+            // ══ 8. ALIAS KOMPATIBILITAS SEEDER / TEST LAMA ═══════════════════
             [
                 'code' => 'IKU-DIKDAS-01',
                 'name' => 'Persentase Prasarana Jalan Distrik Sesuai Standar Teknis',

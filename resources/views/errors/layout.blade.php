@@ -195,9 +195,9 @@
 
     <div class="card">
         <div class="brand">
-            <img src="{{ file_exists(public_path('logo.webp')) ? asset('logo.webp') : asset('logo.png') }}" alt="Logo Papua Barat">
+            <img src="{{ file_exists(public_path('logo.webp')) ? asset('logo.webp') : asset('logo.png') }}" alt="Logo PUPR Mimika">
             <span class="brand-title">e-SAKIP</span>
-            <span class="brand-badge">Pemprov Papua Barat</span>
+            <span class="brand-badge">Pemprov Kabupaten Mimika</span>
         </div>
 
         <div class="code-display">@yield('code')</div>
@@ -222,7 +222,7 @@
         </div>
 
         <div class="footer">
-            &copy; {{ date('Y') }} Biro Organisasi Sekretariat Daerah Provinsi Papua Barat. Hak Cipta Dilindungi.
+            &copy; {{ date('Y') }} Biro Organisasi Sekretariat Daerah Kabupaten Mimika. Hak Cipta Dilindungi.
         </div>
     </div>
 </body>

@@ -60,10 +60,10 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 <div class="hdr-center">
   @if(!empty($logoBase64))
     <div class="hdr-logo-wrap">
-      <img src="{{ $logoBase64 }}" class="hdr-logo-img" alt="Logo Papua Barat">
+      <img src="{{ $logoBase64 }}" class="hdr-logo-img" alt="Logo PUPR Mimika">
     </div>
   @endif
-  <div class="instansi">PEMERINTAH {{ strtoupper($provinceName ?? 'PROVINSI PAPUA BARAT') }}</div>
+  <div class="instansi">PEMERINTAH {{ strtoupper($provinceName ?? 'KABUPATEN MIMIKA') }}</div>
   <div class="doc-title">LAPORAN EKSEKUTIF CAPAIAN KINERJA &amp; SAKIP</div>
   <div class="doc-sub">Tahun Evaluasi: {{ $filters['tahun_evaluasi'] }} &nbsp;|&nbsp; Triwulan: {{ $filters['triwulan'] }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-SAKIP' }} SAKIP</div>
 </div>
@@ -226,7 +226,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 </table>
 
 <div class="footer">
-  <div class="fl">Sistem Informasi Akuntabilitas Kinerja Terintegrasi (e-SAKIP) &bull; Pemerintah Provinsi Papua Barat</div>
+  <div class="fl">Sistem Informasi Akuntabilitas Kinerja Terintegrasi (e-SAKIP) &bull; Pemerintah Kabupaten Mimika</div>
   <div class="fr">Laporan Resmi Eksekutif &bull; Dicetak: {{ $generatedAt }} WIT</div>
 </div>
 

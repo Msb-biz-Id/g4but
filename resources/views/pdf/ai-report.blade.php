@@ -79,7 +79,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 </head>
 <body>
 
-{{-- KOP SURAT RESMI PEMERINTAH PROVINSI PAPUA BARAT --}}
+{{-- KOP SURAT RESMI PEMERINTAH KABUPATEN MIMIKA --}}
 <table class="hdr-table">
   <tr>
     <td class="hdr-logo-cell">

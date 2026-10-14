@@ -315,14 +315,14 @@ export default function Authenticated({
                     label: 'Indikator Kinerja',
                     icon: Target,
                     active: route().current('indicators*'),
-                    show: canViewIndicators,
+                    show: false, // 🔒 HIDE sesuai permintaan
                 },
                 {
                     href: route('units.index'),
                     label: 'Satuan',
                     icon: Ruler,
                     active: route().current('units*'),
-                    show: canViewUnits,
+                    show: false, // 🔒 HIDE sesuai permintaan
                 },
                 {
                     href: route('periods.index'),
@@ -356,7 +356,7 @@ export default function Authenticated({
             items: [
                 {
                     href: route('planning.index'),
-                    label: 'RPJMD / RENSTRA',
+                    label: 'Dokumen Perencanaan',
                     icon: FileText,
                     active: route().current('planning.index') || route().current('planning.documents*') || route().current('planning.docs*'),
                     show: canViewPlanning,
@@ -367,76 +367,6 @@ export default function Authenticated({
                     icon: TreePine,
                     active: route().current('planning.trees*'),
                     show: canViewPlanning,
-                },
-                {
-                    href: route('planning.cascading.index'),
-                    label: 'Proses Bisnis',
-                    icon: Network,
-                    active: route().current('planning.cascading*'),
-                    show: canViewPlanning,
-                },
-                {
-                    href: route('planning.crosscutting.index'),
-                    label: 'Crosscutting Kinerja',
-                    icon: Share2,
-                    active: route().current('planning.crosscutting*'),
-                    show: canViewPlanning,
-                },
-                {
-                    href: route('planning.cascading.index'),
-                    label: 'Cascading Kinerja',
-                    icon: Network,
-                    active: route().current('planning.cascading*'),
-                    show: canViewPlanning,
-                },
-                {
-                    href: route('planning.iku.index'),
-                    label: 'Indikator Kinerja Utama',
-                    icon: Target,
-                    active: route().current('planning.iku*'),
-                    show: canViewPlanning,
-                },
-                {
-                    href: route('planning.documents.index'),
-                    label: 'RKPD / RENJA',
-                    icon: ScrollText,
-                    active: route().current('planning.documents*'),
-                    show: canViewPlanning,
-                },
-                {
-                    href: route('planning.documents.index'),
-                    label: 'DPA',
-                    icon: FileSpreadsheet,
-                    active: false,
-                    show: canViewPlanning,
-                },
-                {
-                    href: route('planning.agreements.index'),
-                    label: 'Perjanjian Kinerja',
-                    icon: Goal,
-                    active: route().current('planning.agreements*'),
-                    show: canViewPlanning,
-                },
-                {
-                    href: route('planning.risks.index'),
-                    label: 'Manajemen Risiko',
-                    icon: ShieldAlert,
-                    active: route().current('planning.risks*'),
-                    show: canViewPlanning,
-                },
-                {
-                    href: route('planning.action-plans.index'),
-                    label: 'Rencana Aksi Kinerja',
-                    icon: TrendingUp,
-                    active: route().current('planning.action-plans*'),
-                    show: canViewPlanning,
-                },
-                {
-                    href: route('knowledge.index'),
-                    label: 'Pedoman Teknis Perencanaan',
-                    icon: BookOpen,
-                    active: route().current('knowledge*'),
-                    show: true,
                 },
                 {
                     href: route('planning.monitoring-matrix'),
@@ -548,7 +478,7 @@ export default function Authenticated({
                     label: 'AI Prediction',
                     icon: TrendingUp,
                     active: route().current('predictions*'),
-                    show: canUseAi && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: false, // 🔒 HIDE sesuai permintaan
                 },
             ],
         },
@@ -681,14 +611,14 @@ export default function Authenticated({
                     label: 'Integrasi',
                     icon: Plug,
                     active: route().current('integrations*'),
-                    show: canViewIntegrations && !MVP_PHASE_1, // 🔒 HIDE Phase 2
+                    show: false, // 🔒 HIDE sesuai permintaan
                 },
                 {
                     href: route('readiness.index'),
                     label: 'Go-Live Readiness',
                     icon: Rocket,
                     active: route().current('readiness*'),
-                    show: canViewReadiness && !MVP_PHASE_1, // 🔒 HIDE - internal ops tool
+                    show: false, // 🔒 HIDE sesuai permintaan
                 },
             ],
         },
@@ -969,7 +899,7 @@ export default function Authenticated({
                                 {appName}
                             </span>
                             <span className="block text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
-                                {appConfig?.instansiName || 'Pemerintah Provinsi Papua Barat'}
+                                {appConfig?.instansiName || 'Pemerintah Kabupaten Mimika'}
                             </span>
                         </div>
                     )}
@@ -1098,7 +1028,7 @@ export default function Authenticated({
                                             {appName}
                                         </span>
                                         <span className="block text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
-                                            {appConfig?.instansiName || 'Pemerintah Provinsi Papua Barat'}
+                                            {appConfig?.instansiName || 'Pemerintah Kabupaten Mimika'}
                                         </span>
                                     </div>
                                 </div>

@@ -76,7 +76,7 @@
 </table>
 
 <div class="footer">
-    Total {{ $trees->count() }} node · e-SAKIP — Platform Digital SAKIP Provinsi Papua Barat
+    Total {{ $trees->count() }} node · e-SAKIP — Platform Digital SAKIP Kabupaten Mimika
 </div>
 </body>
 </html>

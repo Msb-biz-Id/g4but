@@ -23,12 +23,12 @@ tr:nth-child(even) td { background: #f5f7fa; }
 <body>
 <div class="header-block">
   <div class="logo-area">
-    <img src="{{ $logoBase64 ?? (file_exists(public_path('logo-flat.jpg')) ? public_path('logo-flat.jpg') : public_path('logo.png')) }}" style="height: 55px; max-width: 55px;" alt="Logo Papua Barat">
+    <img src="{{ $logoBase64 ?? (file_exists(public_path('logo-flat.jpg')) ? public_path('logo-flat.jpg') : public_path('logo.png')) }}" style="height: 55px; max-width: 55px;" alt="Logo PUPR Mimika">
   </div>
   <div class="title-area">
     <h1>LAPORAN KINERJA</h1>
     <div class="subtitle">Sistem Akuntabilitas Kinerja Instansi Pemerintah (SAKIP)</div>
-    <div class="subtitle">Provinsi Papua Barat</div>
+    <div class="subtitle">Dinas Pekerjaan Umum dan Penataan Ruang Kabupaten Mimika</div>
   </div>
 </div>
 <hr style="border:1px solid #1e3a5f;">
