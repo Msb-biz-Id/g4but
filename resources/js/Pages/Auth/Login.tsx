@@ -194,16 +194,16 @@ export default function Login({
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FFB800] via-[#002B49] to-[#FFB800] shadow-sm" />
 
             {/* Top Navbar */}
-            <header className="w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <header className="w-full max-w-7xl mx-auto px-4 py-3.5 sm:px-6 sm:py-5 flex items-center justify-between gap-2">
                 <Link
                     href={route('home')}
-                    className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors min-h-[44px]"
                 >
-                    <ArrowLeft className="w-4 h-4 text-[#FFB800]" />
-                    <span>Kembali ke Portal Publik</span>
+                    <ArrowLeft className="w-4 h-4 text-[#FFB800] shrink-0" />
+                    <span>Kembali <span className="hidden sm:inline">ke Portal Publik</span></span>
                 </Link>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 shrink-0">
                     {witTime && (
                         <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#002B49]/80 border border-amber-400/30 text-xs font-mono text-amber-300">
                             <Clock className="w-3.5 h-3.5 text-[#FFB800]" />
@@ -215,67 +215,67 @@ export default function Login({
             </header>
 
             {/* ── Main Dual-Column PUPR Mimika Console ───────────────────── */}
-            <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 my-auto">
-                <div className="grid lg:grid-cols-12 gap-8 items-stretch rounded-3xl bg-gradient-to-br from-[#0e1d2e] via-[#0b1827] to-[#07111d] border border-amber-500/30 shadow-2xl overflow-hidden">
+            <main className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6 my-auto">
+                <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-stretch rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#0e1d2e] via-[#0b1827] to-[#07111d] border border-amber-500/30 shadow-2xl overflow-hidden">
 
                     {/* ══ KOLOM KIRI: Identitas & Pilar Pembangunan PUPR Mimika ══ */}
-                    <div className="lg:col-span-6 p-8 sm:p-12 flex flex-col justify-between bg-gradient-to-br from-[#002B49] via-[#07243c] to-[#051829] border-b lg:border-b-0 lg:border-r border-amber-500/20 text-white relative overflow-hidden">
+                    <div className="lg:col-span-6 p-5 sm:p-8 lg:p-12 flex flex-col justify-between bg-gradient-to-br from-[#002B49] via-[#07243c] to-[#051829] border-b lg:border-b-0 lg:border-r border-amber-500/20 text-white relative overflow-hidden">
                         {/* Background architectural grid and city skyline pattern */}
                         <PuprBlueprintGrid className="opacity-[0.07]" />
                         <PuprCitySkylinePattern className="text-[#FFB800] z-0" opacity="0.22" />
 
-                        <div className="relative z-10 space-y-6">
+                        <div className="relative z-10 space-y-4 sm:space-y-6">
                             {/* Emblem & Department Title */}
-                            <div className="flex items-center gap-3.5">
-                                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 p-2.5 flex items-center justify-center shadow-lg border border-amber-300/40 shrink-0">
-                                    <PuprEmblemSvg className="w-9 h-9" color="#002B49" />
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 p-2 sm:p-2.5 flex items-center justify-center shadow-lg border border-amber-300/40 shrink-0">
+                                    <PuprEmblemSvg className="w-8 h-8 sm:w-9 sm:h-9" color="#002B49" />
                                 </div>
-                                <div>
-                                    <span className="text-[10px] font-mono font-bold tracking-widest text-[#FFB800] uppercase block">
+                                <div className="min-w-0">
+                                    <span className="text-[10px] font-mono font-bold tracking-widest text-[#FFB800] uppercase block truncate">
                                         {instansiName}
                                     </span>
-                                    <h2 className="text-xl sm:text-2xl font-black font-serif tracking-tight text-white leading-tight">
+                                    <h2 className="text-lg sm:text-2xl font-black font-serif tracking-tight text-white leading-tight">
                                         {orgName}
                                     </h2>
                                 </div>
                             </div>
 
                             {/* PUPR Official Slogan Badge */}
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-[#FFB800]/40 text-[#FFB800] text-xs font-mono font-bold tracking-wider">
-                                <HardHat className="w-3.5 h-3.5" />
-                                <span>Bekerja Keras • Bergerak Cepat • Bertindak Tepat</span>
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-[#FFB800]/40 text-[#FFB800] text-[11px] sm:text-xs font-mono font-bold tracking-wider max-w-full">
+                                <HardHat className="w-3.5 h-3.5 shrink-0" />
+                                <span className="truncate">Bekerja Keras • Bergerak Cepat • Bertindak Tepat</span>
                             </div>
 
                             {/* Headline */}
                             <div>
-                                <h3 className="text-2xl sm:text-3xl font-extrabold font-serif text-white tracking-tight leading-snug">
+                                <h3 className="text-xl sm:text-3xl font-extrabold font-serif text-white tracking-tight leading-snug">
                                     Akuntabilitas Kinerja Pembangunan Infrastruktur Mimika
                                 </h3>
-                                <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+                                <p className="mt-2.5 sm:mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
                                     Konsol resmi sistem <strong>{appName}</strong> untuk pemantauan target indikator kinerja utama (IKU), verifikasi dokumen bukti fisik (evidence), dan evaluasi SAKIP berkala pada seluruh bidang teknis Dinas PUPR Kabupaten Mimika.
                                 </p>
                             </div>
 
                             {/* 5 Bidang Teknis PUPR Mimika Chips */}
-                            <div className="pt-2">
-                                <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider block mb-2.5">
+                            <div className="pt-1 sm:pt-2">
+                                <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider block mb-2">
                                     5 MATRA PEMBANGUNAN KINERJA:
                                 </span>
-                                <div className="grid grid-cols-2 gap-2 text-xs">
-                                    <div className="p-2.5 rounded-xl bg-black/30 border border-white/10 flex items-center gap-2 text-slate-200">
-                                        <div className="w-2 h-2 rounded-full bg-[#FFB800]" />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                    <div className="p-2 sm:p-2.5 rounded-xl bg-black/30 border border-white/10 flex items-center gap-2 text-slate-200">
+                                        <div className="w-2 h-2 rounded-full bg-[#FFB800] shrink-0" />
                                         <span className="font-semibold truncate">Bina Marga (Jalan &amp; Jembatan)</span>
                                     </div>
-                                    <div className="p-2.5 rounded-xl bg-black/30 border border-white/10 flex items-center gap-2 text-slate-200">
-                                        <div className="w-2 h-2 rounded-full bg-[#FFB800]" />
+                                    <div className="p-2 sm:p-2.5 rounded-xl bg-black/30 border border-white/10 flex items-center gap-2 text-slate-200">
+                                        <div className="w-2 h-2 rounded-full bg-[#FFB800] shrink-0" />
                                         <span className="font-semibold truncate">Cipta Karya (Gedung &amp; SPAM)</span>
                                     </div>
-                                    <div className="p-2.5 rounded-xl bg-black/30 border border-white/10 flex items-center gap-2 text-slate-200">
-                                        <div className="w-2 h-2 rounded-full bg-[#FFB800]" />
+                                    <div className="p-2 sm:p-2.5 rounded-xl bg-black/30 border border-white/10 flex items-center gap-2 text-slate-200">
+                                        <div className="w-2 h-2 rounded-full bg-[#FFB800] shrink-0" />
                                         <span className="font-semibold truncate">Sumber Daya Air (SDA)</span>
                                     </div>
-                                    <div className="p-2.5 rounded-xl bg-black/30 border border-white/10 flex items-center gap-2 text-slate-200">
-                                        <div className="w-2 h-2 rounded-full bg-[#FFB800]" />
+                                    <div className="p-2 sm:p-2.5 rounded-xl bg-black/30 border border-white/10 flex items-center gap-2 text-slate-200">
+                                        <div className="w-2 h-2 rounded-full bg-[#FFB800] shrink-0" />
                                         <span className="font-semibold truncate">Tata Ruang &amp; Konstruksi</span>
                                     </div>
                                 </div>
@@ -283,16 +283,16 @@ export default function Login({
                         </div>
 
                         {/* Territorial Footprint (Bumi Amungme & Kamoro) */}
-                        <div className="relative z-10 mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-slate-300 font-mono">
+                        <div className="relative z-10 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-white/10 flex items-center justify-between text-xs text-slate-300 font-mono">
                             <span>Bumi Amungme &amp; Kamoro</span>
                             <span className="text-[#FFB800] font-bold">Timika, Papua Tengah</span>
                         </div>
                     </div>
 
                     {/* ══ KOLOM KANAN: Form Konsol Masuk Aparatur ═════════════════ */}
-                    <div className="lg:col-span-6 p-8 sm:p-12 flex flex-col justify-between bg-zinc-950/80">
+                    <div className="lg:col-span-6 p-5 sm:p-8 lg:p-12 flex flex-col justify-between bg-zinc-950/80">
                         <div>
-                            <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center justify-between mb-4 sm:mb-6">
                                 <div>
                                     <h2 className="text-xl sm:text-2xl font-bold font-serif text-white tracking-tight">
                                         Konsol Masuk Aparatur
@@ -301,21 +301,21 @@ export default function Login({
                                         Gunakan kredensial resmi akun dinas yang terdaftar.
                                     </p>
                                 </div>
-                                <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[#FFB800]">
+                                <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[#FFB800] shrink-0">
                                     <ShieldCheck className="w-5 h-5" />
                                 </div>
                             </div>
 
                             {/* Status Alert */}
                             {status && (
-                                <div className="mb-5 p-3 rounded-xl bg-[#002B49]/80 border border-[#FFB800]/40 text-xs font-medium text-[#FFB800] text-center">
+                                <div className="mb-4 sm:mb-5 p-3 rounded-xl bg-[#002B49]/80 border border-[#FFB800]/40 text-xs font-medium text-[#FFB800] text-center">
                                     {status}
                                 </div>
                             )}
 
                             {/* 1-Click Role Chips (Pengujian Cepat Aparatur PUPR) */}
                             {showDemoHelper && (
-                                <div className="mb-6 p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800">
+                                <div className="mb-5 sm:mb-6 p-3 sm:p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800">
                                     <div className="flex items-center justify-between mb-2 px-1">
                                         <span className="text-[11px] font-mono font-bold text-zinc-300 flex items-center gap-1.5">
                                             <Zap className="w-3.5 h-3.5 text-[#FFB800] fill-[#FFB800]" />
@@ -336,7 +336,7 @@ export default function Login({
                                         )}
                                     </div>
 
-                                    <div className="flex flex-wrap gap-1.5">
+                                    <div className="flex flex-wrap gap-1.5 max-h-36 sm:max-h-none overflow-y-auto pr-1 scrollbar-thin">
                                         {DEMO_ACCOUNTS.map((acc) => {
                                             const isSelected = selectedDemoId === acc.id;
                                             return (
@@ -344,7 +344,7 @@ export default function Login({
                                                     key={acc.id}
                                                     type="button"
                                                     onClick={() => handleSelectAccount(acc)}
-                                                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                                                    className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
                                                         isSelected
                                                             ? 'bg-gradient-to-r from-[#FFB800] to-amber-500 text-zinc-950 font-bold border-amber-300 shadow-md'
                                                             : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-[#FFB800]/50'

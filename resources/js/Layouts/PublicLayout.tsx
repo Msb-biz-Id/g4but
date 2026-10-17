@@ -128,28 +128,28 @@ export default function PublicLayout({
                         : 'bg-[#002B49] dark:bg-[#041320] border-amber-500/20 text-white'
                 }`}
             >
-                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 lg:px-8">
                     {/* Brand & PUPR Mimika Identity */}
                     <Link
                         href={homeUrl}
-                        className="group flex shrink-0 items-center gap-3"
+                        className="group flex min-w-0 shrink items-center gap-2.5 sm:gap-3"
                     >
-                        <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 p-2 shadow-md border border-amber-300/40 group-hover:scale-105 transition-transform">
+                        <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 p-2 shadow-md border border-amber-300/40 group-hover:scale-105 transition-transform">
                             <PuprEmblemSvg className="h-full w-full object-contain" color="#002B49" />
                             <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#002B49] text-[8px] font-black text-[#FFB800] border border-amber-400">
                                 PU
                             </span>
                         </div>
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                                <span className="text-base font-black tracking-tight font-serif text-white leading-none">
+                        <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                <span className="text-sm sm:text-base font-black tracking-tight font-serif text-white leading-none">
                                     {appName}
                                 </span>
                                 <span className="rounded-md bg-[#FFB800] px-1.5 py-0.5 text-[9px] font-mono font-black text-slate-950">
                                     PUPR
                                 </span>
                             </div>
-                            <span className="text-[11px] text-amber-300 font-semibold tracking-tight mt-0.5 leading-none">
+                            <span className="text-[10px] sm:text-[11px] text-amber-300 font-semibold tracking-tight mt-0.5 leading-none truncate max-w-[130px] sm:max-w-xs md:max-w-none">
                                 {orgName} • Mimika
                             </span>
                         </div>
@@ -178,9 +178,9 @@ export default function PublicLayout({
                     </nav>
 
                     {/* Right Controls: WIT Timika Clock, Theme, Auth */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
                         {witTime && (
-                            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#07243c] border border-amber-400/30 text-xs font-mono text-amber-300">
+                            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#07243c] border border-amber-400/30 text-xs font-mono text-amber-300">
                                 <Clock className="w-3.5 h-3.5 text-[#FFB800]" />
                                 <span>{witTime}</span>
                             </div>
@@ -191,7 +191,7 @@ export default function PublicLayout({
                         {auth.user ? (
                             <Link
                                 href={route('dashboard')}
-                                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#FFB800] to-amber-500 hover:from-amber-400 hover:to-[#FFB800] text-slate-950 px-4 py-2 text-xs font-black shadow-md transition-transform active:scale-95"
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#FFB800] to-amber-500 hover:from-amber-400 hover:to-[#FFB800] text-slate-950 px-3 sm:px-4 py-2 text-xs font-black shadow-md transition-transform active:scale-95 min-h-[38px]"
                             >
                                 <LayoutDashboard className="w-3.5 h-3.5" />
                                 <span className="hidden sm:inline">Dashboard</span>
@@ -199,7 +199,7 @@ export default function PublicLayout({
                         ) : (
                             <Link
                                 href={route('login')}
-                                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#FFB800] to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 px-4 py-2 text-xs font-black shadow-md transition-all active:scale-95"
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#FFB800] to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 px-3 sm:px-4 py-2 text-xs font-black shadow-md transition-all active:scale-95 min-h-[38px]"
                             >
                                 <LogIn className="w-3.5 h-3.5" />
                                 <span>Masuk</span>
@@ -210,7 +210,7 @@ export default function PublicLayout({
                         <button
                             type="button"
                             onClick={() => setMobileOpen((o) => !o)}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white lg:hidden"
+                            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white lg:hidden min-h-[44px] min-w-[44px]"
                             aria-label={mobileOpen ? 'Tutup navigasi' : 'Buka navigasi'}
                         >
                             {mobileOpen ? <X className="h-5 w-5" /> : (
@@ -224,11 +224,11 @@ export default function PublicLayout({
 
                 {/* Mobile Drawer */}
                 {mobileOpen && (
-                    <div className="border-t border-white/10 bg-[#002B49] p-5 lg:hidden animate-fade-in shadow-2xl text-white">
-                        <div className="mb-4 flex items-center justify-between pb-3 border-b border-white/10">
+                    <div className="border-t border-white/10 bg-[#002B49] p-4 sm:p-5 lg:hidden animate-fade-in shadow-2xl text-white">
+                        <div className="mb-3 flex items-center justify-between pb-3 border-b border-white/10">
                             <span className="text-xs font-mono font-bold text-[#FFB800] flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5" />
-                                <span>{witTime} (Timika, Mimika)</span>
+                                <span>{witTime} (Timika)</span>
                             </span>
                             <span className="text-[10px] uppercase font-mono text-slate-300">
                                 PUPR MIMIKA
@@ -240,10 +240,10 @@ export default function PublicLayout({
                                     key={item.id}
                                     href={item.href}
                                     onClick={() => setMobileOpen(false)}
-                                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold ${
+                                    className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold min-h-[44px] transition-colors ${
                                         isActive(item)
                                             ? 'bg-[#FFB800] text-slate-950 shadow-md'
-                                            : 'text-slate-200 hover:bg-white/10'
+                                            : 'text-slate-200 hover:bg-white/10 active:bg-white/15'
                                     }`}
                                 >
                                     <div className="flex items-center gap-2.5">

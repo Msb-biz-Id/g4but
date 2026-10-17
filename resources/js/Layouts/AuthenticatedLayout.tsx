@@ -130,7 +130,7 @@ function SidebarItem({
                 active
                     ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/80',
-                mobile && 'text-base',
+                mobile && 'text-sm min-h-[44px] py-2.5',
             )}
         >
             <Icon
@@ -200,7 +200,10 @@ function SidebarGroup({
 
     return (
         <AccordionItem value={title} className="border-b-0">
-            <AccordionTrigger className="gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800/80 hover:no-underline hover:text-white data-[state=open]:bg-slate-800/50 data-[state=open]:text-white">
+            <AccordionTrigger className={cn(
+                "gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800/80 hover:no-underline hover:text-white data-[state=open]:bg-slate-800/50 data-[state=open]:text-white",
+                mobile && "min-h-[44px] py-2.5"
+            )}>
                 <span className="flex items-center gap-3">
                     <Icon className="h-4 w-4 shrink-0 text-slate-400" />
                     <span className="truncate">{title}</span>
@@ -961,8 +964,8 @@ export default function Authenticated({
                     collapsed ? 'lg:pl-16' : 'lg:pl-64',
                 )}
             >
-                <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-4 lg:px-6">
-                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-2 sm:gap-3 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-3 sm:px-4 lg:px-6">
+                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -982,7 +985,7 @@ export default function Authenticated({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="shrink-0 lg:hidden"
+                                    className="shrink-0 lg:hidden min-h-[40px] min-w-[40px]"
                                     aria-label="Menu"
                                 >
                                     <Menu className="h-5 w-5" />
@@ -1000,6 +1003,10 @@ export default function Authenticated({
                                         </span>
                                     </div>
                                 </div>
+                                <div className="px-4 py-2 border-b border-slate-800 flex items-center justify-between sm:hidden bg-[#0B132B]/30">
+                                    <span className="text-[11px] text-slate-400 font-medium">Tema Warna</span>
+                                    <ThemePanel />
+                                </div>
                                 {renderSidebar(true)}
                                 <div className="border-t border-slate-800 p-3 space-y-2 bg-[#0B132B]/40">
                                     <button
@@ -1008,7 +1015,7 @@ export default function Authenticated({
                                             setMobileOpen(false);
                                             openChat();
                                         }}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-800/80 border border-slate-700/60 hover:bg-slate-800 text-left cursor-pointer transition-colors"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-800/80 border border-slate-700/60 hover:bg-slate-800 text-left cursor-pointer transition-colors min-h-[44px]"
                                     >
                                         <div className="relative flex items-center justify-center h-8 w-8 rounded-md bg-primary text-primary-foreground shrink-0 shadow-xs">
                                             <Bot className="h-4 w-4" />
@@ -1035,7 +1042,7 @@ export default function Authenticated({
                                         method="post"
                                         as="button"
                                         onClick={() => setMobileOpen(false)}
-                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
+                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors min-h-[40px]"
                                     >
                                         <LogOut className="h-4 w-4 shrink-0" />
                                         <span>Keluar</span>
@@ -1043,6 +1050,14 @@ export default function Authenticated({
                                 </div>
                             </SheetContent>
                         </Sheet>
+
+                        {/* Mobile Brand Title */}
+                        <div className="flex items-center gap-2 lg:hidden min-w-0">
+                            <ApplicationLogo className="h-7 w-7 shrink-0 object-contain drop-shadow" />
+                            <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white truncate max-w-[120px] xs:max-w-[160px]">
+                                {appName}
+                            </span>
+                        </div>
 
                         {/* Global Search Bar (Center/Left) */}
                         <div className="relative hidden max-w-sm w-full md:block lg:max-w-md">
@@ -1055,7 +1070,7 @@ export default function Authenticated({
                         </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                         {/* Quick AI Assistant Trigger in Mobile Header */}
                         <Button
                             variant="ghost"
@@ -1063,7 +1078,7 @@ export default function Authenticated({
                             type="button"
                             onClick={toggleChat}
                             className={cn(
-                                'relative shrink-0 lg:hidden transition-colors',
+                                'relative shrink-0 lg:hidden transition-colors min-h-[40px] min-w-[40px]',
                                 isChatOpen
                                     ? 'bg-primary/15 text-primary'
                                     : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
@@ -1078,7 +1093,9 @@ export default function Authenticated({
                             </span>
                         </Button>
 
-                        <ThemePanel />
+                        <div className="hidden sm:inline-flex">
+                            <ThemePanel />
+                        </div>
                         <ThemeToggle />
                         {canViewNotifications && (
                             <NotificationDropdown />

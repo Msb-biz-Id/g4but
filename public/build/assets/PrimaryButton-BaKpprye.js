@@ -1,1 +1,0 @@
-import{j as n}from"./app-COat7CVK.js";import{B as s}from"./button-C5F4_NCc.js";function a({className:t="",disabled:r,children:o,...m}){return n.jsx(s,{...m,className:t,disabled:r,children:o})}export{a as P};
