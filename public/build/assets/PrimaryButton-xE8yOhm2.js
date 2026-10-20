@@ -1,1 +1,0 @@
-import{j as n}from"./app-DjZR2R6S.js";import{B as s}from"./button-CEU-cb2B.js";function a({className:t="",disabled:r,children:o,...m}){return n.jsx(s,{...m,className:t,disabled:r,children:o})}export{a as P};

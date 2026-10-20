@@ -148,7 +148,7 @@ export default function Hero({ user, stats }: HeroProps) {
                     {/* Left Column: Headline, Description & Search */}
                     <div className="lg:col-span-7 space-y-6">
                         <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight font-serif text-white leading-[1.12]">
-                            Akuntabilitas Infrastruktur <span className="text-[#FFB800]">PUPR Mimika</span>
+                            Akuntabilitas Kinerja <span className="text-[#FFB800]">PUPR Kabupaten Mimika</span>
                         </h1>
 
                         <p className="text-base sm:text-lg text-slate-200 leading-relaxed max-w-2xl font-light">

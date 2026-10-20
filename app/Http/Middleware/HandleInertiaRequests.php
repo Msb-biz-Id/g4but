@@ -198,8 +198,8 @@ class HandleInertiaRequests extends Middleware
                     'activePeriodEndYear' => $endYear,
                     'activePeriodRange' => "{$startYear}–{$endYear}",
                     'activePeriodYears' => array_values(array_unique($availableYears)),
-                    'logoUrl' => $configs['app_logo'] ?? '/logo.webp',
-                    'faviconUrl' => $configs['app_favicon'] ?? '/favicon.ico',
+                    'logoUrl' => $this->versionedAsset($configs['app_logo'] ?? '/logo.webp'),
+                    'faviconUrl' => $this->versionedAsset($configs['app_favicon'] ?? '/favicon.ico'),
                     'headlineImageUrl' => $configs['ui_headline_image'] ?? '/images/hero-banner.webp',
                     'loginImageUrl' => $configs['ui_login_image'] ?? '/images/login-bg.webp',
                     'headlineTitle' => $configs['ui_headline_title'] ?? '',
@@ -219,13 +219,28 @@ class HandleInertiaRequests extends Middleware
                 'activePeriodEndYear' => $currYear + 4,
                 'activePeriodRange' => "{$currYear}–" . ($currYear + 4),
                 'activePeriodYears' => range($currYear, $currYear + 4),
-                'logoUrl' => '/logo.webp',
-                'faviconUrl' => '/favicon.ico',
+                'logoUrl' => $this->versionedAsset('/logo.webp'),
+                'faviconUrl' => $this->versionedAsset('/favicon.ico'),
                 'headlineImageUrl' => '/images/hero-banner.webp',
                 'loginImageUrl' => '/images/login-bg.webp',
                 'headlineTitle' => '',
                 'headlineSubtitle' => '',
             ];
         }
+    }
+
+    /**
+     * Tempel ?v=filemtime pada aset public agar browser buang cache lama.
+     */
+    private function versionedAsset(string $url): string
+    {
+        $path = parse_url($url, PHP_URL_PATH) ?: $url;
+        $file = public_path(ltrim($path, '/'));
+
+        if (! is_file($file)) {
+            return $url;
+        }
+
+        return $path . '?v=' . filemtime($file);
     }
 }
