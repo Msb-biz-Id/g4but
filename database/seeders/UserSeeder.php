@@ -307,6 +307,8 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($users as $u) {
+            $roleModel = Role::where('name', $u['role'])->first();
+
             $user = User::where('employee_number', $u['nip'])
                 ->orWhere('email', $u['email'])
                 ->orWhere('email', str_replace(['@siperforma.local', 'kepala.dinas@', 'admin.pupr@'], ['@esakip.local', 'kepala.opd@', 'admin.opd@'], $u['email']))
