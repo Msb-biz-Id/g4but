@@ -430,6 +430,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('index');
         Route::post('/upload-asset', [SettingsController::class, 'uploadAsset'])->name('upload-asset');
+        Route::post('/slider-logo/upload', [SettingsController::class, 'uploadSliderLogo'])->name('slider-logo.upload');
+        Route::post('/slider-logos', [SettingsController::class, 'saveSliderLogos'])->name('slider-logos.save');
         Route::post('/batch', [SettingsController::class, 'updateBatch'])->name('batch');
         Route::put('/{config}', [SettingsController::class, 'update'])->name('update');
         Route::post('/{config}/reset', [SettingsController::class, 'reset'])->name('reset');

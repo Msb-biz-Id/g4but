@@ -1,5 +1,6 @@
 import LandingPreloader from '@/Components/Landing/LandingPreloader';
 import Hero from '@/Components/Landing/Hero';
+import PartnerLogoSlider from '@/Components/Landing/PartnerLogoSlider';
 import CivicPortals from '@/Components/Landing/CivicPortals';
 import PuprOrgStructure from '@/Components/Landing/PuprOrgStructure';
 import Workflow from '@/Components/Landing/Workflow';
@@ -68,6 +69,9 @@ export default function Welcome({
                 canRegister={canRegister}
                 stats={stats}
             />
+
+            {/* Slide Logo Mitra & Jaringan Strategis Dinamis */}
+            <PartnerLogoSlider />
 
             {/* Direct Public Services: Pohon Kinerja, Laporan SAKIP, Pusat Regulasi */}
             <CivicPortals />

@@ -22,7 +22,7 @@ export default function Faq() {
         {
             category: 'umum',
             q: `Apa peran strategis ${appName} bagi ${orgName} ${instansiName}?`,
-            a: `${appName} adalah sistem informasi akuntabilitas kinerja terintegrasi yang menyelaraskan sasaran pembangunan infrastruktur RPJMD Kabupaten Mimika ke 5 bidang teknis dinas (Bina Marga, Cipta Karya, Sumber Daya Air, Tata Ruang, Bina Konstruksi). Berlandaskan PermenPAN-RB No. 88/2021 dan standar mutu Kementerian PUPR.`,
+            a: `${appName} merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.`,
         },
         {
             category: 'umum',

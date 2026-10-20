@@ -167,6 +167,7 @@ class HandleInertiaRequests extends Middleware
                     'app_name', 'app.name', 'app_description', 'app_logo', 'app_favicon',
                     'ui_headline_image', 'ui_login_image',
                     'ui_headline_title', 'ui_headline_subtitle',
+                    'ui_logo_slider',
                     'instansi_name', 'organization_name',
                 ])->pluck('value', 'key')->toArray();
 
@@ -187,9 +188,15 @@ class HandleInertiaRequests extends Middleware
                     $availableYears = range($startYear, $endYear);
                 }
 
+                $rawSlider = $configs['ui_logo_slider'] ?? null;
+                $logoSlider = $rawSlider ? json_decode($rawSlider, true) : [];
+                if (! is_array($logoSlider)) {
+                    $logoSlider = [];
+                }
+
                 return [
                     'appName' => $configs['app_name'] ?? $configs['app.name'] ?? config('app.name', 'E-Sakip PUPR'),
-                    'appDescription' => $configs['app_description'] ?? 'Sistem Informasi Akuntabilitas Kinerja Dinas PUPR Kabupaten Mimika',
+                    'appDescription' => $configs['app_description'] ?? 'merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.',
                     'instansiName' => $configs['instansi_name'] ?? config('app.instansi_name', 'Kabupaten Mimika'),
                     'organizationName' => $configs['organization_name'] ?? config('app.organization_name', 'Dinas Pekerjaan Umum dan Penataan Ruang'),
                     'currentYear' => $currYear,
@@ -198,19 +205,20 @@ class HandleInertiaRequests extends Middleware
                     'activePeriodEndYear' => $endYear,
                     'activePeriodRange' => "{$startYear}–{$endYear}",
                     'activePeriodYears' => array_values(array_unique($availableYears)),
-                    'logoUrl' => $this->versionedAsset($configs['app_logo'] ?? '/logo.webp'),
+                    'logoUrl' => $this->resolveLogoUrl($configs['app_logo'] ?? null),
                     'faviconUrl' => $this->versionedAsset($configs['app_favicon'] ?? '/favicon.ico'),
-                    'headlineImageUrl' => $configs['ui_headline_image'] ?? '/images/hero-banner.webp',
+                    'headlineImageUrl' => $this->versionedAsset($configs['ui_headline_image'] ?? '/images/hero-banner.webp'),
                     'loginImageUrl' => $configs['ui_login_image'] ?? '/images/login-bg.webp',
                     'headlineTitle' => $configs['ui_headline_title'] ?? '',
                     'headlineSubtitle' => $configs['ui_headline_subtitle'] ?? '',
+                    'logoSlider' => $logoSlider,
                 ];
             });
         } catch (\Throwable) {
             $currYear = (int) date('Y');
             return [
-                'appName' => config('app.name', 'SIM Kinerja'),
-                'appDescription' => 'Sistem Informasi Akuntabilitas Kinerja Terintegrasi',
+                'appName' => config('app.name', 'E-Sakip PUPR'),
+                'appDescription' => 'merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.',
                 'instansiName' => config('app.instansi_name', 'Pemerintah Daerah'),
                 'organizationName' => config('app.organization_name', 'Organisasi Perangkat Daerah'),
                 'currentYear' => $currYear,
@@ -219,14 +227,42 @@ class HandleInertiaRequests extends Middleware
                 'activePeriodEndYear' => $currYear + 4,
                 'activePeriodRange' => "{$currYear}–" . ($currYear + 4),
                 'activePeriodYears' => range($currYear, $currYear + 4),
-                'logoUrl' => $this->versionedAsset('/logo.webp'),
+                'logoUrl' => $this->resolveLogoUrl(null),
                 'faviconUrl' => $this->versionedAsset('/favicon.ico'),
-                'headlineImageUrl' => '/images/hero-banner.webp',
+                'headlineImageUrl' => $this->versionedAsset('/images/hero-banner.webp'),
                 'loginImageUrl' => '/images/login-bg.webp',
                 'headlineTitle' => '',
                 'headlineSubtitle' => '',
+                'logoSlider' => [],
             ];
         }
+    }
+
+    /**
+     * Cari logo aktif dari konfigurasi atau fallback umum secara dinamis.
+     */
+    private function resolveLogoUrl(?string $configuredLogo): string
+    {
+        if ($configuredLogo && (str_starts_with($configuredLogo, 'http://') || str_starts_with($configuredLogo, 'https://'))) {
+            return $configuredLogo;
+        }
+
+        $candidates = array_values(array_filter([
+            $configuredLogo,
+            '/logo.webp',
+            '/images/logo.png',
+            '/logo.png',
+        ]));
+
+        foreach ($candidates as $cand) {
+            $path = parse_url($cand, PHP_URL_PATH) ?: $cand;
+            $file = public_path(ltrim($path, '/'));
+            if (is_file($file)) {
+                return $path . '?v=' . filemtime($file);
+            }
+        }
+
+        return $configuredLogo ?: '/logo.webp';
     }
 
     /**

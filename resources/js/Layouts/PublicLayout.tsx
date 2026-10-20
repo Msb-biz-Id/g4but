@@ -134,12 +134,7 @@ export default function PublicLayout({
                         href={homeUrl}
                         className="group flex min-w-0 shrink items-center gap-2.5 sm:gap-3"
                     >
-                        <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 p-2 shadow-md border border-amber-300/40 group-hover:scale-105 transition-transform">
-                            <PuprEmblemSvg className="h-full w-full object-contain" color="#002B49" />
-                            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#002B49] text-[8px] font-black text-[#FFB800] border border-amber-400">
-                                PU
-                            </span>
-                        </div>
+                        <ApplicationLogo className="h-11 w-11 sm:h-12 sm:w-12 shrink-0 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300" />
                         <div className="flex flex-col min-w-0">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                                 <span className="text-sm sm:text-base font-black tracking-tight font-serif text-white leading-none">
@@ -309,9 +304,7 @@ export default function PublicLayout({
                             {/* Brand & Slogan */}
                             <div className="lg:col-span-2 space-y-3.5">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 p-2 border border-amber-300/40 flex items-center justify-center shadow-lg">
-                                        <PuprEmblemSvg className="h-full w-full object-contain" color="#002B49" />
-                                    </div>
+                                    <ApplicationLogo className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 object-contain drop-shadow-xl" />
                                     <div>
                                         <div className="text-lg font-black font-serif text-white">
                                             {orgName}
@@ -322,8 +315,8 @@ export default function PublicLayout({
                                     </div>
                                 </div>
 
-                                <p className="text-xs text-slate-300 leading-relaxed max-w-lg font-light">
-                                    Sistem Informasi Akuntabilitas Kinerja Terintegrasi (<strong>{appName}</strong>) menyelaraskan perencanaan, pencatatan realisasi fisik &amp; keuangan, serta evaluasi SAKIP berkala dengan semboyan insan PUPR: <em>Bekerja Keras, Bergerak Cepat, Bertindak Tepat</em>.
+                                <p className="text-xs text-slate-300 leading-relaxed max-w-xl font-light">
+                                    <strong>{appName}</strong> merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.
                                 </p>
 
                                 <div className="flex items-center gap-2 text-xs font-mono text-amber-300 pt-1">

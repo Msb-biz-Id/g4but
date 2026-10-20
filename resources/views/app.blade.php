@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="e-SAKIP - Sistem Informasi Akuntabilitas Kinerja Terintegrasi Dinas Pekerjaan Umum dan Penataan Ruang (PUPR) Kabupaten Mimika. Portal perencanaan, pengukuran kinerja SAKIP, dan keterbukaan informasi publik.">
+        <meta name="description" content="e-SAKIP PUPR merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.">
         <meta name="keywords" content="e-sakip, sakip mimika, pupr mimika, akuntabilitas kinerja, dinas pupr mimika, iku, informasi publik mimika">
         <meta name="author" content="Dinas Pekerjaan Umum dan Penataan Ruang Kabupaten Mimika">
         <meta name="robots" content="index, follow">

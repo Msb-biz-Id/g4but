@@ -3,7 +3,7 @@ import { usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { cn } from '@/lib/utils';
 import { X, HardHat, CheckCircle2 } from 'lucide-react';
-import { PuprEmblemSvg } from './PuprOrnaments';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { PuprCitySkylinePattern, PuprBlueprintGrid } from './PuprCityPattern';
 
 /**
@@ -117,13 +117,9 @@ export default function LandingPreloader() {
 
             {/* Center Monogram & Progress Indicator */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto max-w-lg mx-auto w-full px-4">
-                {/* Emblem PUPR */}
-                <div className="relative mb-6">
-                    <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-3xl bg-gradient-to-br from-[#FFB800] via-amber-500 to-amber-700 border-2 border-amber-300/50 p-5 flex items-center justify-center shadow-[0_0_50px_rgba(255,184,0,0.35)] relative">
-                        <PuprEmblemSvg className="h-full w-full object-contain drop-shadow" color="#002B49" />
-                    </div>
-                    {/* Ring Denyut Konstruksi */}
-                    <div className="absolute -inset-2 rounded-3xl border border-[#FFB800]/30 animate-ping pointer-events-none opacity-40" />
+                {/* Logo Resmi Sistem */}
+                <div className="relative mb-6 flex items-center justify-center">
+                    <ApplicationLogo className="h-28 w-28 sm:h-32 sm:w-32 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-transform animate-pulse-soft" />
                 </div>
 
                 {/* Judul Sistem */}

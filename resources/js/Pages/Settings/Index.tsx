@@ -10,13 +10,14 @@ import {
     Save, RotateCcw, Lock, Eye, EyeOff,
     Sparkles, Shield, Upload, Building2, Palette,
     Bell, Image, ImagePlus, Loader2, CheckCircle2,
-    Sliders, AlertCircle
+    Sliders, AlertCircle, Images
 } from 'lucide-react';
 import { PageProps } from '@/types';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import { Select2 } from '@/Components/ui/select2';
 import PageHeader from '@/Components/Dashboard/PageHeader';
+import SliderLogoManager, { SliderLogoItem } from './SliderLogoManager';
 
 interface AppConfig {
     id: number;
@@ -51,6 +52,13 @@ const TABS = [
         icon: Palette,
         groups: ['ui', 'theme'],
         description: 'Kustomisasi gambar banner headline, background login, serta preferensi warna tema dan font.',
+    },
+    {
+        key: 'slider_logo',
+        label: 'Slide Logo Beranda',
+        icon: Images,
+        groups: ['slider_logo', 'ui', 'UI'],
+        description: 'Kelola daftar logo instansi mitra dan tautan link yang tampil bergulir (marquee) di bawah headline beranda.',
     },
     {
         key: 'keamanan',
@@ -439,8 +447,21 @@ export default function SettingsIndex({ configs, canManage }: SettingsIndexProps
 
     const currentTab = TABS.find((t) => t.key === activeTab) ?? TABS[0];
     const targetGroups = currentTab.groups.map(normalizeGroup);
-    const tabConfigs = configs.filter((c) => targetGroups.includes(normalizeGroup(c.group)));
+    const tabConfigs = configs.filter((c) => targetGroups.includes(normalizeGroup(c.group)) && c.key !== 'ui_logo_slider');
     const tabGroups = Array.from(new Set(tabConfigs.map((c) => normalizeGroup(c.group))));
+
+    // Parse slider logos data for SliderLogoManager
+    const sliderConfig = configs.find((c) => c.key === 'ui_logo_slider');
+    const parsedSliderLogos: SliderLogoItem[] = useMemo(() => {
+        try {
+            if (!sliderConfig?.value) return [];
+            return typeof sliderConfig.value === 'string'
+                ? JSON.parse(sliderConfig.value)
+                : (sliderConfig.value as any);
+        } catch {
+            return [];
+        }
+    }, [sliderConfig]);
 
     // Calculate unsaved changes count on active tab
     const dirtyCount = useMemo(() => {
@@ -538,7 +559,7 @@ export default function SettingsIndex({ configs, canManage }: SettingsIndexProps
                     title="Konfigurasi & Pengaturan Sistem"
                     description="Kelola parameter global aplikasi, keamanan, antarmuka visual, kuota AI, serta integrasi gateway."
                     actions={
-                        canManage ? (
+                        canManage && activeTab !== 'slider_logo' ? (
                             <div className="flex items-center gap-2">
                                 {dirtyCount > 0 && (
                                     <Button
@@ -572,7 +593,7 @@ export default function SettingsIndex({ configs, canManage }: SettingsIndexProps
                 {/* ── Tab Navigation Bar ───────────────────────────────── */}
                 <div className="flex overflow-x-auto gap-1 rounded-xl border border-border bg-slate-100/70 dark:bg-slate-800/50 p-1.5 shadow-xs scrollbar-thin">
                     {TABS.map((tab) => {
-                        const hasConfigs = configs.some((c) => tab.groups.includes(c.group));
+                        const hasConfigs = tab.key === 'slider_logo' || configs.some((c) => tab.groups.includes(c.group));
                         if (!hasConfigs) return null;
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.key;
@@ -600,8 +621,10 @@ export default function SettingsIndex({ configs, canManage }: SettingsIndexProps
                     </p>
                 </div>
 
-                {/* ── Group Cards (Unified Section) ────────────────────── */}
-                {tabGroups.length === 0 ? (
+                {/* ── Tab Content: Slider Logo Manager vs Group Cards ───── */}
+                {activeTab === 'slider_logo' ? (
+                    <SliderLogoManager initialLogos={parsedSliderLogos} canManage={canManage} />
+                ) : tabGroups.length === 0 ? (
                     <Card className="p-8 text-center text-sm text-muted-foreground">
                         Tidak ada konfigurasi yang ditemukan pada tab ini.
                     </Card>

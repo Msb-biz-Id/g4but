@@ -94,8 +94,19 @@ export default {
                 'bar-grow': 'bar-grow 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards',
                 'accordion-down': 'accordion-down 0.2s ease-out',
                 'accordion-up': 'accordion-up 0.2s ease-out',
+                'tree-unfold': 'tree-unfold 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                'branch-grow': 'branch-grow 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             },
             keyframes: {
+                'tree-unfold': {
+                    '0%': { opacity: '0', transform: 'scale(0.95) translateY(-14px)' },
+                    '50%': { opacity: '0.7' },
+                    '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+                },
+                'branch-grow': {
+                    '0%': { opacity: '0', transform: 'scaleY(0)', transformOrigin: 'top' },
+                    '100%': { opacity: '1', transform: 'scaleY(1)', transformOrigin: 'top' },
+                },
                 'gradient-x': {
                     '0%, 100%': { 'background-position': '0% 50%' },
                     '50%': { 'background-position': '100% 50%' },

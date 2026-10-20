@@ -227,9 +227,7 @@ export default function Login({
                         <div className="relative z-10 space-y-4 sm:space-y-6">
                             {/* Emblem & Department Title */}
                             <div className="flex items-center gap-3">
-                                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-[#FFB800] to-amber-600 p-2 sm:p-2.5 flex items-center justify-center shadow-lg border border-amber-300/40 shrink-0">
-                                    <PuprEmblemSvg className="w-8 h-8 sm:w-9 sm:h-9" color="#002B49" />
-                                </div>
+                                <ApplicationLogo className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 object-contain drop-shadow-xl" />
                                 <div className="min-w-0">
                                     <span className="text-[10px] font-mono font-bold tracking-widest text-[#FFB800] uppercase block truncate">
                                         {instansiName}
@@ -252,7 +250,7 @@ export default function Login({
                                     Akuntabilitas Kinerja Pembangunan Infrastruktur Mimika
                                 </h3>
                                 <p className="mt-2.5 sm:mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-                                    Konsol resmi sistem <strong>{appName}</strong> untuk pemantauan target indikator kinerja utama (IKU), verifikasi dokumen bukti fisik (evidence), dan evaluasi SAKIP berkala pada seluruh bidang teknis Dinas PUPR Kabupaten Mimika.
+                                    <strong>{appName}</strong> merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.
                                 </p>
                             </div>
 

@@ -160,7 +160,17 @@ class SettingsController extends Controller
 
         $key = $request->input('asset_key');
         $meta = self::ASSET_KEYS[$key];
-        $dest = public_path($meta['dest']);
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'webp');
+
+        if ($key === 'app_logo') {
+            $destFile = "logo.{$ext}";
+            $dest = public_path($destFile);
+            $publicPath = "/{$destFile}";
+        } else {
+            $dest = public_path($meta['dest']);
+            $publicPath = $meta['public'];
+        }
 
         // Pastikan direktori tujuan ada
         $dir = dirname($dest);
@@ -169,20 +179,101 @@ class SettingsController extends Controller
         }
 
         // Pindahkan file ke public path (overwrite)
-        $request->file('file')->move($dir, basename($dest));
+        $file->move($dir, basename($dest));
+
+        // Sinkronisasi fallback salinan jika upload logo
+        if ($key === 'app_logo') {
+            if ($dest !== public_path('logo.webp') && is_file($dest)) {
+                @copy($dest, public_path('logo.webp'));
+            }
+            if ($dest !== public_path('images/logo.png') && is_file($dest)) {
+                @copy($dest, public_path('images/logo.png'));
+            }
+        }
 
         // Perbarui nilai di app_configs (tambah cache-bust querystring)
         AppConfig::where('key', $key)->update([
-            'value' => $meta['public'].'?v='.time(),
+            'value' => $publicPath.'?v='.time(),
             'updated_at' => now(),
         ]);
 
         Cache::forget('app_general_config');
+        Cache::forget('app_configs.all');
+        Cache::forget('app_config_all');
 
         app(AuditService::class)->log(
             'asset_uploaded', 'app_config', null, null, ['key' => $key]
         );
 
         return back()->with('success', "Aset '{$key}' berhasil diunggah.");
+    }
+
+    /**
+     * Upload gambar logo untuk slide logo mitra di beranda.
+     */
+    public function uploadSliderLogo(Request $request)
+    {
+        $this->authorize('config:manage');
+
+        $request->validate([
+            'file' => 'required|file|mimes:jpg,jpeg,png,gif,ico,svg,webp|max:3072',
+        ]);
+
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'png');
+        $filename = 'slider_' . time() . '_' . \Illuminate\Support\Str::random(6) . '.' . $ext;
+        $dir = public_path('uploads/slider-logos');
+
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $file->move($dir, $filename);
+
+        return response()->json([
+            'success' => true,
+            'url' => '/uploads/slider-logos/' . $filename,
+        ]);
+    }
+
+    /**
+     * Simpan seluruh daftar slide logo mitra dari pengaturan.
+     */
+    public function saveSliderLogos(Request $request): RedirectResponse
+    {
+        $this->authorize('config:manage');
+
+        $validated = $request->validate([
+            'logos' => 'required|array',
+            'logos.*.id' => 'nullable|string',
+            'logos.*.name' => 'required|string|max:150',
+            'logos.*.image' => 'required|string',
+            'logos.*.url' => 'nullable|string|max:255',
+            'logos.*.active' => 'nullable|boolean',
+        ]);
+
+        AppConfig::updateOrCreate(
+            ['key' => 'ui_logo_slider'],
+            [
+                'group' => 'UI',
+                'label' => 'Slide Logo Mitra & Terkait',
+                'description' => 'Daftar logo instansi, mitra, dan tautan yang tampil pada slider beranda di bawah headline.',
+                'type' => 'json',
+                'value' => json_encode($validated['logos'], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT),
+                'default_value' => '[]',
+                'is_secret' => false,
+            ]
+        );
+
+        Cache::forget('app_general_config');
+        Cache::forget('app_configs.all');
+        Cache::forget('app_config_all');
+
+        app(AuditService::class)->log(
+            'slider_logos_updated', 'app_config', null, null,
+            ['count' => count($validated['logos'])]
+        );
+
+        return back()->with('success', 'Pengaturan slide logo beranda berhasil disimpan.');
     }
 }

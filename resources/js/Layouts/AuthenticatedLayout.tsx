@@ -863,7 +863,7 @@ export default function Authenticated({
                         collapsed ? 'justify-center px-0' : 'gap-3 px-4',
                     )}
                 >
-                    <ApplicationLogo className="h-8 w-8 shrink-0 object-contain drop-shadow" />
+                    <ApplicationLogo className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 object-contain drop-shadow" />
                     {!collapsed && (
                         <div className="min-w-0 flex-1">
                             <span className="block text-base font-bold tracking-tight text-white leading-tight">
@@ -993,7 +993,7 @@ export default function Authenticated({
                             </SheetTrigger>
                             <SheetContent side="left" className="flex flex-col w-72 p-0 bg-[#0F172A] border-slate-800 text-slate-200">
                                 <div className="flex h-16 items-center gap-3 border-b border-slate-800 bg-[#0B132B]/60 px-4">
-                                    <ApplicationLogo className="h-8 w-8 shrink-0 object-contain drop-shadow" />
+                                    <ApplicationLogo className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 object-contain drop-shadow" />
                                     <div className="min-w-0 flex-1">
                                         <span className="block text-base font-bold tracking-tight text-white leading-tight">
                                             {appName}
@@ -1053,7 +1053,7 @@ export default function Authenticated({
 
                         {/* Mobile Brand Title */}
                         <div className="flex items-center gap-2 lg:hidden min-w-0">
-                            <ApplicationLogo className="h-7 w-7 shrink-0 object-contain drop-shadow" />
+                            <ApplicationLogo className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 object-contain drop-shadow" />
                             <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white truncate max-w-[120px] xs:max-w-[160px]">
                                 {appName}
                             </span>

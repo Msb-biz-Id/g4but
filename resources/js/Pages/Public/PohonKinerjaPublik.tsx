@@ -33,20 +33,22 @@ function PublicNodeCard({
     node,
     isOutputStack = false,
     highlighted,
+    isSelected,
     matchesSearch,
     isCollapsed,
     childCount,
     onToggleCollapse,
-    onHighlight,
+    onSelectNode,
 }: {
     node: KinerjaNode;
     isOutputStack?: boolean;
     highlighted: boolean;
+    isSelected: boolean;
     matchesSearch: boolean;
     isCollapsed: boolean;
     childCount: number;
     onToggleCollapse: (id: number) => void;
-    onHighlight: (id: number | null) => void;
+    onSelectNode: (node: KinerjaNode) => void;
 }) {
     const config = getSurabayaLevelConfig(node.level);
 
@@ -54,20 +56,18 @@ function PublicNodeCard({
         <div
             onClick={(e) => {
                 e.stopPropagation();
-                onHighlight(node.id);
-                if (childCount > 0) {
-                    onToggleCollapse(node.id);
-                }
+                onSelectNode(node);
             }}
-            title={childCount > 0 ? (isCollapsed ? 'Klik bagan untuk membuka cabang turunan' : 'Klik bagan untuk menutup cabang turunan') : 'Simpul Terminal'}
+            title={childCount > 0 ? 'Klik kartu untuk melihat detail simpul lengkap' : 'Simpul Terminal (Tingkat Paling Bawah)'}
             className={cn(
                 'group relative flex flex-col rounded-xl border-2 text-left transition-all duration-200 cursor-pointer shadow-md select-none',
-                'hover:shadow-xl hover:border-primary/60 hover:-translate-y-0.5',
+                'hover:shadow-xl hover:border-amber-400 hover:-translate-y-0.5',
                 config.cardBg,
                 config.border,
                 config.widthClass,
-                highlighted && 'ring-4 ring-primary ring-offset-2 scale-[1.03] z-20 shadow-2xl',
-                matchesSearch && !highlighted && 'ring-4 ring-amber-400 ring-offset-2 scale-[1.02] z-20 shadow-xl'
+                isSelected && 'ring-4 ring-[#FFB800] ring-offset-2 scale-[1.03] z-30 shadow-2xl border-[#FFB800]',
+                !isSelected && highlighted && 'ring-4 ring-primary ring-offset-2 scale-[1.02] z-20 shadow-xl',
+                matchesSearch && !isSelected && !highlighted && 'ring-4 ring-amber-400 ring-offset-2 scale-[1.02] z-20 shadow-xl'
             )}
         >
             {/* Header Strip */}
@@ -110,35 +110,56 @@ function PublicNodeCard({
                 )}
             </div>
 
-            {/* Bottom Expand / Collapse Handle */}
-            <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-50/90 dark:bg-slate-800/80 rounded-b-lg border-t border-slate-100 dark:border-slate-800">
+            {/* Bottom Expand / Collapse Handle & Detail Button */}
+            <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-50/90 dark:bg-slate-800/80 rounded-b-lg border-t border-slate-100 dark:border-slate-800 gap-1.5">
                 {childCount > 0 ? (
-                    <span
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleCollapse(node.id);
+                        }}
                         className={cn(
-                            'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold transition pointer-events-none',
+                            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-2xs cursor-pointer',
                             isCollapsed
-                                ? 'bg-primary text-primary-foreground shadow-2xs'
-                                : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+                                ? 'bg-[#FFB800] hover:bg-amber-400 text-slate-950 font-black'
+                                : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200'
                         )}
+                        title={isCollapsed ? 'Buka cabang turunan di bawah simpul ini' : 'Tutup cabang turunan'}
                     >
                         {isCollapsed ? (
                             <>
-                                <ChevronRight className="h-3 w-3" />
+                                <ChevronRight className="h-3.5 w-3.5" />
                                 <span>+{childCount} Turunan</span>
                             </>
                         ) : (
                             <>
-                                <ChevronDown className="h-3 w-3" />
+                                <ChevronDown className="h-3.5 w-3.5" />
                                 <span>{childCount} Turunan</span>
                             </>
                         )}
-                    </span>
+                    </button>
                 ) : (
                     <span className="text-[10px] text-slate-400 font-mono">Simpul Terminal</span>
                 )}
-                <span className="text-[10px] text-slate-400 font-medium">
-                    {childCount > 0 ? (isCollapsed ? 'Klik untuk buka' : 'Klik untuk tutup') : 'Publik'}
-                </span>
+
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectNode(node);
+                    }}
+                    className={cn(
+                        'inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded transition cursor-pointer',
+                        isSelected
+                            ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300'
+                            : 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50'
+                    )}
+                    title="Buka panel detail lengkap simpul ini"
+                >
+                    <span>Detail</span>
+                    <Eye className="h-3 w-3" />
+                </button>
             </div>
         </div>
     );
@@ -150,17 +171,19 @@ function PublicSubTree({
     visibleLayers,
     collapsedIds,
     highlightedId,
+    selectedNodeId,
     matchedIds,
     onToggleCollapse,
-    onHighlight,
+    onSelectNode,
 }: {
     node: KinerjaNode;
     visibleLayers: Record<string, boolean>;
     collapsedIds: Set<number>;
     highlightedId: number | null;
+    selectedNodeId: number | null;
     matchedIds: Set<number>;
     onToggleCollapse: (id: number) => void;
-    onHighlight: (id: number | null) => void;
+    onSelectNode: (node: KinerjaNode) => void;
 }) {
     if (visibleLayers[normalizeLevel(node.level)] === false) return null;
 
@@ -171,6 +194,7 @@ function PublicSubTree({
 
     const isCollapsed = collapsedIds.has(node.id);
     const highlighted = highlightedId === node.id;
+    const isSelected = selectedNodeId === node.id;
     const matchesSearch = matchedIds.has(node.id);
 
     const isOutputStack =
@@ -183,15 +207,16 @@ function PublicSubTree({
                 node={node}
                 isOutputStack={isOutputStack}
                 highlighted={highlighted}
+                isSelected={isSelected}
                 matchesSearch={matchesSearch}
                 isCollapsed={isCollapsed}
                 childCount={visibleChildren.length}
                 onToggleCollapse={onToggleCollapse}
-                onHighlight={onHighlight}
+                onSelectNode={onSelectNode}
             />
 
             {!isCollapsed && visibleChildren.length > 0 && (
-                <>
+                <div className="transition-all duration-300 ease-in-out flex flex-col items-center">
                     {isOutputStack ? (
                         /* Vertical Output Stack */
                         <div className="flex flex-col items-center pt-2">
@@ -211,11 +236,12 @@ function PublicSubTree({
                                             node={child}
                                             isOutputStack={true}
                                             highlighted={highlightedId === child.id}
+                                            isSelected={selectedNodeId === child.id}
                                             matchesSearch={matchedIds.has(child.id)}
                                             isCollapsed={false}
                                             childCount={0}
                                             onToggleCollapse={onToggleCollapse}
-                                            onHighlight={onHighlight}
+                                            onSelectNode={onSelectNode}
                                         />
                                     </React.Fragment>
                                 ))}
@@ -226,7 +252,7 @@ function PublicSubTree({
                         <div className="flex flex-col items-center">
                             <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600" />
 
-                            <div className="flex items-start justify-center gap-6 sm:gap-8">
+                            <div className="flex items-start justify-center gap-6 sm:gap-8 pt-1">
                                 {visibleChildren.map((child, idx) => {
                                     const isFirst = idx === 0;
                                     const isLast = idx === visibleChildren.length - 1;
@@ -255,9 +281,10 @@ function PublicSubTree({
                                                 visibleLayers={visibleLayers}
                                                 collapsedIds={collapsedIds}
                                                 highlightedId={highlightedId}
+                                                selectedNodeId={selectedNodeId}
                                                 matchedIds={matchedIds}
                                                 onToggleCollapse={onToggleCollapse}
-                                                onHighlight={onHighlight}
+                                                onSelectNode={onSelectNode}
                                             />
                                         </div>
                                     );
@@ -265,7 +292,7 @@ function PublicSubTree({
                             </div>
                         </div>
                     )}
-                </>
+                </div>
             )}
         </div>
     );
@@ -284,6 +311,7 @@ export default function PohonKinerjaPublik({
     const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
 
     const [highlightedId, setHighlightedId] = useState<number | null>(null);
+    const [selectedNode, setSelectedNode] = useState<KinerjaNode | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [layerFilterOpen, setLayerFilterOpen] = useState(false);
 
@@ -342,6 +370,12 @@ export default function PohonKinerjaPublik({
         setCollapsedIds(collectAllParentIds(tree));
     }, [tree, collectAllParentIds]);
 
+    // Handle node selection without expanding/collapsing
+    const handleSelectNode = useCallback((node: KinerjaNode) => {
+        setSelectedNode((prev) => (prev?.id === node.id ? null : node));
+        setHighlightedId((prev) => (prev === node.id ? null : node.id));
+    }, []);
+
     // Search matches
     const { matchedIds, ancestorIds } = useMemo(() => {
         const matches = new Set<number>();
@@ -380,6 +414,7 @@ export default function PohonKinerjaPublik({
         return { matchedIds: matches, ancestorIds: ancestors };
     }, [tree, searchQuery]);
 
+    // Otomatis buka leluhur simpul yang cocok saat melakukan pencarian
     useEffect(() => {
         if (ancestorIds.size > 0) {
             setCollapsedIds((prev) => {
@@ -389,6 +424,27 @@ export default function PohonKinerjaPublik({
             });
         }
     }, [ancestorIds]);
+
+    // Hierarki alur cascading dari akar hingga simpul terpilih
+    const selectedNodeBreadcrumb = useMemo<KinerjaNode[]>(() => {
+        if (!selectedNode) return [];
+        const path: KinerjaNode[] = [];
+        function findPath(nodes: KinerjaNode[], currentPath: KinerjaNode[]): boolean {
+            for (const n of nodes) {
+                const nextPath = [...currentPath, n];
+                if (n.id === selectedNode?.id) {
+                    path.push(...nextPath);
+                    return true;
+                }
+                if (findPath(getNodeChildren(n), nextPath)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        findPath(tree, []);
+        return path;
+    }, [tree, selectedNode]);
 
     // Sinkronisasi nilai filter organisasi & periode (mencocokkan ID atau kode secara fleksibel)
     const selectedOrgId = useMemo(() => {
@@ -419,8 +475,6 @@ export default function PohonKinerjaPublik({
     });
 
     const handleBack = (e: React.MouseEvent) => {
-        // Jika pengguna datang dari Laporan Publik di sesi browser ini, gunakan window.history.back()
-        // agar state filter, pencarian, dan posisi scroll tetap presisi.
         const lastLaporanUrl = typeof window !== 'undefined' ? sessionStorage.getItem('laporan_last_url') : null;
         if (lastLaporanUrl && typeof window !== 'undefined' && window.history.length > 1) {
             e.preventDefault();
@@ -510,11 +564,11 @@ export default function PohonKinerjaPublik({
                             <SelectNative
                                 value={selectedOrgId}
                                 onChange={(e) => handleFilter('organization', e.target.value)}
-                                className="h-8 text-xs w-full sm:w-48"
+                                className="h-8 text-xs w-full sm:w-48 bg-white/10 text-white border-white/20"
                             >
-                                <option value="">Semua Organisasi</option>
+                                <option value="" className="text-slate-900">Semua Organisasi</option>
                                 {organizations.map((o) => (
-                                    <option key={o.id} value={String(o.id)}>
+                                    <option key={o.id} value={String(o.id)} className="text-slate-900">
                                         {o.name}
                                     </option>
                                 ))}
@@ -523,11 +577,11 @@ export default function PohonKinerjaPublik({
                             <SelectNative
                                 value={selectedPeriodYear}
                                 onChange={(e) => handleFilter('period', e.target.value)}
-                                className="h-8 text-xs w-full sm:w-36"
+                                className="h-8 text-xs w-full sm:w-36 bg-white/10 text-white border-white/20"
                             >
-                                <option value="">Semua Periode</option>
+                                <option value="" className="text-slate-900">Semua Periode</option>
                                 {periods.map((p) => (
-                                    <option key={p.id} value={String(p.year)}>
+                                    <option key={p.id} value={String(p.year)} className="text-slate-900">
                                         {p.year}
                                     </option>
                                 ))}
@@ -539,19 +593,19 @@ export default function PohonKinerjaPublik({
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Cari simpul, OPD, IK..."
-                                    className="h-8 pl-8 pr-7 text-xs"
+                                    className="h-8 pl-8 pr-7 text-xs bg-white/10 text-white border-white/20 placeholder-slate-400"
                                 />
                                 {searchQuery && (
                                     <button
                                         onClick={() => setSearchQuery('')}
-                                        className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
+                                        className="absolute right-2 top-2 text-slate-400 hover:text-white"
                                     >
                                         <X className="h-3.5 w-3.5" />
                                     </button>
                                 )}
                             </div>
                             {matchedIds.size > 0 && (
-                                <Badge variant="secondary" className="text-[11px] h-7 px-2">
+                                <Badge variant="secondary" className="text-[11px] h-7 px-2 bg-amber-400 text-slate-950 font-bold">
                                     {matchedIds.size} cocok
                                 </Badge>
                             )}
@@ -564,9 +618,9 @@ export default function PohonKinerjaPublik({
                                     size="sm"
                                     variant="outline"
                                     onClick={() => setLayerFilterOpen(!layerFilterOpen)}
-                                    className={cn('h-8 text-xs gap-1', layerFilterOpen && 'bg-slate-100')}
+                                    className={cn('h-8 text-xs gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20', layerFilterOpen && 'bg-white/25')}
                                 >
-                                    <Layers className="h-3.5 w-3.5 text-indigo-500" />
+                                    <Layers className="h-3.5 w-3.5 text-amber-300" />
                                     <span>Layer</span>
                                     <ChevronDown className="h-3 w-3 opacity-60" />
                                 </Button>
@@ -578,7 +632,7 @@ export default function PohonKinerjaPublik({
                                         </div>
                                         <div className="space-y-1.5">
                                             {Object.entries(SURABAYA_LEVELS).map(([k, lvl]) => (
-                                                <label key={k} className="flex items-center gap-2 text-xs cursor-pointer p-1 rounded hover:bg-slate-50">
+                                                <label key={k} className="flex items-center gap-2 text-xs cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800">
                                                     <input
                                                         type="checkbox"
                                                         checked={visibleLayers[k] ?? true}
@@ -586,7 +640,7 @@ export default function PohonKinerjaPublik({
                                                         className="rounded text-primary h-3.5 w-3.5"
                                                     />
                                                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: lvl.accent }} />
-                                                    <span>{lvl.label}</span>
+                                                    <span className="text-slate-800 dark:text-slate-200">{lvl.label}</span>
                                                 </label>
                                             ))}
                                         </div>
@@ -594,77 +648,89 @@ export default function PohonKinerjaPublik({
                                 )}
                             </div>
 
-                            <Button size="sm" variant="outline" onClick={expandAll} className="h-8 text-xs gap-1">
-                                <Maximize2 className="h-3.5 w-3.5" />
-                                <span>Expand All</span>
+                            <Button size="sm" variant="outline" onClick={collapseAll} className="h-8 text-xs gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20" title="Tutup semua cabang turunan">
+                                <Minimize2 className="h-3.5 w-3.5 text-amber-300" />
+                                <span>Tutup Semua</span>
                             </Button>
-                            <Button size="sm" variant="outline" onClick={collapseAll} className="h-8 text-xs gap-1">
-                                <Minimize2 className="h-3.5 w-3.5" />
-                                <span>Collapse</span>
+                            <Button size="sm" variant="outline" onClick={expandAll} className="h-8 text-xs gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20" title="Buka seluruh cabang pohon kinerja">
+                                <Maximize2 className="h-3.5 w-3.5 text-amber-300" />
+                                <span>Buka Semua</span>
                             </Button>
                         </div>
                     </div>
                 </div>
 
-                {/* Main Interactive Canvas */}
-                <div className="flex-1 overflow-hidden relative">
+                {/* Main Interactive Canvas & Inspector Container */}
+                <div className="flex-1 overflow-hidden relative flex flex-col">
                     <TransformWrapper
                         initialScale={0.8}
                         minScale={0.15}
                         maxScale={2.5}
                         limitToBounds={false}
                         centerOnInit={true}
-                        wheel={{ step: 0.08 }}
+                        smooth={false}
+                        wheel={{ step: 0.05 }}
+                        doubleClick={{ disabled: true }}
+                        panning={{ velocityDisabled: true }}
+                        zoomAnimation={{ animationTime: 200, animationType: 'easeOut' }}
                     >
                         {({ zoomIn, zoomOut, resetTransform, centerView, state }) => (
                             <>
-                                {/* Floating controls */}
+                                {/* Floating zoom & positioning controls */}
                                 <div className="absolute top-4 right-4 z-30 flex items-center gap-1 rounded-xl border border-slate-200 bg-white/90 backdrop-blur-md px-2 py-1 shadow-lg dark:border-slate-800 dark:bg-slate-900/90">
                                     <button
                                         type="button"
-                                        onClick={() => zoomIn()}
-                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition"
-                                        title="Zoom In"
+                                        onClick={() => zoomIn(0.1, 200, 'easeOut')}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                                        title="Zoom In (Perlahan 10%)"
                                     >
                                         <ZoomIn className="h-4 w-4" />
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => zoomOut()}
-                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition"
-                                        title="Zoom Out"
+                                        onClick={() => zoomOut(0.1, 200, 'easeOut')}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                                        title="Zoom Out (Perlahan 10%)"
                                     >
                                         <ZoomOut className="h-4 w-4" />
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => resetTransform()}
-                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition"
-                                        title="Reset Zoom"
+                                        onClick={() => resetTransform(200, 'easeOut')}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                                        title="Reset Zoom Awal (80%)"
                                     >
                                         <RotateCcw className="h-4 w-4" />
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => centerView(0.8)}
-                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition"
-                                        title="Pusatkan"
+                                        onClick={() => centerView(0.8, 250, 'easeOut')}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                                        title="Pusatkan Tampilan"
                                     >
                                         <Maximize className="h-4 w-4" />
                                     </button>
                                     <div className="h-4 w-px bg-slate-200 mx-1" />
-                                    <span className="text-[11px] font-mono font-medium text-slate-500 w-12 text-center">
+                                    <span className="text-[11px] font-mono font-medium text-slate-500 w-12 text-center select-none">
                                         {Math.round((state?.scale ?? 0.8) * 100)}%
                                     </span>
                                 </div>
 
-                                <div className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing">
+                                <div className="flex-1 w-full h-full min-h-0 overflow-hidden cursor-grab active:cursor-grabbing">
                                     <TransformComponent
                                         wrapperStyle={{ width: '100%', height: '100%' }}
-                                        contentStyle={{ width: 'max-content', minWidth: '100%', minHeight: '100%', padding: '60px 80px' }}
+                                        contentStyle={{
+                                            width: 'max-content',
+                                            minWidth: '100%',
+                                            minHeight: '100%',
+                                            padding: '60px 80px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                        }}
                                     >
                                         {tree.length > 0 ? (
-                                            <div className="flex flex-col items-center gap-12 select-none">
+                                            <div className="flex flex-col items-center gap-12 select-none min-w-max pb-32">
                                                 {tree.map((rootNode) => (
                                                     <PublicSubTree
                                                         key={rootNode.id}
@@ -672,9 +738,10 @@ export default function PohonKinerjaPublik({
                                                         visibleLayers={visibleLayers}
                                                         collapsedIds={collapsedIds}
                                                         highlightedId={highlightedId}
+                                                        selectedNodeId={selectedNode?.id ?? null}
                                                         matchedIds={matchedIds}
                                                         onToggleCollapse={toggleCollapse}
-                                                        onHighlight={setHighlightedId}
+                                                        onSelectNode={handleSelectNode}
                                                     />
                                                 ))}
                                             </div>
@@ -689,6 +756,7 @@ export default function PohonKinerjaPublik({
                                     </TransformComponent>
                                 </div>
 
+                                {/* Legend Bawah Informasi Interaksi */}
                                 <div className="shrink-0 flex flex-wrap items-center gap-4 border-t border-slate-200 bg-white/95 px-4 py-2 text-xs">
                                     <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider">
                                         Tingkatan Simpul:
@@ -699,13 +767,166 @@ export default function PohonKinerjaPublik({
                                             <span className="font-medium">{lvl.label}</span>
                                         </div>
                                     ))}
-                                    <span className="ml-auto text-[11px] text-slate-400">
-                                        💡 Geser mouse untuk pan • Scroll untuk zoom • Klik bagan simpul untuk buka/tutup turunan
+                                    <span className="ml-auto text-[11px] text-slate-500 font-medium">
+                                        💡 Klik kartu untuk detail simpul • Klik tombol [+ Turunan] untuk buka/tutup cabang • Scroll untuk zoom halus (5%)
                                     </span>
                                 </div>
                             </>
                         )}
                     </TransformWrapper>
+
+                    {/* ══ PANEL INSPEKSI DETAIL SIMPUL (Slide-Over Inspector) ══ */}
+                    {selectedNode && (
+                        <aside
+                            aria-label="Detail Simpul Pohon Kinerja"
+                            className="absolute top-0 right-0 bottom-0 z-40 w-full sm:w-[380px] lg:w-[420px] bg-white dark:bg-[#07131e] border-l border-slate-200 dark:border-amber-500/30 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 select-none"
+                        >
+                            {/* Header Inspector */}
+                            <div className="shrink-0 flex items-center justify-between p-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-[#002B49] to-[#07243c] text-white">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#FFB800] text-slate-950 font-black">
+                                        {selectedNode.code}
+                                    </span>
+                                    <span className="text-xs font-bold font-mono tracking-wider text-amber-300 uppercase">
+                                        {getSurabayaLevelConfig(selectedNode.level).tierName}
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedNode(null)}
+                                    className="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                                    title="Tutup Detail Simpul"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+
+                            {/* Body Inspector */}
+                            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs">
+                                {/* Pernyataan Kinerja (Statement) Lengkap */}
+                                <div className="space-y-1.5">
+                                    <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+                                        Pernyataan Kinerja (Cascading Statement):
+                                    </span>
+                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug">
+                                        {selectedNode.name}
+                                    </h3>
+                                </div>
+
+                                {/* Deskripsi Tambahan */}
+                                {selectedNode.description && (
+                                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 leading-relaxed text-xs">
+                                        {selectedNode.description}
+                                    </div>
+                                )}
+
+                                {/* Indikator Kinerja Utama (IKU) */}
+                                {selectedNode.indicator ? (
+                                    <div className="p-3.5 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 space-y-2">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wide">
+                                            <Target className="h-3.5 w-3.5 shrink-0" />
+                                            <span>Indikator Kinerja Terukur</span>
+                                        </div>
+                                        <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                                            {selectedNode.indicator.name}
+                                        </div>
+                                        {selectedNode.indicator.unit && (
+                                            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                                                Satuan Pengukuran: <span className="font-bold text-slate-700 dark:text-slate-300">{selectedNode.indicator.unit}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 italic text-[11px]">
+                                        Belum ada indikator kuantitatif yang dipasangkan pada simpul ini.
+                                    </div>
+                                )}
+
+                                {/* Organisasi / Bidang Pengampu */}
+                                {selectedNode.organization && (
+                                    <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 space-y-1">
+                                        <span className="text-[10px] font-mono font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider block">
+                                            Unit Kerja Pengampu:
+                                        </span>
+                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-100">
+                                            <Building2 className="h-4 w-4 text-blue-600 shrink-0" />
+                                            <span>{selectedNode.organization.name}</span>
+                                        </div>
+                                        {selectedNode.organization.short_name && (
+                                            <div className="text-[11px] text-slate-500 font-mono">
+                                                Kode OPD: {selectedNode.organization.short_name}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Hierarki Cascading Breadcrumb */}
+                                {selectedNodeBreadcrumb.length > 1 && (
+                                    <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-white/10">
+                                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                                            Rantai Cascading (Alur Vertikal):
+                                        </span>
+                                        <div className="space-y-1.5">
+                                            {selectedNodeBreadcrumb.map((bNode, bIdx) => (
+                                                <div
+                                                    key={bNode.id}
+                                                    onClick={() => {
+                                                        setSelectedNode(bNode);
+                                                        setHighlightedId(bNode.id);
+                                                    }}
+                                                    className={cn(
+                                                        'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition text-[11px]',
+                                                        bNode.id === selectedNode.id
+                                                            ? 'bg-[#FFB800]/20 border border-[#FFB800] font-bold text-amber-950 dark:text-amber-300'
+                                                            : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300'
+                                                    )}
+                                                >
+                                                    <span className="font-mono text-[9px] px-1 py-0.5 rounded bg-black/10 dark:bg-white/10 shrink-0 font-bold">
+                                                        {bIdx + 1}. {bNode.code}
+                                                    </span>
+                                                    <span className="truncate flex-1">{bNode.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Footer Inspector Aksi */}
+                            <div className="shrink-0 p-3 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#07131e] flex items-center justify-between gap-2">
+                                {getNodeChildren(selectedNode).length > 0 && (
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                            toggleCollapse(selectedNode.id);
+                                        }}
+                                        className="h-8 text-xs gap-1.5 flex-1"
+                                    >
+                                        {collapsedIds.has(selectedNode.id) ? (
+                                            <>
+                                                <ChevronDown className="h-3.5 w-3.5" />
+                                                <span>Buka Cabang Turunan</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Minimize2 className="h-3.5 w-3.5" />
+                                                <span>Tutup Cabang Turunan</span>
+                                            </>
+                                        )}
+                                    </Button>
+                                )}
+                                <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => setSelectedNode(null)}
+                                    className="h-8 text-xs bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                                >
+                                    Tutup
+                                </Button>
+                            </div>
+                        </aside>
+                    )}
                 </div>
             </div>
         </PublicLayout>

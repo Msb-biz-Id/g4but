@@ -77,7 +77,7 @@ export default function AiPreview() {
                                         onClick={() => setActive(i)}
                                         className={`w-full flex items-center gap-3.5 p-4 rounded-2xl border text-left transition-all ${
                                             isCurrent
-                                                ? 'bg-gradient-to-r from-emerald-900 to-zinc-900 text-white border-amber-500 shadow-lg scale-[1.02]'
+                                                ? 'bg-gradient-to-r from-[#002B49] to-zinc-900 text-white border-amber-500 shadow-lg scale-[1.02]'
                                                 : 'bg-zinc-900/60 text-zinc-300 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700'
                                         }`}
                                     >
@@ -104,9 +104,9 @@ export default function AiPreview() {
                         </div>
 
                         {/* WhatsApp Gateway Integration Card */}
-                        <div className="p-4 rounded-2xl border border-emerald-500/20 bg-emerald-950/30 backdrop-blur-sm">
-                            <div className="flex items-center gap-2 font-bold text-emerald-400 text-xs mb-1.5">
-                                <MessageSquareCheck className="h-4 w-4 text-emerald-300" />
+                        <div className="p-4 rounded-2xl border border-amber-500/30 bg-[#002B49]/50 backdrop-blur-sm">
+                            <div className="flex items-center gap-2 font-bold text-amber-300 text-xs mb-1.5">
+                                <MessageSquareCheck className="h-4 w-4 text-[#FFB800]" />
                                 <span>WhatsApp Notifikasi Terdaftar</span>
                             </div>
                             <p className="text-[11px] text-zinc-300 leading-relaxed">
@@ -116,12 +116,12 @@ export default function AiPreview() {
                     </div>
 
                     {/* Right: Rich Interactive Console Display */}
-                    <div className="lg:col-span-8 rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-zinc-950 p-6 sm:p-8 shadow-2xl flex flex-col justify-between">
+                    <div className="lg:col-span-8 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-zinc-950 p-6 sm:p-8 shadow-2xl flex flex-col justify-between">
                         <div>
                             {/* Console Title Bar */}
                             <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-zinc-800">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-950 border border-amber-500/30 text-amber-400">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#002B49] border border-amber-500/30 text-amber-400">
                                         <ActiveIcon className="h-5 w-5" />
                                     </div>
                                     <div>
@@ -134,7 +134,7 @@ export default function AiPreview() {
                                     </div>
                                 </div>
 
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-950 border border-emerald-500/40 text-[10px] font-mono font-bold text-emerald-300">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#002B49] border border-amber-500/40 text-[10px] font-mono font-bold text-amber-300">
                                     <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
                                     <span>DATA TERVALIDASI</span>
                                 </span>
@@ -167,10 +167,10 @@ export default function AiPreview() {
                         {/* Footer Status */}
                         <div className="mt-8 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-400">
                             <span className="flex items-center gap-1.5">
-                                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                                <Terminal className="w-3.5 h-3.5 text-amber-400" />
                                 <span>Algoritma Deterministik SAKIP</span>
                             </span>
-                            <span className="text-emerald-400 font-bold">Audit Trail: Aktif</span>
+                            <span className="text-amber-400 font-bold">Audit Trail: Aktif</span>
                         </div>
                     </div>
                 </div>

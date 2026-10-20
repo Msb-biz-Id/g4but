@@ -39,7 +39,7 @@ export default function Guest({ children, className, maxWidth = 'md' }: GuestPro
                 <ThemeToggle />
             </div>
             <Link href={route('home')} className="flex items-center gap-3 transition-opacity hover:opacity-90">
-                <ApplicationLogo className="h-12 w-12 shrink-0 drop-shadow-md" />
+                <ApplicationLogo className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 object-contain drop-shadow-lg" />
                 <div className="flex flex-col">
                     <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-foreground">
                         {appName}
