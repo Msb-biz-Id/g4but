@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('code') - @yield('title') | e-SAKIP</title>
+    <title>@yield('code') - @yield('title') | SIPERFORMA PUPR</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
@@ -196,7 +196,7 @@
     <div class="card">
         <div class="brand">
             <img src="{{ file_exists(public_path('logo.webp')) ? asset('logo.webp') : asset('logo.png') }}" alt="Logo PUPR Mimika">
-            <span class="brand-title">e-SAKIP</span>
+            <span class="brand-title">SIPERFORMA PUPR</span>
             <span class="brand-badge">Pemerintah Kabupaten Mimika</span>
         </div>
 

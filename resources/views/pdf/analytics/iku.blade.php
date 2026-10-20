@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Analisis Capaian IKU OPD {{ $year }}</title>
+﻿<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Analisis Capaian IKU Unit Kerja {{ $year }}</title>
 <style>* { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DejaVu Sans',sans-serif; font-size:8px; color:#1a1a2e; padding:14px 18px; }
 .hdr-table { width:100%; border-collapse:collapse; border:none; border-bottom:2px solid #1e3a5f; margin-bottom:10px; padding-bottom:8px; }
@@ -25,15 +25,15 @@ tr:nth-child(even) td { background:#f8fafc; }
     <td class="hdr-logo-cell"><img src="{{ $logoBase64 ?? public_path('logo.png') }}" alt="Logo"></td>
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Kabupaten Mimika</div>
-<div class="doc-title">ANALISIS CAPAIAN IKU OPD</div>
-<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
+<div class="doc-title">Analisis Capaian IKU Unit Kerja</div>
+<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; SIPERFORMA PUPR</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
 </table>
-<div class="meta"><div class="meta-l"><strong>Total IKU OPD:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
+<div class="meta"><div class="meta-l"><strong>Total IKU Unit Kerja:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
 @if(count($rows)>0)
-<table><thead><tr><th style="width:20px">No</th><th>Sasaran Strategis</th><th>Indikator IKU OPD</th><th style="width:35px">Satuan</th><th style="width:45px">Karakter</th>
+<table><thead><tr><th style="width:20px">No</th><th>Sasaran Strategis</th><th>Indikator IKU</th><th style="width:35px">Satuan</th><th style="width:45px">Karakter</th>
 <th style="width:45px">Target {{ $year }}</th><th style="width:45px">Realisasi {{ $year }}</th><th style="width:50px">Capaian {{ $year }}</th><th style="width:65px">Status</th></tr></thead><tbody>
 @foreach($rows as $r)
 <tr><td class="tc">{{ $r['no'] ?? '-' }}</td><td>{{ $r['sasaran'] ?? '-' }}</td><td>{{ $r['indikator'] ?? '-' }}</td>
@@ -44,6 +44,6 @@ tr:nth-child(even) td { background:#f8fafc; }
 @endforeach
 </tbody></table>
 <div style="margin-top:6px;font-size:7px;color:#64748b;">Kriteria Status: <span class="g">Tercapai (&ge; 100%)</span> &nbsp;|&nbsp; <span class="w">Perlu Perhatian (50% - 99.9%)</span> &nbsp;|&nbsp; <span class="r">Kritis (&lt; 50%)</span> &nbsp;|&nbsp; <span class="n">Tidak Dinilai (Target=0 &amp; Real=0)</span></div>
-@else<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data IKU OPD.</p>@endif
-<div class="footer"><div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
+@else<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data IKU.</p>@endif
+<div class="footer"><div class="fl">SIPERFORMA PUPR — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
 </body></html>

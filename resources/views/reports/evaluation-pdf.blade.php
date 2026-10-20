@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -134,7 +134,7 @@
 
 {{-- FOOTER --}}
 <div class="footer">
-    <div class="footer-left">e-SAKIP — Platform Digital SAKIP Kabupaten Mimika</div>
+    <div class="footer-left">SIPERFORMA PUPR</div>
     <div class="footer-right">Dicetak: {{ $generatedAt }}</div>
 </div>
 

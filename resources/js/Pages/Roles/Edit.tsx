@@ -93,7 +93,7 @@ const MODULE_INFO: Record<string, { title: string; desc: string }> = {
     },
     configuration: {
         title: 'Pengaturan & Konfigurasi Sistem',
-        desc: 'Konfigurasi teknis, batas kuota, dan preferensi aplikasi e-SAKIP.',
+        desc: 'Konfigurasi teknis, batas kuota, dan preferensi aplikasi SIPERFORMA PUPR.',
     },
 };
 
@@ -279,7 +279,7 @@ function getPermissionMeta(perm: PermissionItem) {
 
 export default function RolesEdit({ role, permissions }: Props) {
     const { appConfig } = usePage<Props>().props;
-    const appName = appConfig?.appName || 'e-SAKIP';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
 
     const { data, setData, errors, put, processing } = useForm({
         name: role.name,
@@ -381,7 +381,7 @@ export default function RolesEdit({ role, permissions }: Props) {
                             </span>
                         </h2>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Tentukan matriks izin dan kewenangan operasional yang diperbolehkan untuk peran ini di seluruh modul e-SAKIP.
+                            Tentukan matriks izin dan kewenangan operasional yang diperbolehkan untuk peran ini di seluruh modul SIPERFORMA PUPR.
                         </p>
                     </div>
 

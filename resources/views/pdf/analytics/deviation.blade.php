@@ -31,7 +31,7 @@ tr:nth-child(even) td { background:#f8fafc; }
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Kabupaten Mimika</div>
     <div class="doc-title">ANALISIS DEVIASI TARGET VS REALISASI</div>
-    <div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
+    <div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; SIPERFORMA PUPR</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
@@ -74,7 +74,7 @@ tr:nth-child(even) td { background:#f8fafc; }
 <p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data deviasi.</p>
 @endif
 <div class="footer">
-  <div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div>
+  <div class="fl">SIPERFORMA PUPR — SAKIP Kabupaten Mimika</div>
   <div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div>
 </div>
 </body></html>

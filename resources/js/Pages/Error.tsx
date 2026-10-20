@@ -56,7 +56,7 @@ const errorDetails: Record<number, ErrorDetail> = {
         bgBadge: 'bg-rose-500/10 dark:bg-rose-500/20',
         textBadge: 'text-rose-600 dark:text-rose-400',
         borderBadge: 'border-rose-500/20 dark:border-rose-500/30',
-        actionHint: 'Jika Anda merasa ini sebuah kekeliruan, silakan hubungi Administrator sistem e-SAKIP.',
+        actionHint: 'Jika Anda merasa ini sebuah kekeliruan, silakan hubungi Administrator sistem SIPERFORMA PUPR.',
     },
     419: {
         title: 'Sesi Telah Berakhir',
@@ -94,7 +94,7 @@ const errorDetails: Record<number, ErrorDetail> = {
     503: {
         title: 'Layanan Sedang Pemeliharaan',
         description:
-            'Sistem e-SAKIP sedang dalam proses pemeliharaan rutin atau peningkatan performa server.',
+            'Sistem SIPERFORMA PUPR sedang dalam proses pemeliharaan rutin atau peningkatan performa server.',
         icon: Wrench,
         color: 'text-primary',
         bgBadge: 'bg-primary/10 dark:bg-primary/20',
@@ -106,9 +106,9 @@ const errorDetails: Record<number, ErrorDetail> = {
 
 export default function Error({ status, message }: ErrorProps) {
     const { theme, appConfig } = usePage<PageProps>().props;
-    const appName = appConfig?.appName || 'e-SAKIP';
-    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
-    const orgName = appConfig?.organizationName || 'Biro Organisasi Sekretariat Daerah';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
+    const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
     const currentYear = appConfig?.currentYear || new Date().getFullYear();
 
     // Terapkan tema kustom dari database
@@ -147,7 +147,7 @@ export default function Error({ status, message }: ErrorProps) {
 
     return (
         <>
-            <Head title={`${status} - ${error.title} | e-SAKIP`} />
+            <Head title={`${status} - ${error.title} | ${appName}`} />
 
             <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-50 p-4 selection:bg-primary selection:text-primary-foreground dark:bg-slate-950">
                 {/* Background Ambient Glows */}

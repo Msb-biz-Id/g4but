@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -26,8 +26,8 @@
 </head>
 <body>
 <div class="header">
-    <h1>POHON KINERJA — {{ $org ? strtoupper($org->name) : 'SEMUA OPD' }}</h1>
-    <p>e-SAKIP · Dicetak: {{ $generatedAt }}</p>
+    <h1>POHON KINERJA — {{ $org ? strtoupper($org->name) : 'Semua Unit Kerja' }}</h1>
+    <p>SIPERFORMA PUPR · Dicetak: {{ $generatedAt }}</p>
 </div>
 
 <table>
@@ -76,7 +76,7 @@
 </table>
 
 <div class="footer">
-    Total {{ $trees->count() }} node · e-SAKIP — Platform Digital SAKIP Kabupaten Mimika
+    Total {{ $trees->count() }} node · SIPERFORMA PUPR
 </div>
 </body>
 </html>

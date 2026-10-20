@@ -52,8 +52,8 @@ export default function RolesIndex({ roles }: Props) {
     const maxPermissions = useMemo(() => Math.max(...roles.map((r) => r.permissions_count || 0), 0), [roles]);
 
     const { appConfig } = usePage<PageProps>().props;
-    const appName = appConfig?.appName || 'e-SAKIP';
-    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
+    const instansiName = appConfig?.instansiName || 'Dinas PUPR Kabupaten Mimika';
 
     return (
         <AuthenticatedLayout header="Manajemen Peran & Hak Akses (RBAC)">

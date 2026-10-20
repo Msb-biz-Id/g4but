@@ -236,7 +236,7 @@ export default function Authenticated({
     const { auth, appConfig } = usePage<PageProps>().props;
     const { url: currentUrl } = usePage();
     const user = auth?.user;
-    const appName = appConfig?.appName || 'E-Sakip PUPR';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
 
     const permissions = user?.permissions ?? [];
     const canViewUsers = permissions.includes('user:view');
@@ -264,7 +264,7 @@ export default function Authenticated({
     const canViewPlanning = permissions.includes('goal:view');       // fix: planning:view tdk ada di seeder, gate pakai goal:view
     const canViewAudit = permissions.includes('audit_log:view');      // fix: audit_log:view (bukan audit:view)
     const canViewWhatsapp = permissions.includes('integration:view'); // fix: pakai integration:view (whatsapp:view tdk ada di seeder)
-    const canViewMonitoring = permissions.includes('planning:review'); // Monitoring OPD: eksklusif pengawas provinsi (planning:review)
+    const canViewMonitoring = permissions.includes('planning:review'); // Monitoring Unit Kerja: eksklusif pengawas (planning:review)
     const canManageSettings = permissions.includes('config:manage');
 
     // ─── FLAG FASE MVP ─────────────────────────────────────────────────────────
@@ -360,7 +360,7 @@ export default function Authenticated({
                 },
                 {
                     href: route('planning.monitoring-matrix'),
-                    label: 'Monitoring OPD',
+                    label: 'Monitoring Unit Kerja',
                     icon: BarChart3,
                     active: route().current('planning.monitoring-matrix*'),
                     show: canViewMonitoring,

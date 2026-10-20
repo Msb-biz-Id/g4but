@@ -216,7 +216,7 @@ class UserExportService
         $sheet->getRowDimension(1)->setRowHeight(32);
 
         // Subtitle row
-        $appName = AppConfig::where('key', 'app_name')->value('value') ?: config('app.name', 'e-SAKIP');
+        $appName = AppConfig::where('key', 'app_name')->value('value') ?: config('app.name', 'SIPERFORMA PUPR');
         $instansiName = AppConfig::where('key', 'instansi_name')->value('value') ?: 'Pemerintah Daerah';
         $sheet->mergeCells('A2:J2');
         $sheet->setCellValue('A2', "{$appName} — Sistem Akuntabilitas Kinerja {$instansiName} | Diekspor: ".now()->translatedFormat('d F Y H:i'));

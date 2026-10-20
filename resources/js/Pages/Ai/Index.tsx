@@ -242,7 +242,7 @@ export default function AiIndex({
             if (displayParsed.rekomendasi?.length > 0) {
                 txt += 'Rekomendasi Tindak Lanjut:\n' + displayParsed.rekomendasi.map((r) => `- ${r.tindakan}`).join('\n') + '\n\n';
             }
-            txt += 'Sumber: analisis otomatis e-SAKIP';
+            txt += 'Sumber: analisis otomatis SIPERFORMA PUPR';
             return txt.trim();
         }
         return formatNarrativeText(currentResult.output || '');
@@ -449,14 +449,14 @@ export default function AiIndex({
                                         {/* Banner Ringkasan Dokumen */}
                                         <div className="border-b border-border pb-4">
                                             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground mb-1">
-                                                <span>Perangkat Daerah</span>
-                                                <span>Sistem e-SAKIP SAKIP</span>
+                                                <span>Unit Kerja Dinas PUPR</span>
+                                                <span>Sistem SIPERFORMA PUPR</span>
                                             </div>
                                             <h3 className="text-lg font-bold text-foreground">
                                                 {currentTabInfo.label}
                                             </h3>
                                             <p className="text-xs text-muted-foreground mt-0.5">
-                                                Lingkup Analisis: {selectedOrgId ? organizations.find((o) => String(o.id) === String(selectedOrgId))?.name : 'Seluruh Unit Kerja (OPD Induk, Sekretariat, dan Bidang)'}
+                                                Lingkup Analisis: {selectedOrgId ? organizations.find((o) => String(o.id) === String(selectedOrgId))?.name : 'Seluruh Unit Kerja (Sekretariat, Bidang Teknis, dan UPTD)'}
                                             </p>
                                         </div>
 
@@ -519,7 +519,7 @@ export default function AiIndex({
 
                                         {/* Footer Legalitas & Verifikasi Dokumen */}
                                         <div className="pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[11px] text-muted-foreground">
-                                            <span>Dokumen resmi hasil audit analitik data SAKIP e-SAKIP.</span>
+                                            <span>Dokumen resmi hasil telaah analitis SIPERFORMA PUPR.</span>
                                             <span>Sifat Dokumen: Rahasia &amp; Terbatas (Aparatur Terverifikasi)</span>
                                         </div>
                                     </div>
@@ -532,7 +532,7 @@ export default function AiIndex({
                                         <div className="space-y-1.5 max-w-md">
                                             <h3 className="text-base font-bold text-foreground">Panel Hasil Laporan Eksekutif</h3>
                                             <p className="text-xs text-muted-foreground leading-relaxed">
-                                                Silakan pilih modul analisis pada tab di sebelah kanan, tentukan parameter lingkup Perangkat Daerah (OPD), lalu klik tombol <span className="font-semibold text-foreground">"Jalankan Analisis AI"</span>.
+                                                Silakan pilih modul analisis pada tab di sebelah kanan, tentukan parameter lingkup Unit Kerja, lalu klik tombol <span className="font-semibold text-foreground">"Jalankan Analisis AI"</span>.
                                             </p>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 text-left max-w-lg w-full">

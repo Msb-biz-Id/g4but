@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -66,7 +66,7 @@
                 <div class="instansi">Pemerintah Kabupaten Mimika</div>
                 <div class="instansi-sub">Sistem Akuntabilitas Kinerja Instansi Pemerintah (SAKIP)</div>
                 <div class="doc-title">LEMBAR PENGESAHAN DOKUMEN SAKIP</div>
-                <div class="doc-sub">Sistem Informasi e-SAKIP LITE &bull; Cetak Otomatis Dashboard Analitik</div>
+                <div class="doc-sub">SIPERFORMA PUPR &bull; Cetak Otomatis Dashboard Analitik</div>
             </td>
             <td class="hdr-spacer-cell"></td>
         </tr>
@@ -100,7 +100,7 @@
             <td class="meta-value">{{ $doc->document_number ?: ($doc->code ?: '-') }}</td>
         </tr>
         <tr>
-            <td class="meta-label">Perangkat Daerah / Instansi</td>
+            <td class="meta-label">Unit Kerja / Bidang / Instansi</td>
             <td class="meta-sep">:</td>
             <td class="meta-value">
                 <strong>{{ $doc->organization?->name ?: 'Pemerintah Kabupaten Mimika' }}</strong>
@@ -153,7 +153,7 @@
     <div class="seal-box">
         <div class="seal-title">Keterangan Keabsahan Dokumen Digital</div>
         <div class="seal-desc">
-            Dokumen ini diakui secara sah dalam Sistem e-SAKIP Kabupaten Mimika sebagai bagian dari pemenuhan parameter evaluasi akuntabilitas kinerja SAKIP (12 Dokumen OPD). Apabila OPD bersangkutan mengunggah lampiran berkas lengkap (PDF/XLSX), sistem akan secara otomatis menyediakan berkas asli tersebut pada tautan unduh.
+            Dokumen ini diakui secara sah dalam SIPERFORMA PUPR Kabupaten Mimika sebagai bagian dari pemenuhan parameter evaluasi akuntabilitas kinerja SAKIP (12 Dokumen Unit Kerja). Apabila Unit Kerja bersangkutan mengunggah lampiran berkas lengkap (PDF/XLSX), sistem akan secara otomatis menyediakan berkas asli tersebut pada tautan unduh.
         </div>
     </div>
 
@@ -172,14 +172,14 @@
                     Mengetahui / Penanggung Jawab,<br>
                     {{ $doc->organization?->name ?: 'Pemerintah Daerah' }}
                 </div>
-                <div class="sig-name">{{ $doc->creator?->name ?: 'Kepala Perangkat Daerah' }}</div>
+                <div class="sig-name">{{ $doc->creator?->name ?: 'Kepala Unit Kerja / Bidang' }}</div>
                 <div class="sig-nip">NIP. -</div>
             </td>
         </tr>
     </table>
 
     <div class="footer">
-        <div class="fl">Sistem Informasi e-SAKIP &bull; Dokumen SAKIP {{ $doc->code ?: $doc->id }}</div>
+        <div class="fl">Sistem Informasi SIPERFORMA PUPR &bull; Dokumen SAKIP {{ $doc->code ?: $doc->id }}</div>
         <div class="fr">Dicetak pada: {{ $generatedAt }}</div>
     </div>
 </body>

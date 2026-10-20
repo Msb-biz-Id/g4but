@@ -857,9 +857,9 @@ export default function Dashboard({
     pemda_sakip_matrix, opd_sakip_matrix, sakip_pemda, sakip_pemda_matrix,
 }: Props) {
     const { appConfig } = usePage<PageProps>().props;
-    const appName = appConfig?.appName || 'e-SAKIP';
-    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
-    const orgName = appConfig?.organizationName || 'Biro Organisasi Sekretariat Daerah';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
+    const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
     const currentYear = appConfig?.currentYear || 2026;
 
     const initialRawYear = Number(current_filters?.tahun_evaluasi ?? tahun_evaluasi);

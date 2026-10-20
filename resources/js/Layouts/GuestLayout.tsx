@@ -24,8 +24,8 @@ const maxWidthMap: Record<string, string> = {
 
 export default function Guest({ children, className, maxWidth = 'md' }: GuestProps) {
     const { theme, appConfig } = usePage<PageProps>().props;
-    const appName = appConfig?.appName || 'e-SAKIP';
-    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
+    const instansiName = appConfig?.instansiName || 'Dinas PUPR Kabupaten Mimika';
 
     useEffect(() => {
         if (theme) {

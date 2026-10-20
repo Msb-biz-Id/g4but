@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -41,9 +41,9 @@ class EvaluationSeeder extends Seeder
         $pp2025 = PlanningPeriod::where('code', 'TA-2025')->first();
         $pp2026 = PlanningPeriod::where('code', 'TA-2026')->firstOrFail();
 
-        $superAdmin = User::where('email', 'superadmin@esakip.local')->first();
-        $kadis = User::where('email', 'kepala.opd@esakip.local')->first() ?? $superAdmin;
-        $adminOpd = User::where('email', 'admin.opd@esakip.local')->first() ?? $superAdmin;
+        $superAdmin = User::where('email', 'superadmin@siperforma.local')->first();
+        $kadis = User::where('email', 'kepala.dinas@siperforma.local')->first() ?? $superAdmin;
+        $adminOpd = User::where('email', 'admin.pupr@siperforma.local')->first() ?? $superAdmin;
 
         // ══════════════════════════════════════════════════════════════════════
         // 1. EVALUASI SAKIP RESMI (EVALUATIONS & SCORES) OPD & UNIT KERJA

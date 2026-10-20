@@ -100,7 +100,7 @@ function SakipOpdDonutChart({
     const option = {
         tooltip: {
             trigger: 'item',
-            formatter: '{b}: <b>{c}</b> OPD ({d}%)',
+            formatter: '{b}: <b>{c}</b> Unit Kerja ({d}%)',
         },
         legend: {
             bottom: 0,
@@ -110,7 +110,7 @@ function SakipOpdDonutChart({
         },
         series: [
             {
-                name: 'Kelengkapan SAKIP OPD',
+                name: 'Kelengkapan SAKIP Unit Kerja',
                 type: 'pie',
                 radius: ['58%', '82%'],
                 center: ['50%', '42%'],
@@ -118,14 +118,14 @@ function SakipOpdDonutChart({
                 label: {
                     show: true,
                     position: 'center',
-                    formatter: () => `{val|${percentage.toFixed(1)}%}\n{lbl|OPD Lengkap}`,
+                    formatter: () => `{val|${percentage.toFixed(1)}%}\n{lbl|Unit Kerja Lengkap}`,
                     rich: {
                         val: { fontSize: 17, fontWeight: 800, color: '#1e293b', lineHeight: 21 },
                         lbl: { fontSize: 10, color: '#64748b', lineHeight: 14 },
                     },
                 },
                 data: [
-                    { name: 'OPD Lengkap', value: lengkap, itemStyle: { color: '#10b981' } },
+                    { name: 'Unit Kerja Lengkap', value: lengkap, itemStyle: { color: '#10b981' } },
                     { name: 'Belum Lengkap', value: belumLengkap, itemStyle: { color: '#f59e0b' } },
                 ],
             },
@@ -246,7 +246,7 @@ function SakipPemdaTrendChart({
         yAxis: { type: 'value', min: 70, max: 100, splitLine: { lineStyle: { type: 'dashed' } } },
         series: [
             {
-                name: 'Nilai SAKIP OPD',
+                name: 'Nilai SAKIP Unit Kerja',
                 type: 'line',
                 data: nilai,
                 lineStyle: { color: '#10b981', width: 3 },
@@ -337,7 +337,7 @@ function PkoPemdaTrendChart({
         },
         series: [
             {
-                name: 'Nilai PKO OPD',
+                name: 'Nilai PKO Unit Kerja',
                 type: 'bar',
                 barWidth: 38,
                 data: nilai,
@@ -1027,7 +1027,7 @@ function BudgetOpdRankingBarChart({
 
 function RiskDistributionDonutChart({ tinggi, sedang, rendah }: { tinggi: number; sedang: number; rendah: number }) {
     const option = {
-        tooltip: { trigger: 'item', formatter: '{b}: <b>{c}</b> OPD ({d}%)' },
+        tooltip: { trigger: 'item', formatter: '{b}: <b>{c}</b> Unit Kerja ({d}%)' },
         legend: { bottom: 0, textStyle: { fontSize: 11, color: '#64748b' } },
         series: [
             {
@@ -2104,7 +2104,7 @@ export default function AnalyticsIndex({
             } else {
                 const colKeys = Object.keys(sakip_docs.opd_columns);
                 const colLabels = Object.values(sakip_docs.opd_columns);
-                const headers = ['No', 'Kode OPD', 'Perangkat Daerah', ...colLabels, 'Tersedia', 'Total', 'Kelengkapan (%)', 'Status'];
+                const headers = ['No', 'Kode Unit Kerja', 'Unit Kerja / Bidang', ...colLabels, 'Tersedia', 'Total', 'Kelengkapan (%)', 'Status'];
                 const lines = filteredOpdDocs.map((r) => {
                     const rowChecks = colKeys.map((k) => (r.checks[k] ? '✓' : '-'));
                     return [r.no, r.organization_code, r.organization_name, ...rowChecks, r.available_count, r.total_required, `${r.percentage}%`, r.status].join('\t');
@@ -2112,18 +2112,18 @@ export default function AnalyticsIndex({
                 tsv = [headers.join('\t'), ...lines].join('\n');
             }
         } else if (activeTab === 'iku') {
-            const headers = ['No', 'Sasaran Strategis', 'Indikator IKU OPD', 'Satuan', 'Karakter', `Target (${evalYear})`, `Realisasi (${evalYear})`, `Capaian (%)`, 'Status', 'Predikat', 'OPD Pengampu'];
+            const headers = ['No', 'Sasaran Strategis', 'Indikator IKU', 'Satuan', 'Karakter', `Target (${evalYear})`, `Realisasi (${evalYear})`, `Capaian (%)`, 'Status', 'Predikat', 'Unit Kerja Pengampu'];
             const lines = filteredIkuPemda.map((r) => [r.no, r.sasaran, r.indikator, r.satuan, r.karakter, r.target ?? '-', r.realisasi ?? '-', r.capaian !== null ? `${r.capaian}%` : '-', r.status, r.predikat, r.opd_pengampu].join('\t'));
             tsv = [headers.join('\t'), ...lines].join('\n');
         } else if (activeTab === 'opd') {
             if (opdMatrixView === 'ranking') {
-                const headers = ['Rank', 'Perangkat Daerah', 'Jumlah Indikator Kinerja', 'Rata-rata Capaian', 'Tercapai', 'Perlu Perhatian', 'Kritis', 'Status'];
+                const headers = ['Rank', 'Unit Kerja / Bidang', 'Jumlah Indikator Kinerja', 'Rata-rata Capaian', 'Tercapai', 'Perlu Perhatian', 'Kritis', 'Status'];
                 const lines = filteredOpdRanking.map((r) => [r.rank, r.perangkat_daerah, r.jumlah_indikator, `${r.rata_capaian.toFixed(2)}%`, r.tercapai, r.perhatian, r.kritis, r.status].join('\t'));
                 tsv = [headers.join('\t'), ...lines].join('\n');
             } else {
                 const years = opd_ranking_matrix?.years ?? available_years ?? [evalYear];
                 const yearHeaders = years.map((y) => `Capaian ${y} (%)`).join('\t');
-                const headers = ['Rank', 'Perangkat Daerah', 'Jumlah Indikator Kinerja', yearHeaders, 'Tren', `Status (${evalYear})`];
+                const headers = ['Rank', 'Unit Kerja / Bidang', 'Jumlah Indikator Kinerja', yearHeaders, 'Tren', `Status (${evalYear})`];
                 const lines = filteredOpdRanking.map((r) => {
                     const yCols = years.map((y) => (r.yearly && r.yearly[y] ? `${r.yearly[y].capaian.toFixed(2)}%` : '-')).join('\t');
                     return [r.rank, r.perangkat_daerah, r.jumlah_indikator, yCols, r.tren ?? '→', r.status].join('\t');
@@ -2142,17 +2142,17 @@ export default function AnalyticsIndex({
                 k.predikat,
                 k.deskripsi,
             ].join('\t'));
-            const totalLine = ['', 'TOTAL NILAI SAKIP OPD', '100.0', (dataPemda?.nilai ?? 0.0).toFixed(2), `${(dataPemda?.nilai ?? 0.0).toFixed(2)}%`, dataPemda?.predikat ?? 'BELUM DINILAI', 'Evaluasi Akuntabilitas Kinerja OPD (PermenPANRB 88/2021)'].join('\t');
+            const totalLine = ['', 'TOTAL NILAI SAKIP DINAS PUPR', '100.0', (dataPemda?.nilai ?? 0.0).toFixed(2), `${(dataPemda?.nilai ?? 0.0).toFixed(2)}%`, dataPemda?.predikat ?? 'BELUM DINILAI', 'Evaluasi Akuntabilitas Kinerja Instansi (PermenPANRB 88/2021)'].join('\t');
             tsv = [headers.join('\t'), ...lines, totalLine].join('\n');
         } else if (activeTab === 'sakip_eval') {
             if (sakipMatrixView === 'components') {
-                const headers = ['No', 'Kode OPD', 'Perangkat Daerah', 'Perencanaan (30)', 'Pengukuran (30)', 'Pelaporan (15)', 'Evaluasi Internal (25)', 'Nilai SAKIP', 'Predikat', 'Status LHE'];
+                const headers = ['No', 'Kode Unit Kerja', 'Unit Kerja / Bidang', 'Perencanaan (30)', 'Pengukuran (30)', 'Pelaporan (15)', 'Evaluasi Internal (25)', 'Nilai SAKIP', 'Predikat', 'Status LHE'];
                 const lines = filteredSakipEval.map((r) => [r.no, r.kode, r.perangkat_daerah, r.perencanaan.toFixed(2), r.pengukuran.toFixed(2), r.pelaporan.toFixed(2), r.evaluasi_internal.toFixed(2), r.nilai.toFixed(2), r.predikat, r.lhe?.status_dokumen ?? 'LHE Tersedia'].join('\t'));
                 tsv = [headers.join('\t'), ...lines].join('\n');
             } else {
                 const years = sakip_eval_matrix?.years ?? available_years ?? [evalYear];
                 const yearHeaders = years.map((y) => `Nilai SAKIP ${y}`).join('\t');
-                const headers = ['No', 'Kode OPD', 'Perangkat Daerah', yearHeaders, 'Tren', `Nilai (${evalYear})`, `Predikat (${evalYear})`, 'Status LHE'];
+                const headers = ['No', 'Kode Unit Kerja', 'Unit Kerja / Bidang', yearHeaders, 'Tren', `Nilai (${evalYear})`, `Predikat (${evalYear})`, 'Status LHE'];
                 const lines = filteredSakipEval.map((r) => {
                     const yCols = years.map((y) => (r.yearly && r.yearly[y] ? `${r.yearly[y].nilai.toFixed(2)} (${r.yearly[y].predikat})` : '-')).join('\t');
                     return [r.no, r.kode, r.perangkat_daerah, yCols, r.tren ?? '→', r.nilai.toFixed(2), r.predikat, r.lhe?.status_dokumen ?? 'LHE Tersedia'].join('\t');
@@ -2171,7 +2171,7 @@ export default function AnalyticsIndex({
                 tsv = [headers.join('\t'), ...lines].join('\n');
             } else {
                 if (pkoOpdMatrixView === 'trend_5yr') {
-                    const headers = ['No', 'Perangkat Daerah', ...pkoYears.map(String), 'Tren', `Nilai PKO (${evalYear})`, 'Predikat', 'Peringkat'];
+                    const headers = ['No', 'Unit Kerja / Bidang', ...pkoYears.map(String), 'Tren', `Nilai PKO (${evalYear})`, 'Predikat', 'Peringkat'];
                     const lines = filteredPkoOpd.map((r, i) => [
                         i + 1,
                         r.perangkat_daerah,
@@ -2183,7 +2183,7 @@ export default function AnalyticsIndex({
                     ].join('\t'));
                     tsv = [headers.join('\t'), ...lines].join('\n');
                 } else {
-                    const headers = ['No', 'Perangkat Daerah', 'Nilai PKO', 'Predikat', 'Peringkat'];
+                    const headers = ['No', 'Unit Kerja / Bidang', 'Nilai PKO', 'Predikat', 'Peringkat'];
                     const lines = filteredPkoOpd.map((r, i) => [
                         i + 1,
                         r.perangkat_daerah,
@@ -2196,7 +2196,7 @@ export default function AnalyticsIndex({
             }
         } else if (activeTab === 'action_plans') {
             if (actionPlansViewMode === 'opd_summary') {
-                const headers = ['No', 'Perangkat Daerah', `Target ${actionPlansTw}`, `Realisasi ${actionPlansTw}`, 'Capaian', 'Status', 'Predikat', 'Jml Renaksi'];
+                const headers = ['No', 'Unit Kerja / Bidang', `Target ${actionPlansTw}`, `Realisasi ${actionPlansTw}`, 'Capaian', 'Status', 'Predikat', 'Jml Renaksi'];
                 const lines = filteredActionPlansOpd.map((r) => [
                     r.no,
                     r.opd,
@@ -2209,7 +2209,7 @@ export default function AnalyticsIndex({
                 ].join('\t'));
                 tsv = [headers.join('\t'), ...lines].join('\n');
             } else if (actionPlansViewMode === 'quarterly_trend') {
-                const headers = ['No', 'Perangkat Daerah', 'TW I (%)', 'TW II (%)', 'TW III (%)', 'TW IV (%)', 'Tren', `Status (${actionPlansTw})`];
+                const headers = ['No', 'Unit Kerja / Bidang', 'TW I (%)', 'TW II (%)', 'TW III (%)', 'TW IV (%)', 'Tren', `Status (${actionPlansTw})`];
                 const lines = filteredActionPlansOpd.map((r) => [
                     r.no,
                     r.opd,
@@ -2222,13 +2222,13 @@ export default function AnalyticsIndex({
                 ].join('\t'));
                 tsv = [headers.join('\t'), ...lines].join('\n');
             } else {
-                const headers = ['No', 'Kode OPD', 'Perangkat Daerah', 'Rencana Aksi Kinerja', `Target ${actionPlansTw}`, `Realisasi ${actionPlansTw}`, 'Capaian (%)', 'Status', 'Predikat'];
+                const headers = ['No', 'Kode Unit Kerja', 'Unit Kerja / Bidang', 'Rencana Aksi Kinerja', `Target ${actionPlansTw}`, `Realisasi ${actionPlansTw}`, 'Capaian (%)', 'Status', 'Predikat'];
                 const lines = filteredActionPlans.map((r) => [r.no, r.kode, r.perangkat_daerah, r.rencana_aksi, r.target_tw != null ? r.target_tw.toFixed(2) : '-', r.realisasi_tw != null ? r.realisasi_tw.toFixed(2) : '-', r.capaian != null ? `${r.capaian.toFixed(2)}%` : '-', r.status, r.predikat].join('\t'));
                 tsv = [headers.join('\t'), ...lines].join('\n');
             }
         } else if (activeTab === 'monitoring_budget') {
             if (budgetViewMode === 'opd_summary') {
-                const headers = ['No', 'Perangkat Daerah', `Pagu ${actionPlansTw}`, `Realisasi ${actionPlansTw}`, 'Serapan (%)', 'Status', 'Predikat', 'Jml Subkegiatan'];
+                const headers = ['No', 'Unit Kerja / Bidang', `Pagu ${actionPlansTw}`, `Realisasi ${actionPlansTw}`, 'Serapan (%)', 'Status', 'Predikat', 'Jml Subkegiatan'];
                 const lines = filteredMonitoringBudgetOpd.map((r) => [
                     r.no,
                     r.opd,
@@ -2241,7 +2241,7 @@ export default function AnalyticsIndex({
                 ].join('\t'));
                 tsv = [headers.join('\t'), ...lines].join('\n');
             } else if (budgetViewMode === 'quarterly_trend') {
-                const headers = ['No', 'Perangkat Daerah', 'TW I (%)', 'TW II (%)', 'TW III (%)', 'TW IV (%)', 'Tren', `Status (${actionPlansTw})`];
+                const headers = ['No', 'Unit Kerja / Bidang', 'TW I (%)', 'TW II (%)', 'TW III (%)', 'TW IV (%)', 'Tren', `Status (${actionPlansTw})`];
                 const lines = filteredMonitoringBudgetOpd.map((r) => [
                     r.no,
                     r.opd,
@@ -2254,7 +2254,7 @@ export default function AnalyticsIndex({
                 ].join('\t'));
                 tsv = [headers.join('\t'), ...lines].join('\n');
             } else {
-                const headers = ['No', 'Kode OPD', 'Perangkat Daerah', 'Subkegiatan', 'Indikator Subkegiatan', `Pagu ${actionPlansTw}`, `Realisasi ${actionPlansTw}`, 'Serapan (%)', 'Status', 'Predikat'];
+                const headers = ['No', 'Kode Unit Kerja', 'Unit Kerja / Bidang', 'Subkegiatan', 'Indikator Subkegiatan', `Pagu ${actionPlansTw}`, `Realisasi ${actionPlansTw}`, 'Serapan (%)', 'Status', 'Predikat'];
                 const lines = filteredMonitoringBudgetRows.map((r) => [
                     r.no,
                     r.kode,
@@ -2270,7 +2270,7 @@ export default function AnalyticsIndex({
                 tsv = [headers.join('\t'), ...lines].join('\n');
             }
         } else if (activeTab === 'risk_map') {
-            const headers = ['Peringkat Risiko', 'Kode OPD', 'Perangkat Daerah', 'Skor Risiko (0-100)', 'Level Risiko', 'Rata-rata Capaian (%)', 'Nilai SAKIP', 'Kelengkapan Dokumen (%)', 'Rekomendasi Tindak Lanjut'];
+            const headers = ['Peringkat Risiko', 'Kode Unit Kerja', 'Unit Kerja / Bidang', 'Skor Risiko (0-100)', 'Level Risiko', 'Rata-rata Capaian (%)', 'Nilai SAKIP', 'Kelengkapan Dokumen (%)', 'Rekomendasi Tindak Lanjut'];
             const lines = filteredRiskMap.map((r) => [r.rank, r.kode, r.perangkat_daerah, r.risk_score, r.risk_level, `${r.rata_capaian}%`, r.sakip_nilai, `${r.dokumen_persen}%`, r.rekomendasi.join(' | ')].join('\t'));
             tsv = [headers.join('\t'), ...lines].join('\n');
         } else if (activeTab === 'trend') {
@@ -2278,7 +2278,7 @@ export default function AnalyticsIndex({
             const lines = filteredTrend.map((r, i) => [i + 1, r.period, formatDate(r.start_date), formatDate(r.end_date), r.evaluated_indicators ?? 0, r.realization_count, `${r.average_achievement}%`, r.status ?? '-'].join('\t'));
             tsv = [headers.join('\t'), ...lines].join('\n');
         } else if (activeTab === 'deviation') {
-            const headers = ['No', 'Kode Indikator', 'Nama Indikator', 'Kode OPD', 'Perangkat Daerah', 'Satuan', 'Periode', 'Target', 'Realisasi', 'Deviasi', 'Capaian (%)', 'Status'];
+            const headers = ['No', 'Kode Indikator', 'Nama Indikator', 'Kode Unit Kerja', 'Unit Kerja / Bidang', 'Satuan', 'Periode', 'Target', 'Realisasi', 'Deviasi', 'Capaian (%)', 'Status'];
             const lines = filteredDeviation.map((r, i) => [i + 1, r.indicator_code, r.indicator_name, r.organization_code, r.organization_name ?? '-', r.unit ?? '-', r.period, r.target ?? '-', r.value, r.deviation ?? '-', r.achievement !== null ? `${r.achievement}%` : '-', r.status].join('\t'));
             tsv = [headers.join('\t'), ...lines].join('\n');
         } else if (activeTab === 'heatmap') {
@@ -2538,7 +2538,7 @@ export default function AnalyticsIndex({
                                         onClick={() => setOpdMatrixView('ranking')}
                                         className={`px-3 py-1 text-xs font-semibold rounded-md transition ${opdMatrixView === 'ranking' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}
                                     >
-                                        Ranking OPD ({evalYear})
+                                        Ranking Unit Kerja ({evalYear})
                                     </button>
                                     <button
                                         onClick={() => setOpdMatrixView('trend_5yr')}
@@ -2635,11 +2635,11 @@ export default function AnalyticsIndex({
                                             <p className="text-xl font-black text-slate-800 dark:text-white">{sakip_docs.opd_summary.total_opd} OPD</p>
                                         </div>
                                         <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-center shadow-2xs">
-                                            <p className="text-[10px] font-semibold text-emerald-700 uppercase">OPD Lengkap</p>
+                                            <p className="text-[10px] font-semibold text-emerald-700 uppercase">Unit Kerja Lengkap</p>
                                             <p className="text-xl font-black text-emerald-800">{sakip_docs.opd_summary.opd_lengkap} OPD</p>
                                         </div>
                                         <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-center shadow-2xs">
-                                            <p className="text-[10px] font-semibold text-amber-700 uppercase">OPD Belum Lengkap</p>
+                                            <p className="text-[10px] font-semibold text-amber-700 uppercase">Unit Kerja Belum Lengkap</p>
                                             <p className="text-xl font-black text-amber-800">{sakip_docs.opd_summary.opd_belum_lengkap} OPD</p>
                                         </div>
                                         <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-3 text-center shadow-2xs">
@@ -2652,13 +2652,13 @@ export default function AnalyticsIndex({
                                         </div>
                                         <div className="col-span-2 sm:col-span-5 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-800 p-2.5 flex items-center justify-between px-3.5 shadow-2xs text-xs text-slate-600 dark:text-slate-300">
                                             <span>
-                                                <strong>Rumus:</strong> Persentase OPD Lengkap = Jumlah OPD Lengkap (100%) / Total OPD × 100% = {sakip_docs.opd_summary.opd_lengkap} / {sakip_docs.opd_summary.total_opd} × 100% = <strong className="text-blue-600 dark:text-blue-400">{sakip_docs.opd_summary.pct_lengkap}%</strong>
+                                                <strong>Rumus:</strong> Persentase Unit Kerja Lengkap = Jumlah Unit Kerja Lengkap (100%) / Total OPD × 100% = {sakip_docs.opd_summary.opd_lengkap} / {sakip_docs.opd_summary.total_opd} × 100% = <strong className="text-blue-600 dark:text-blue-400">{sakip_docs.opd_summary.pct_lengkap}%</strong>
                                             </span>
                                         </div>
                                     </div>
 
                                     <div className="md:col-span-4 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-800 p-3 flex flex-col items-center justify-center shadow-2xs">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Grafik Proporsi OPD</p>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">Grafik Proporsi Unit Kerja</p>
                                         <SakipOpdDonutChart
                                             lengkap={sakip_docs.opd_summary.opd_lengkap}
                                             belumLengkap={sakip_docs.opd_summary.opd_belum_lengkap}
@@ -2675,7 +2675,7 @@ export default function AnalyticsIndex({
                                         <div className="flex items-center gap-2">
                                             <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
                                             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                                                Daftar Kelengkapan Dokumen SAKIP OPD ({evalYear})
+                                                Daftar Kelengkapan Dokumen SAKIP Unit Kerja ({evalYear})
                                             </h4>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2">
@@ -2689,7 +2689,7 @@ export default function AnalyticsIndex({
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 shadow-2xs cursor-pointer transition"
-                                                title={`Download PDF Dokumen SAKIP OPD Tahun ${evalYear}`}
+                                                title={`Download PDF Dokumen SAKIP Unit Kerja Tahun ${evalYear}`}
                                             >
                                                 <FileDown className="h-3.5 w-3.5" />
                                                 <span>Download PDF</span>
@@ -2782,7 +2782,7 @@ export default function AnalyticsIndex({
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 shadow-2xs cursor-pointer transition"
-                                                title={`Download PDF Dokumen SAKIP OPD Tahun ${evalYear}`}
+                                                title={`Download PDF Dokumen SAKIP Unit Kerja Tahun ${evalYear}`}
                                             >
                                                 <FileDown className="h-3.5 w-3.5" />
                                                 <span>Download PDF</span>
@@ -2797,7 +2797,7 @@ export default function AnalyticsIndex({
                                             <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                                 <tr>
                                                     <th className="px-3 py-3 font-semibold text-center w-10">No</th>
-                                                    <th className="px-3 py-3 font-semibold min-w-[200px]">Perangkat Daerah</th>
+                                                    <th className="px-3 py-3 font-semibold min-w-[200px]">Unit Kerja / Bidang</th>
                                                     {Object.entries(sakip_docs.opd_columns).map(([k, label]) => (
                                                         <th key={k} className="px-2 py-3 font-semibold text-center text-[11px]" title={label}>
                                                             {label}
@@ -2868,7 +2868,7 @@ export default function AnalyticsIndex({
                         </div>
                     )}
 
-                    {/* TAB 3: CAPAIAN IKU OPD (DISEMBUNYIKAN TOTAL) */}
+                    {/* TAB 3: CAPAIAN IKU UNIT KERJA (DISEMBUNYIKAN TOTAL) */}
                     {false && activeTab === 'iku' && (
                         <div className="p-4 space-y-4">
                             {/* 6 KARTU UTAMA STATISTIK */}
@@ -2940,7 +2940,7 @@ export default function AnalyticsIndex({
                                 </div>
                             </div>
 
-                            {/* GRAFIK TREN 5 TAHUN IKU OPD */}
+                            {/* GRAFIK TREN 5 TAHUN IKU UNIT KERJA */}
                             <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-800 shadow-2xs">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-700 gap-2">
                                     <div>
@@ -2957,7 +2957,7 @@ export default function AnalyticsIndex({
                                 <IkuAnalyticsTrendChart trend={iku_pemda_matrix?.trend ?? []} />
                             </div>
 
-                            {/* FILTER STATUS TABS & MATRIKS IKU OPD CONTROLS */}
+                            {/* FILTER STATUS TABS & MATRIKS IKU UNIT KERJA CONTROLS */}
                             <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                     <span className="text-xs font-semibold text-slate-500 mr-1">Status:</span>
@@ -3030,7 +3030,7 @@ export default function AnalyticsIndex({
                                         target="_blank"
                                         rel="noreferrer"
                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 shadow-2xs cursor-pointer transition"
-                                        title={`Download PDF Capaian IKU OPD Tahun ${evalYear}`}
+                                        title={`Download PDF Capaian IKU Unit Kerja Tahun ${evalYear}`}
                                     >
                                         <FileDown className="h-3.5 w-3.5" />
                                         <span>Download PDF</span>
@@ -3048,7 +3048,7 @@ export default function AnalyticsIndex({
                                             <tr>
                                                 <th className="px-3 py-3 font-semibold text-center w-10">No</th>
                                                 <th className="px-4 py-3 font-semibold w-52">Sasaran Strategis</th>
-                                                <th className="px-4 py-3 font-semibold">Indikator IKU OPD</th>
+                                                <th className="px-4 py-3 font-semibold">Indikator IKU</th>
                                                 <th className="px-2 py-3 font-semibold text-center w-20">Satuan</th>
                                                 <th className="px-3 py-3 font-semibold text-center w-36">Karakter Indikator</th>
                                                 <th className="px-3 py-3 font-semibold text-right w-24">Target</th>
@@ -3059,7 +3059,7 @@ export default function AnalyticsIndex({
                                         </thead>
                                         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                                             {filteredIkuPemda.length === 0 ? (
-                                                <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-400">Tidak ada IKU OPD yang sesuai pencarian.</td></tr>
+                                                <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-400">Tidak ada IKU yang sesuai pencarian.</td></tr>
                                             ) : (
                                                 filteredIkuPemda.map((row) => (
                                                     <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
@@ -3102,7 +3102,7 @@ export default function AnalyticsIndex({
                                             <tr>
                                                 <th rowSpan={2} className="px-2.5 py-2 font-bold text-center w-10 border-r border-slate-200">No</th>
                                                 <th rowSpan={2} className="px-3 py-2 font-bold w-48 border-r border-slate-200">Sasaran Strategis</th>
-                                                <th rowSpan={2} className="px-3 py-2 font-bold w-52 border-r border-slate-200">IKU OPD</th>
+                                                <th rowSpan={2} className="px-3 py-2 font-bold w-52 border-r border-slate-200">IKU Unit Kerja</th>
                                                 {ikuPemdaYears.map((y) => (
                                                     <th key={y} colSpan={3} className={`px-2 py-1 font-bold text-center border-r border-slate-200 ${y === Number(evalYear) ? 'bg-blue-100 text-blue-900 font-black' : ''}`}>
                                                         {y}
@@ -3159,7 +3159,7 @@ export default function AnalyticsIndex({
                     )}
 
                     {/* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
-                        TAB 4: CAPAIAN KINERJA OPD (Baris 3 Panduan)
+                        TAB 4: CAPAIAN KINERJA UNIT KERJA (Baris 3 Panduan)
                     =============================================================== */}
                     {activeTab === 'opd' && (
                         <div className="p-4 space-y-4">
@@ -3173,7 +3173,7 @@ export default function AnalyticsIndex({
                                             : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-800 hover:bg-slate-50'
                                     }`}
                                 >
-                                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Total OPD</p>
+                                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Total Unit Kerja</p>
                                     <p className="text-2xl font-black text-slate-800 dark:text-white mt-0.5">{opd_ranking_matrix?.summary.total_opd ?? 0}</p>
                                     <span className="text-[10px] text-slate-500">Semua Perangkat Daerah</span>
                                 </div>
@@ -3232,7 +3232,7 @@ export default function AnalyticsIndex({
                                 </div>
                             </div>
 
-                            {/* GRAFIK TREN 5 TAHUN KINERJA OPD */}
+                            {/* GRAFIK TREN 5 TAHUN KINERJA UNIT KERJA */}
                             <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-800 shadow-2xs">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-700 gap-2">
                                     <div>
@@ -3249,7 +3249,7 @@ export default function AnalyticsIndex({
                                 <OpdPerformanceTrendChart trend={opd_ranking_matrix?.trend ?? []} />
                             </div>
 
-                            {/* FILTER STATUS TABS & MATRIKS OPD CONTROLS */}
+                            {/* FILTER STATUS TABS & MATRIKS UNIT KERJA CONTROLS */}
                             <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                     <span className="text-xs font-semibold text-slate-500 mr-1">Status:</span>
@@ -3322,7 +3322,7 @@ export default function AnalyticsIndex({
                                         target="_blank"
                                         rel="noreferrer"
                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 shadow-2xs cursor-pointer transition"
-                                        title={`Download PDF Ranking OPD Tahun ${evalYear}`}
+                                        title={`Download PDF Ranking Unit Kerja Tahun ${evalYear}`}
                                     >
                                         <FileDown className="h-3.5 w-3.5" />
                                         <span>Download PDF</span>
@@ -3339,7 +3339,7 @@ export default function AnalyticsIndex({
                                         <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                             <tr>
                                                 <th className="px-3 py-3 font-semibold text-center w-12">Rank</th>
-                                                <th className="px-4 py-3 font-semibold">Perangkat Daerah</th>
+                                                <th className="px-4 py-3 font-semibold">Unit Kerja / Bidang</th>
                                                 <th className="px-3 py-3 font-semibold text-center w-36">Jumlah Indikator Kinerja</th>
                                                 <th className="px-3 py-3 font-semibold text-right w-32">Rata-rata Capaian</th>
                                                 <th className="px-3 py-3 font-semibold text-center w-20">Tercapai</th>
@@ -3351,7 +3351,7 @@ export default function AnalyticsIndex({
                                         </thead>
                                         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                                             {filteredOpdRanking.length === 0 ? (
-                                                <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-400">Tidak ada data OPD yang sesuai.</td></tr>
+                                                <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-400">Tidak ada data unit kerja yang sesuai.</td></tr>
                                             ) : (
                                                 filteredOpdRanking.map((row) => (
                                                     <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer" onClick={() => setSelectedOpdForDrilldown(row)}>
@@ -3407,7 +3407,7 @@ export default function AnalyticsIndex({
                                         <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                                             <tr>
                                                 <th className="px-3 py-3 font-semibold text-center w-12 border-r border-slate-200 dark:border-slate-700">Rank</th>
-                                                <th className="px-4 py-3 font-semibold border-r border-slate-200 dark:border-slate-700">Perangkat Daerah</th>
+                                                <th className="px-4 py-3 font-semibold border-r border-slate-200 dark:border-slate-700">Unit Kerja / Bidang</th>
                                                 <th className="px-3 py-3 font-semibold text-center w-24 border-r border-slate-200 dark:border-slate-700">Jml Indikator</th>
                                                 {opdTrendYears.map((y) => (
                                                     <th key={y} className={`px-3 py-3 font-bold text-center border-r border-slate-200 dark:border-slate-700 ${y === Number(evalYear) ? 'bg-blue-100/80 text-blue-900 dark:bg-blue-950/70 dark:text-blue-200 font-black' : ''}`}>
@@ -3421,7 +3421,7 @@ export default function AnalyticsIndex({
                                         </thead>
                                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                             {filteredOpdRanking.length === 0 ? (
-                                                <tr><td colSpan={11} className="px-4 py-8 text-center text-slate-400">Tidak ada data tren OPD yang cocok.</td></tr>
+                                                <tr><td colSpan={11} className="px-4 py-8 text-center text-slate-400">Tidak ada data tren unit kerja yang cocok.</td></tr>
                                             ) : (
                                                 filteredOpdRanking.map((row) => (
                                                     <tr key={`trend-opd-${row.id}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer" onClick={() => setSelectedOpdForDrilldown(row)}>
@@ -3480,7 +3480,7 @@ export default function AnalyticsIndex({
                                 </div>
                             )}
 
-                            {/* Kotak Legenda Status Kinerja Bawah Tabel OPD */}
+                            {/* Kotak Legenda Status Kinerja Bawah Tabel Unit Kerja */}
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 flex flex-wrap items-center gap-x-4 gap-y-1.5">
                                 <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                     <span>💡</span> Kriteria Status Kinerja:
@@ -3516,7 +3516,7 @@ export default function AnalyticsIndex({
                     )}
 
                     {/* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
-                        TAB: NILAI SAKIP OPD (Baris 3 Panduan - Modul Evaluasi)
+                        TAB: NILAI SAKIP UNIT KERJA (Baris 3 Panduan - Modul Evaluasi)
                     = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  */}
                     {activeTab === 'sakip_pemda' && (
                         <div className="p-4 space-y-4">
@@ -3667,7 +3667,7 @@ export default function AnalyticsIndex({
                                             {/* BARIS TOTAL */}
                                             <tr className="bg-emerald-50/70 dark:bg-emerald-950/40 border-t-2 border-emerald-300 dark:border-emerald-700 font-bold">
                                                 <td colSpan={2} className="px-3 py-2.5 text-center text-emerald-950 dark:text-emerald-100 font-black">
-                                                    TOTAL NILAI SAKIP OPD
+                                                    TOTAL NILAI SAKIP DINAS PUPR
                                                 </td>
                                                 <td className="px-3 py-2.5 text-center text-emerald-900 dark:text-emerald-200">100.0%</td>
                                                 <td className="px-3 py-2.5 text-center text-emerald-900 dark:text-emerald-100 text-sm font-black">
@@ -3792,7 +3792,7 @@ export default function AnalyticsIndex({
                                             : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800'
                                     }`}
                                 >
-                                    <p className="text-[10px] font-semibold text-slate-500 uppercase">Total OPD</p>
+                                    <p className="text-[10px] font-semibold text-slate-500 uppercase">Total Unit Kerja</p>
                                     <p className="text-xl font-black text-slate-800 dark:text-white mt-0.5">{sakip_eval_matrix?.summary.opd_dievaluasi ?? 0}</p>
                                     <span className="text-[9px] text-slate-400 mt-0.5 block">Semua OPD</span>
                                 </button>
@@ -4004,7 +4004,7 @@ export default function AnalyticsIndex({
                                         <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                             <tr>
                                                 <th className="px-3 py-3 font-semibold text-center w-12">No</th>
-                                                <th className="px-4 py-3 font-semibold">Perangkat Daerah</th>
+                                                <th className="px-4 py-3 font-semibold">Unit Kerja / Bidang</th>
                                                 <th className="px-3 py-3 font-semibold text-right w-32">Perencanaan (30)</th>
                                                 <th className="px-3 py-3 font-semibold text-right w-32">Pengukuran (30)</th>
                                                 <th className="px-3 py-3 font-semibold text-right w-32">Pelaporan (15)</th>
@@ -4058,7 +4058,7 @@ export default function AnalyticsIndex({
                                         <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                             <tr>
                                                 <th className="px-3 py-3 font-semibold text-center w-12">No</th>
-                                                <th className="px-4 py-3 font-semibold">Perangkat Daerah</th>
+                                                <th className="px-4 py-3 font-semibold">Unit Kerja / Bidang</th>
                                                 {sakipTrendYears.map((yr) => (
                                                     <th
                                                         key={yr}
@@ -4562,7 +4562,7 @@ export default function AnalyticsIndex({
                                                     <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                                                          <tr>
                                                             <th className="px-3 py-3 font-bold text-center w-12">No</th>
-                                                            <th className="px-4 py-3 font-bold">Perangkat Daerah</th>
+                                                            <th className="px-4 py-3 font-bold">Unit Kerja / Bidang</th>
                                                             <th className="px-3 py-3 font-bold text-right w-32">Capaian PK</th>
                                                             <th className="px-3 py-3 font-bold text-right w-32">Nilai PKO (NKO)</th>
                                                             <th className="px-3 py-3 font-bold text-center w-36">Predikat PKO</th>
@@ -4614,7 +4614,7 @@ export default function AnalyticsIndex({
                                                     <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                                                         <tr>
                                                             <th className="px-3 py-3 font-bold text-center w-12">No</th>
-                                                            <th className="px-4 py-3 font-bold">Perangkat Daerah</th>
+                                                            <th className="px-4 py-3 font-bold">Unit Kerja / Bidang</th>
                                                             {pkoYears.map((yr) => (
                                                                 <th
                                                                     key={yr}
@@ -4998,7 +4998,7 @@ export default function AnalyticsIndex({
                                             <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800/90 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                                                 <tr>
                                                     <th className="px-4 py-3 font-bold text-center w-12">No</th>
-                                                    <th className="px-4 py-3 font-bold">Perangkat Daerah</th>
+                                                    <th className="px-4 py-3 font-bold">Unit Kerja / Bidang</th>
                                                     <th className="px-3 py-3 font-bold text-center w-28">TW I (%)</th>
                                                     <th className="px-3 py-3 font-bold text-center w-32 bg-blue-50/80 dark:bg-blue-950/40 text-blue-900 dark:text-blue-300 border-x border-blue-200 dark:border-blue-800">
                                                         TW II (%) {actionPlansTw === 'TW II' ? '★' : ''}
@@ -5063,7 +5063,7 @@ export default function AnalyticsIndex({
                                             <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800/90 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                                                 <tr>
                                                     <th className="px-3 py-3 font-semibold text-center w-12">No</th>
-                                                    <th className="px-4 py-3 font-semibold w-48">Perangkat Daerah</th>
+                                                    <th className="px-4 py-3 font-semibold w-48">Unit Kerja / Bidang</th>
                                                     <th className="px-4 py-3 font-semibold">Rencana Aksi Kinerja</th>
                                                     <th className="px-3 py-3 font-semibold text-right w-28">Target {actionPlansTw}</th>
                                                     <th className="px-3 py-3 font-semibold text-right w-28">Realisasi {actionPlansTw}</th>
@@ -5440,7 +5440,7 @@ export default function AnalyticsIndex({
                                             <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800/90 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                                                 <tr>
                                                     <th className="px-4 py-3 font-bold text-center w-12">No</th>
-                                                    <th className="px-4 py-3 font-bold">Perangkat Daerah</th>
+                                                    <th className="px-4 py-3 font-bold">Unit Kerja / Bidang</th>
                                                     <th className="px-3 py-3 font-bold text-center w-28">TW I (%)</th>
                                                     <th className="px-3 py-3 font-bold text-center w-32 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border-x border-emerald-200 dark:border-emerald-800">
                                                         TW II (%) {actionPlansTw === 'TW II' ? '★' : ''}
@@ -5505,7 +5505,7 @@ export default function AnalyticsIndex({
                                             <thead className="bg-slate-50 text-slate-700 dark:bg-slate-800/90 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                                                 <tr>
                                                     <th className="px-3 py-3 font-semibold text-center w-12">No</th>
-                                                    <th className="px-4 py-3 font-semibold w-48">Perangkat Daerah</th>
+                                                    <th className="px-4 py-3 font-semibold w-48">Unit Kerja / Bidang</th>
                                                     <th className="px-4 py-3 font-semibold">Subkegiatan &amp; Indikator</th>
                                                     <th className="px-3 py-3 font-semibold text-right w-28">Pagu {actionPlansTw}</th>
                                                     <th className="px-3 py-3 font-semibold text-right w-28">Realisasi {actionPlansTw}</th>
@@ -5622,17 +5622,17 @@ export default function AnalyticsIndex({
                                 <div className="md:col-span-8 grid grid-cols-3 gap-3">
                                     <div className="rounded-lg border border-rose-300 bg-rose-100/70 p-4 text-center shadow-2xs">
                                         <p className="text-xs font-bold text-rose-800 uppercase">Risiko Tinggi</p>
-                                        <p className="text-3xl font-black text-rose-950 mt-1">{risk_map_matrix?.summary.risiko_tinggi ?? 0} OPD</p>
+                                        <p className="text-3xl font-black text-rose-950 mt-1">{risk_map_matrix?.summary.risiko_tinggi ?? 0} Unit Kerja</p>
                                         <span className="text-[11px] text-rose-700">Skor Risiko &ge; 50</span>
                                     </div>
                                     <div className="rounded-lg border border-amber-300 bg-amber-100/70 p-4 text-center shadow-2xs">
                                         <p className="text-xs font-bold text-amber-800 uppercase">Risiko Sedang</p>
-                                        <p className="text-3xl font-black text-amber-950 mt-1">{risk_map_matrix?.summary.risiko_sedang ?? 0} OPD</p>
+                                        <p className="text-3xl font-black text-amber-950 mt-1">{risk_map_matrix?.summary.risiko_sedang ?? 0} Unit Kerja</p>
                                         <span className="text-[11px] text-amber-700">Skor Risiko 25 - 49</span>
                                     </div>
                                     <div className="rounded-lg border border-emerald-300 bg-emerald-100/70 p-4 text-center shadow-2xs">
                                         <p className="text-xs font-bold text-emerald-800 uppercase">Risiko Rendah</p>
-                                        <p className="text-3xl font-black text-emerald-950 mt-1">{risk_map_matrix?.summary.risiko_rendah ?? 0} OPD</p>
+                                        <p className="text-3xl font-black text-emerald-950 mt-1">{risk_map_matrix?.summary.risiko_rendah ?? 0} Unit Kerja</p>
                                         <span className="text-[11px] text-emerald-700">Skor Risiko &lt; 25</span>
                                     </div>
                                 </div>
@@ -5681,7 +5681,7 @@ export default function AnalyticsIndex({
                                     <thead className="bg-slate-100 text-slate-700">
                                         <tr>
                                             <th className="px-3 py-3 font-semibold text-center w-12">No</th>
-                                            <th className="px-4 py-3 font-semibold w-48">Perangkat Daerah</th>
+                                            <th className="px-4 py-3 font-semibold w-48">Unit Kerja / Bidang</th>
                                             <th className="px-3 py-3 font-semibold text-center w-28">Skor Risiko</th>
                                             <th className="px-3 py-3 font-semibold text-center w-28">Level Risiko</th>
                                             <th className="px-3 py-3 font-semibold text-right w-24">Capaian</th>
@@ -5850,7 +5850,7 @@ export default function AnalyticsIndex({
                                             <th className="px-3 py-3 font-semibold text-center w-12">No</th>
                                             <th className="px-3 py-3 font-semibold w-28">Kode</th>
                                             <th className="px-4 py-3 font-semibold">Indikator Kinerja</th>
-                                            <th className="px-3 py-3 font-semibold w-36">Perangkat Daerah</th>
+                                            <th className="px-3 py-3 font-semibold w-36">Unit Kerja / Bidang</th>
                                             <th className="px-3 py-3 font-semibold text-center w-28">Periode</th>
                                             <th className="px-3 py-3 font-semibold text-right w-24">Target</th>
                                             <th className="px-3 py-3 font-semibold text-right w-24">Realisasi</th>

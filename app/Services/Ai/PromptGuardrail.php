@@ -158,8 +158,8 @@ class PromptGuardrail
     public function label(string $content, string $channel = 'web'): string
     {
         $appName = class_exists(\App\Models\AppConfig::class)
-            ? (\App\Models\AppConfig::where('key', 'app_name')->value('value') ?: config('app.name', 'e-SAKIP'))
-            : config('app.name', 'e-SAKIP');
+            ? (\App\Models\AppConfig::where('key', 'app_name')->value('value') ?: config('app.name', 'SIPERFORMA PUPR'))
+            : config('app.name', 'SIPERFORMA PUPR');
 
         $mark = $channel === 'whatsapp'
             ? "[Hasil analisis otomatis {$appName}]"

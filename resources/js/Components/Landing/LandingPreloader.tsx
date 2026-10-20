@@ -17,7 +17,7 @@ export default function LandingPreloader() {
     const [isDismissed, setIsDismissed] = useState(false);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
-    const appName = appConfig?.appName || 'e-SAKIP';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
     const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
     const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
 

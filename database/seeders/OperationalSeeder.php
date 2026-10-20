@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -37,11 +37,11 @@ class OperationalSeeder extends Seeder
 
         $pp2026 = PlanningPeriod::where('code', 'TA-2026')->firstOrFail();
 
-        $superAdmin = User::where('email', 'superadmin@esakip.local')->firstOrFail();
-        $kadis = User::where('email', 'kepala.opd@esakip.local')->first() ?? $superAdmin;
-        $adminOpd = User::where('email', 'admin.opd@esakip.local')->first() ?? $superAdmin;
-        $kabidBM = User::where('email', 'kabid.binamarga@esakip.local')->first() ?? $superAdmin;
-        $kabidCK = User::where('email', 'kabid.ciptakarya@esakip.local')->first() ?? $superAdmin;
+        $superAdmin = User::where('email', 'superadmin@siperforma.local')->firstOrFail();
+        $kadis = User::where('email', 'kepala.dinas@siperforma.local')->first() ?? $superAdmin;
+        $adminOpd = User::where('email', 'admin.pupr@siperforma.local')->first() ?? $superAdmin;
+        $kabidBM = User::where('email', 'kabid.binamarga@siperforma.local')->first() ?? $superAdmin;
+        $kabidCK = User::where('email', 'kabid.ciptakarya@siperforma.local')->first() ?? $superAdmin;
 
         // ══════════════════════════════════════════════════════════════════════
         // 1. EARLY WARNING SYSTEM (ALERTS)

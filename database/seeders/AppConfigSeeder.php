@@ -17,8 +17,8 @@ class AppConfigSeeder extends Seeder
                 'label' => 'Nama Aplikasi',
                 'description' => 'Nama resmi aplikasi yang ditampilkan di header dan email.',
                 'type' => 'string',
-                'value' => 'E-Sakip PUPR',
-                'default_value' => 'E-Sakip PUPR',
+                'value' => 'SIPERFORMA PUPR',
+                'default_value' => 'SIPERFORMA PUPR',
                 'is_secret' => false,
             ],
             [
@@ -27,8 +27,8 @@ class AppConfigSeeder extends Seeder
                 'label' => 'Nama Aplikasi (Alias)',
                 'description' => 'Alias nama aplikasi untuk kompatibilitas template.',
                 'type' => 'string',
-                'value' => 'E-Sakip PUPR',
-                'default_value' => 'E-Sakip PUPR',
+                'value' => 'SIPERFORMA PUPR',
+                'default_value' => 'SIPERFORMA PUPR',
                 'is_secret' => false,
             ],
             [

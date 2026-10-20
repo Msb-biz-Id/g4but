@@ -107,7 +107,7 @@ export default function PublicIndex({
     categories,
 }: Props) {
     const { appConfig } = usePage<any>().props;
-    const appName = appConfig?.appName || 'e-SAKIP';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
     const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
     const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
 

@@ -391,10 +391,10 @@ function SurabayaSubTree({
                                                     className={cn(
                                                         'absolute top-0 h-0.5 bg-slate-300 dark:bg-slate-600',
                                                         isFirst
-                                                             ? 'left-1/2 right-0'
+                                                            ? 'left-1/2 right-0'
                                                             : isLast
-                                                            ? 'left-0 right-1/2'
-                                                            : 'left-0 right-0'
+                                                                ? 'left-0 right-1/2'
+                                                                : 'left-0 right-0'
                                                     )}
                                                 />
                                             )}

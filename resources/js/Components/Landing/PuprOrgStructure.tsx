@@ -25,25 +25,25 @@ const STRUKTUR_BIDANG: BidangData[] = [
         name: 'Bidang Cipta Karya',
         code: 'BIDANG-CK',
         icon: Building2,
-        kabidEmail: 'kabid.ciptakarya@esakip.local',
+        kabidEmail: 'kabid.ciptakarya@siperforma.local',
         tagline: 'Tata Gedung, Prasarana Pemukiman & Air Minum',
         sections: [
             {
                 name: 'Seksi Bangunan Gedung dan Penataan Lingkungan',
                 code: 'SEKSI-CK-1',
-                picEmail: 'seksi.gedung@esakip.local',
+                picEmail: 'seksi.gedung@siperforma.local',
                 focus: 'Standarisasi kelayakan teknis gedung daerah & tata lingkungan perkotaan',
             },
             {
                 name: 'Seksi Penyehatan Prasarana Pemukiman',
                 code: 'SEKSI-CK-2',
-                picEmail: 'seksi.prasarana@esakip.local',
+                picEmail: 'seksi.prasarana@siperforma.local',
                 focus: 'Prasarana dasar sanitasi, drainase pemukiman, dan pencegahan kawasan kumuh',
             },
             {
                 name: 'Seksi Air Minum Dan Sanitasi',
                 code: 'SEKSI-CK-3',
-                picEmail: 'seksi.airminum@esakip.local',
+                picEmail: 'seksi.airminum@siperforma.local',
                 focus: 'Pengembangan jaringan SPAM perpipaan dan sanitasi terpadu masyarakat Mimika',
             },
         ],
@@ -52,25 +52,25 @@ const STRUKTUR_BIDANG: BidangData[] = [
         name: 'Bidang Bina Marga',
         code: 'BIDANG-BM',
         icon: Compass,
-        kabidEmail: 'kabid.binamarga@esakip.local',
+        kabidEmail: 'kabid.binamarga@siperforma.local',
         tagline: 'Konektivitas Jalan & Jembatan Kabupaten',
         sections: [
             {
                 name: 'Seksi Pembangunan Dan Peningkatan Jalan dan Jembatan',
                 code: 'SEKSI-BM-1',
-                picEmail: 'seksi.pembangunanjalan@esakip.local',
+                picEmail: 'seksi.pembangunanjalan@siperforma.local',
                 focus: 'Pembangunan ruas jalan poros kabupaten dan jembatan penghubung distrik',
             },
             {
                 name: 'Seksi Pemeliharaan Jalan dan Jembatan',
                 code: 'SEKSI-BM-2',
-                picEmail: 'seksi.pemeliharaanjalan@esakip.local',
+                picEmail: 'seksi.pemeliharaanjalan@siperforma.local',
                 focus: 'Pemeliharaan berkala, penanganan tanggap darurat jalan dan jembatan rusak',
             },
             {
                 name: 'Seksi Perencanaan Dan Leger Jalan dan Jembatan',
                 code: 'SEKSI-BM-3',
-                picEmail: 'seksi.perencanaanjalan@esakip.local',
+                picEmail: 'seksi.perencanaanjalan@siperforma.local',
                 focus: 'Audit data leger jalan daerah, DED konstruksi, dan inventarisasi aset jalan',
             },
         ],
@@ -79,25 +79,25 @@ const STRUKTUR_BIDANG: BidangData[] = [
         name: 'Bidang Sumber Daya Air',
         code: 'BIDANG-SDA',
         icon: Activity,
-        kabidEmail: 'kabid.sda@esakip.local',
+        kabidEmail: 'kabid.sda@siperforma.local',
         tagline: 'Pengendali Banjir, Tanggul & Jaringan Irigasi',
         sections: [
             {
                 name: 'Seksi Pembangunan Sarana dan Prasarana SDA',
                 code: 'SEKSI-SDA-1',
-                picEmail: 'seksi.sarpras.sda@esakip.local',
+                picEmail: 'seksi.sarpras.sda@siperforma.local',
                 focus: 'Pembangunan tanggul penahan banjir sungai dan sarana irigasi pertanian',
             },
             {
                 name: 'Seksi Operasi dan Pemeliharaan SDA',
                 code: 'SEKSI-SDA-2',
-                picEmail: 'seksi.op.sda@esakip.local',
+                picEmail: 'seksi.op.sda@siperforma.local',
                 focus: 'Operasi pintu air, normalisasi berkala saluran sungai dan drainase primer',
             },
             {
                 name: 'Seksi Bina Manfaat SDA',
                 code: 'SEKSI-SDA-3',
-                picEmail: 'seksi.binamanfaat.sda@esakip.local',
+                picEmail: 'seksi.binamanfaat.sda@siperforma.local',
                 focus: 'Pendataan pemanfaatan alokasi air tanah dan pemberdayaan P3A kelompok tani',
             },
         ],
@@ -106,25 +106,25 @@ const STRUKTUR_BIDANG: BidangData[] = [
         name: 'Bidang Penataan Ruang',
         code: 'BIDANG-TR',
         icon: Layers,
-        kabidEmail: 'kabid.penataanruang@esakip.local',
+        kabidEmail: 'kabid.penataanruang@siperforma.local',
         tagline: 'RTRW, Pemanfaatan Zonasi & Pengendalian',
         sections: [
             {
                 name: 'Seksi Perencanaan Penataan Ruang',
                 code: 'SEKSI-TR-1',
-                picEmail: 'seksi.perencanaanruang@esakip.local',
+                picEmail: 'seksi.perencanaanruang@siperforma.local',
                 focus: 'Penyusunan Rencana Tata Ruang Wilayah (RTRW) & Rencana Detail Tata Ruang (RDTR)',
             },
             {
                 name: 'Seksi Pemanfaatan Ruang',
                 code: 'SEKSI-TR-2',
-                picEmail: 'seksi.pemanfaatanruang@esakip.local',
+                picEmail: 'seksi.pemanfaatanruang@siperforma.local',
                 focus: 'Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR) dan perizinan zonasi wilayah',
             },
             {
                 name: 'Seksi Pengendalian Tata Ruang',
                 code: 'SEKSI-TR-3',
-                picEmail: 'seksi.pengendalianruang@esakip.local',
+                picEmail: 'seksi.pengendalianruang@siperforma.local',
                 focus: 'Pengawasan tertib ruang, penegakan sanksi tata ruang dan audit kepatuhan',
             },
         ],
@@ -175,7 +175,7 @@ export default function PuprOrgStructure() {
                                 Kepala Dinas PUPR Kabupaten Mimika
                             </h3>
                             <p className="text-[11px] font-mono text-slate-300 mt-0.5">
-                                Akun: <span className="text-[#FFB800]">kepala.opd@esakip.local</span>
+                                Akun: <span className="text-[#FFB800]">kepala.dinas@siperforma.local</span>
                             </p>
                         </div>
 
@@ -281,7 +281,7 @@ export default function PuprOrgStructure() {
                                 UPTD Dinas PUPR Kabupaten Mimika
                             </h4>
                             <p className="text-[10px] font-mono text-slate-400 mt-0.5">
-                                Akun: <span className="text-amber-300">kepala.uptd@esakip.local</span>
+                                Akun: <span className="text-amber-300">kepala.uptd@siperforma.local</span>
                             </p>
                         </div>
                     </div>

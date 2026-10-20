@@ -63,7 +63,7 @@ export default function LateSubmissions({ lateRows, periods, totalLate, filters,
                         { label: 'Monitoring Keterlambatan' },
                     ]}
                     title="Monitoring Keterlambatan Pengiriman Realisasi"
-                    description="Daftar perangkat daerah yang melewati batas waktu pengiriman berkas realisasi kinerja."
+                    description="Daftar unit kerja / bidang yang melewati batas waktu pengiriman berkas realisasi kinerja."
                     actions={
                         <SelectNative
                             value={filters.measurement_period_id?.toString() ?? ''}
@@ -114,7 +114,7 @@ export default function LateSubmissions({ lateRows, periods, totalLate, filters,
                                 </div>
                                 <div>
                                     <p className="text-2xl font-bold">{totalLate}</p>
-                                    <p className="text-xs text-muted-foreground">Total OPD terlambat</p>
+                                    <p className="text-xs text-muted-foreground">Total Unit Kerja terlambat</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -124,14 +124,14 @@ export default function LateSubmissions({ lateRows, periods, totalLate, filters,
                 {/* Table */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Daftar OPD Terlambat</CardTitle>
+                        <CardTitle className="text-base">Daftar Unit Kerja / Bidang Terlambat</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-10">No</TableHead>
-                                    <TableHead>OPD</TableHead>
+                                    <TableHead>Unit Kerja / Bidang</TableHead>
                                     <TableHead>Periode</TableHead>
                                     <TableHead>Batas Waktu</TableHead>
                                     <TableHead className="text-right">Hari Terlambat</TableHead>
@@ -142,7 +142,7 @@ export default function LateSubmissions({ lateRows, periods, totalLate, filters,
                                 {lateRows.length === 0 && (
                                     <TableRow>
                                         <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
-                                            ✅ Tidak ada OPD yang terlambat menyerahkan realisasi.
+                                            Tidak ada Unit Kerja yang terlambat menyerahkan realisasi.
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -179,7 +179,7 @@ export default function LateSubmissions({ lateRows, periods, totalLate, filters,
                             perPage={perPage}
                             currentPage={safeCurrentPage}
                             lastPage={lastPage}
-                            itemLabel="OPD terlambat"
+                            itemLabel="Unit Kerja terlambat"
                             onPerPageChange={(val) => { setPerPage(val); setCurrentPage(1); }}
                             onClientPageChange={(page) => setCurrentPage(page)}
                         />

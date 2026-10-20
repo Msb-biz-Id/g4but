@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Ranking Kinerja OPD {{ $year }}</title>
+﻿<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Ranking Kinerja Unit Kerja {{ $year }}</title>
 <style>* { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DejaVu Sans',sans-serif; font-size:8px; color:#1a1a2e; padding:14px 18px; }
 .hdr-table { width:100%; border-collapse:collapse; border:none; border-bottom:2px solid #1e3a5f; margin-bottom:10px; padding-bottom:8px; }
@@ -22,15 +22,15 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
     <td class="hdr-logo-cell"><img src="{{ $logoBase64 ?? public_path('logo.png') }}" alt="Logo"></td>
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Kabupaten Mimika</div>
-<div class="doc-title">RANKING KINERJA PERANGKAT DAERAH</div>
-<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
+<div class="doc-title">RANKING KINERJA Unit Kerja / Bidang</div>
+<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; SIPERFORMA PUPR</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
 </table>
-<div class="meta"><div class="meta-l"><strong>Total OPD:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
+<div class="meta"><div class="meta-l"><strong>Total Unit Kerja:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
 @if(count($rows)>0)
-<table><thead><tr><th>Peringkat</th><th>Kode</th><th>Perangkat Daerah</th><th>Jml Indikator</th><th>Rata-rata Capaian</th><th>Tercapai</th><th>Perhatian</th><th>Kritis</th><th>Status</th><th>Predikat</th><th>Tren</th></tr></thead><tbody>
+<table><thead><tr><th>Peringkat</th><th>Kode</th><th>Unit Kerja / Bidang</th><th>Jml Indikator</th><th>Rata-rata Capaian</th><th>Tercapai</th><th>Perhatian</th><th>Kritis</th><th>Status</th><th>Predikat</th><th>Tren</th></tr></thead><tbody>
 @foreach($rows as $r)
 <tr><td class="tc">{{ $r['rank'] ?? '-' }}</td><td class="tc">{{ $r['kode'] ?? '-' }}</td><td>{{ $r['perangkat_daerah'] ?? '-' }}</td>
 <td class="tc">{{ $r['jumlah_indikator'] ?? 0 }}</td>
@@ -40,6 +40,6 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
 @endforeach
 </tbody></table>
 <div style="margin-top:8px;padding:4px 8px;background:#f8fafc;border:1px solid #e2e8f0;font-size:6.5px;color:#475569;"><strong>Kriteria Status Kinerja:</strong> <span style="color:#15803d;font-weight:bold;">Tercapai:</span> Capaian &ge; 100% | <span style="color:#d97706;font-weight:bold;">Perlu Perhatian:</span> 50% &le; Capaian &lt; 100% | <span style="color:#dc2626;font-weight:bold;">Kritis:</span> Capaian &lt; 50% atau Nilai Minus | <span style="color:#64748b;font-weight:bold;">Tidak Dinilai:</span> Target = 0 dan Realisasi = 0</div>
-@else<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data ranking OPD.</p>@endif
-<div class="footer"><div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
+@else<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data ranking unit kerja.</p>@endif
+<div class="footer"><div class="fl">SIPERFORMA PUPR — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
 </body></html>

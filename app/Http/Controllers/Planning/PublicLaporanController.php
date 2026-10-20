@@ -14,7 +14,7 @@ use Inertia\Response as InertiaResponse;
 
 /**
  * Portal Laporan Publik (MOD-003)
- * Menyajikan dokumen perencanaan OPD yang sudah approved ke publik tanpa login.
+ * Menyajikan dokumen perencanaan Dinas PUPR yang sudah approved ke publik tanpa login.
  */
 class PublicLaporanController extends Controller
 {
@@ -60,10 +60,10 @@ class PublicLaporanController extends Controller
     ];
 
     private const TIPE_LABEL = [
-        'rpjmd' => 'RPJMD',
-        'renstra' => 'Renstra',
+        'rpjmd' => 'Renstra PUPR',
+        'renstra' => 'Renstra PUPR',
         'renja' => 'Renja',
-        'rkpd' => 'RKPD',
+        'rkpd' => 'Renja / RKPD',
         'rkt' => 'RKT',
         'dpa' => 'DPA',
         'rencana_aksi' => 'Rencana Aksi',

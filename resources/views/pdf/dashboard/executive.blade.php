@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -65,12 +65,12 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
   @endif
   <div class="instansi">PEMERINTAH {{ strtoupper($provinceName ?? 'KABUPATEN MIMIKA') }}</div>
   <div class="doc-title">LAPORAN EKSEKUTIF CAPAIAN KINERJA &amp; SAKIP</div>
-  <div class="doc-sub">Tahun Evaluasi: {{ $filters['tahun_evaluasi'] }} &nbsp;|&nbsp; Triwulan: {{ $filters['triwulan'] }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-SAKIP' }} SAKIP</div>
+  <div class="doc-sub">Tahun Evaluasi: {{ $filters['tahun_evaluasi'] }} &nbsp;|&nbsp; Triwulan: {{ $filters['triwulan'] }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'SIPERFORMA PUPR' }} SAKIP</div>
 </div>
 
 <div class="meta">
   <div class="meta-l">
-    <strong>Filter:</strong> Perangkat Daerah: {{ $filters['organization_id'] ? 'OPD Terpilih' : 'Seluruh OPD' }} &nbsp;|&nbsp;
+    <strong>Filter:</strong> Unit Kerja / Bidang: {{ $filters['organization_id'] ? 'Unit Kerja Terpilih' : 'Seluruh Unit Kerja' }} &nbsp;|&nbsp;
     Status: {{ $filters['status_kinerja'] }}
   </div>
   <div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div>
@@ -79,7 +79,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 <!-- 8 KPI UTAMA -->
 <table class="kpi-table">
     <td>
-      <div class="kpi-label">Rata-rata Capaian Kinerja OPD</div>
+      <div class="kpi-label">Rata-rata Capaian Kinerja Unit Kerja</div>
       <div class="kpi-value g">{{ number_format($kpi['rata_capaian_opd']['pct'], 2) }}%</div>
       <div class="kpi-sub">
         <span class="badge {{ $kpi['rata_capaian_opd']['status'] === 'Tercapai' ? 'b-green' : ($kpi['rata_capaian_opd']['status'] === 'Perlu Perhatian' ? 'b-yellow' : ($kpi['rata_capaian_opd']['status'] === 'Terlambat' ? 'b-orange' : 'b-red')) }}">
@@ -97,7 +97,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
       </div>
     </td>
     <td>
-      <div class="kpi-label">Rata-rata Capaian OPD</div>
+      <div class="kpi-label">Rata-rata Capaian Unit Kerja</div>
       <div class="kpi-value {{ $kpi['rata_capaian_opd']['pct'] >= 100 ? 'g' : ($kpi['rata_capaian_opd']['pct'] >= 80 ? 'w' : ($kpi['rata_capaian_opd']['pct'] >= 50 ? 'o' : 'r')) }}">
         {{ number_format($kpi['rata_capaian_opd']['pct'], 2) }}%
       </div>
@@ -108,14 +108,14 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
       </div>
     </td>
     <td>
-      <div class="kpi-label">Rata-rata Nilai SAKIP OPD</div>
+      <div class="kpi-label">Rata-rata Nilai SAKIP Unit Kerja</div>
       <div class="kpi-value" style="color:#2563eb">{{ number_format($kpi['rata_nilai_sakip_opd']['nilai'], 2) }}</div>
       <div class="kpi-sub">Predikat: <strong>{{ $kpi['rata_nilai_sakip_opd']['predikat'] }}</strong></div>
     </td>
   </tr>
   <tr>
     <td>
-      <div class="kpi-label">Nilai PKO OPD</div>
+      <div class="kpi-label">Nilai PKO Unit Kerja</div>
       <div class="kpi-value" style="color:#0891b2">{{ number_format($kpi['nilai_pko_pemda']['nilai'], 2) }}</div>
       <div class="kpi-sub">Predikat: <strong>{{ $kpi['nilai_pko_pemda']['predikat'] }}</strong></div>
     </td>
@@ -125,7 +125,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
       <div class="kpi-sub"><span class="badge b-red">Kritis</span></div>
     </td>
     <td>
-      <div class="kpi-label">Kelengkapan SAKIP OPD</div>
+      <div class="kpi-label">Kelengkapan SAKIP Unit Kerja</div>
       <div class="kpi-value {{ $kpi['kelengkapan_pemda']['pct'] >= 100 ? 'g' : ($kpi['kelengkapan_pemda']['pct'] >= 80 ? 'w' : 'r') }}">
         {{ number_format($kpi['kelengkapan_pemda']['pct'], 1) }}%
       </div>
@@ -136,7 +136,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
       <div class="kpi-value {{ $kpi['opd_sakip_lengkap']['pct'] >= 100 ? 'g' : ($kpi['opd_sakip_lengkap']['pct'] >= 80 ? 'w' : 'r') }}">
         {{ number_format($kpi['opd_sakip_lengkap']['pct'], 1) }}%
       </div>
-      <div class="kpi-sub">{{ $kpi['opd_sakip_lengkap']['lengkap'] }}/{{ $kpi['opd_sakip_lengkap']['total'] }} Perangkat Daerah</div>
+      <div class="kpi-sub">{{ $kpi['opd_sakip_lengkap']['lengkap'] }}/{{ $kpi['opd_sakip_lengkap']['total'] }} Unit Kerja / Bidang</div>
     </td>
   </tr>
 </table>
@@ -164,14 +164,14 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
   </tbody>
 </table>
 
-<!-- TABEL CAPAIAN KINERJA OPD -->
-<div class="section-title">Peringkat &amp; Capaian Kinerja Seluruh Perangkat Daerah (OPD)</div>
+<!-- TABEL Capaian Kinerja Unit Kerja -->
+<div class="section-title">Peringkat &amp; Capaian Kinerja Seluruh Unit Kerja / Bidang (OPD)</div>
 <table class="data-table">
   <thead>
     <tr>
       <th style="width:24px">No</th>
       <th style="width:50px">Kode</th>
-      <th>Nama Perangkat Daerah</th>
+      <th>Nama Unit Kerja / Bidang</th>
       <th style="width:55px">Jml Indikator</th>
       <th style="width:65px">Rata-rata Capaian</th>
       <th style="width:48px">Terlambat</th>
@@ -210,14 +210,14 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
     </tr>
     @empty
     <tr>
-      <td colspan="8" class="tc n" style="padding:10px;">Tidak ada data perangkat daerah yang sesuai filter.</td>
+      <td colspan="8" class="tc n" style="padding:10px;">Tidak ada data Unit Kerja / Bidang yang sesuai filter.</td>
     </tr>
     @endforelse
   </tbody>
 </table>
 
 <div class="footer">
-  <div class="fl">Sistem Informasi Akuntabilitas Kinerja Terintegrasi (e-SAKIP) &bull; Pemerintah Kabupaten Mimika</div>
+  <div class="fl">SIPERFORMA PUPR &bull; Pemerintah Kabupaten Mimika</div>
   <div class="fr">Laporan Resmi Eksekutif &bull; Dicetak: {{ $generatedAt }} WIT</div>
 </div>
 

@@ -22,15 +22,15 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
     <td class="hdr-logo-cell"><img src="{{ $logoBase64 ?? public_path('logo.png') }}" alt="Logo"></td>
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Kabupaten Mimika</div>
-<div class="doc-title">PETA RISIKO KINERJA PERANGKAT DAERAH</div>
-<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
+<div class="doc-title">PETA RISIKO KINERJA Unit Kerja / Bidang</div>
+<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; SIPERFORMA PUPR</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
 </table>
-<div class="meta"><div class="meta-l"><strong>Total OPD:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
+<div class="meta"><div class="meta-l"><strong>Total Unit Kerja:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
 @if(count($rows)>0)
-<table><thead><tr><th>Peringkat</th><th>Kode</th><th>Perangkat Daerah</th><th>Skor Risiko</th><th>Level Risiko</th><th>Rata-rata Capaian</th><th>Nilai SAKIP</th><th>Kelengkapan Dok.</th><th>Rekomendasi</th></tr></thead><tbody>
+<table><thead><tr><th>Peringkat</th><th>Kode</th><th>Unit Kerja / Bidang</th><th>Skor Risiko</th><th>Level Risiko</th><th>Rata-rata Capaian</th><th>Nilai SAKIP</th><th>Kelengkapan Dok.</th><th>Rekomendasi</th></tr></thead><tbody>
 @foreach($rows as $r)
 @php $s=$r['risk_score']??0; $cls=$s>=70?'r':($s>=40?'w':'g'); @endphp
 <tr><td class="tc">{{ $r['rank']??'-' }}</td><td class="tc">{{ $r['kode']??'-' }}</td><td>{{ $r['perangkat_daerah']??'-' }}</td>
@@ -40,5 +40,5 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
 @endforeach
 </tbody></table>
 @else<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data peta risiko.</p>@endif
-<div class="footer"><div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
+<div class="footer"><div class="fl">SIPERFORMA PUPR — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
 </body></html>

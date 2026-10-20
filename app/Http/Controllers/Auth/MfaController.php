@@ -41,7 +41,7 @@ class MfaController extends Controller
         }
 
         $qrCodeUrl = $this->google2fa->getQRCodeUrl(
-            config('app.name', 'e-SAKIP'),
+            config('app.name', 'SIPERFORMA PUPR'),
             $user->email,
             $secret,
         );

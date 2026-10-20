@@ -23,9 +23,9 @@ class MockAiProvider implements AiProvider
     private function getAppName(): string
     {
         try {
-            return AppConfig::where('key', 'app_name')->value('value') ?: config('app.name', 'e-SAKIP');
+            return AppConfig::where('key', 'app_name')->value('value') ?: config('app.name', 'SIPERFORMA PUPR');
         } catch (\Throwable) {
-            return config('app.name', 'e-SAKIP');
+            return config('app.name', 'SIPERFORMA PUPR');
         }
     }
 

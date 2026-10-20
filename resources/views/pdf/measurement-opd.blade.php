@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -51,9 +51,9 @@ table.matrix td { padding:2.5px 2px; border:1px solid #cbd5e1; vertical-align:to
     <td class="hdr-logo-cell"><img src="{{ $logoBase64 ?? public_path('logo.png') }}" alt="Logo"></td>
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Kabupaten Mimika</div>
-      <div class="doc-title">LAPORAN REALISASI KINERJA PERANGKAT DAERAH (PD)</div>
+      <div class="doc-title">LAPORAN REALISASI KINERJA Unit Kerja / Bidang (PD)</div>
       <div class="doc-sub">Pengukuran Kinerja &nbsp;|&nbsp; Tahun {{ $currentYear }} &nbsp;|&nbsp;
-        @if($organization) {{ $organization->name }} @else Semua Perangkat Daerah @endif &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
+        @if($organization) {{ $organization->name }} @else Semua Unit Kerja / Bidang @endif &nbsp;|&nbsp; SIPERFORMA PUPR</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
@@ -78,7 +78,7 @@ table.matrix td { padding:2.5px 2px; border:1px solid #cbd5e1; vertical-align:to
   <thead>
     <tr>
       <th rowspan="2" style="width:18px">No</th>
-      <th rowspan="2" style="width:65px">Perangkat Daerah</th>
+      <th rowspan="2" style="width:65px">Unit Kerja / Bidang</th>
       <th rowspan="2" style="width:70px">Tujuan Renstra</th>
       <th rowspan="2" style="width:65px">Indikator Tujuan</th>
       <th rowspan="2" style="width:22px">Sat</th>
@@ -109,7 +109,7 @@ table.matrix td { padding:2.5px 2px; border:1px solid #cbd5e1; vertical-align:to
       @php
         $rawOrgGroups = [];
         foreach($goals as $goal) {
-          $oName = trim($goal->organization->name ?? ($organization->name ?? 'Perangkat Daerah'));
+          $oName = trim($goal->organization->name ?? ($organization->name ?? 'Unit Kerja / Bidang'));
           $rawOrgGroups[$oName][] = $goal;
         }
 
@@ -458,11 +458,11 @@ table.matrix td { padding:2.5px 2px; border:1px solid #cbd5e1; vertical-align:to
 </table>
 <div style="margin-top:6px;font-size:7px;color:#64748b;"><strong>Kriteria Status Kinerja:</strong> <span class="g">Tercapai (&ge; 100%)</span> &nbsp;|&nbsp; <span class="w">Perlu Perhatian (50% - 99.9%)</span> &nbsp;|&nbsp; <span class="r">Kritis (&lt; 50% / Minus)</span> &nbsp;|&nbsp; <span class="n">Tidak Dinilai (Target = 0 &amp; Realisasi = 0 / Belum Ada Data)</span></div>
 @else
-<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data realisasi kinerja Perangkat Daerah.</p>
+<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data realisasi kinerja Unit Kerja / Bidang.</p>
 @endif
 
 <div class="footer">
-  <div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div>
+  <div class="fl">SIPERFORMA PUPR — SAKIP Kabupaten Mimika</div>
   <div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div>
 </div>
 </body>

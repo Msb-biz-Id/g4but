@@ -74,7 +74,7 @@ export default function PublicLayout({
     const homeUrl = route('home');
     const infoUrl = route('knowledge.public.index');
 
-    const appName = appConfig?.appName || 'e-SAKIP';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
     const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
     const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
     const currentYear = appConfig?.currentYear || new Date().getFullYear();
@@ -138,7 +138,7 @@ export default function PublicLayout({
                         <div className="flex flex-col min-w-0">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                                 <span className="text-sm sm:text-base font-black tracking-tight font-serif text-white leading-none">
-                                    {appName}
+                                    {appName.replace(/\s*PUPR$/i, '')}
                                 </span>
                                 <span className="rounded-md bg-[#FFB800] px-1.5 py-0.5 text-[9px] font-mono font-black text-slate-950">
                                     PUPR

@@ -113,7 +113,7 @@ export default function FloatingChatWidget({
     const defaultWelcome: ChatMessage = {
         id: 'welcome',
         role: 'assistant',
-        content: `Selamat datang **${user?.name || 'Bapak/Ibu'}**.\n\nSaya adalah **AI Asisten SAKIP & Kinerja e-SAKIP Perangkat Daerah** yang bertugas mendampingi Anda dalam analisis dan pemantauan akuntabilitas kinerja unit kerja secara objektif, transparan, dan berbasis data resmi sistem tanpa halusinasi.\n\nSilakan pilih salah satu menu analisis cepat di bawah atau ajukan pertanyaan spesifik terkait indikator, dokumen, anggaran, dan evaluasi SAKIP.`,
+        content: `Selamat datang **${user?.name || 'Bapak/Ibu'}**.\n\nSaya adalah **AI Asisten Kinerja SIPERFORMA PUPR** yang bertugas mendampingi Anda dalam analisis dan pemantauan akuntabilitas kinerja unit kerja secara objektif, transparan, dan berbasis data resmi sistem tanpa halusinasi.\n\nSilakan pilih salah satu menu analisis cepat di bawah atau ajukan pertanyaan spesifik terkait indikator, dokumen, anggaran, dan evaluasi SAKIP.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
@@ -357,7 +357,7 @@ export default function FloatingChatWidget({
                             <div className="min-w-0">
                                 <div className="flex items-center gap-1.5">
                                     <h3 className="text-xs sm:text-sm font-bold truncate">
-                                        AI Asisten e-SAKIP
+                                        AI Asisten SIPERFORMA PUPR
                                     </h3>
                                     <span className="h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
                                 </div>
@@ -549,7 +549,7 @@ export default function FloatingChatWidget({
                                         Otorisasi RBAC Aktif • Bebas Halusinasi
                                     </span>
                                     <span className="text-[9px]">
-                                        e-SAKIP
+                                        SIPERFORMA PUPR
                                     </span>
                                 </div>
                             </div>
@@ -558,7 +558,7 @@ export default function FloatingChatWidget({
                 </div>
             )}
 
-            {/* ── Floating Launcher Trigger Button 'AI Asisten e-SAKIP' ── */}
+            {/* ── Floating Launcher Trigger Button 'AI Asisten SIPERFORMA PUPR' ── */}
             {!hideFloatingTrigger && (
                 <button
                     type="button"
@@ -569,8 +569,8 @@ export default function FloatingChatWidget({
                             ? 'h-10 px-3.5 rounded-full bg-slate-800 hover:bg-slate-900 text-white'
                             : 'h-11 px-3.5 rounded-full bg-gradient-to-r from-primary via-teal-600 to-emerald-600 hover:from-primary/95 hover:via-teal-600/95 hover:to-emerald-600/95 text-white'
                     )}
-                    aria-label="AI Asisten e-SAKIP"
-                    title="Tanya AI Asisten e-SAKIP"
+                    aria-label="AI Asisten SIPERFORMA PUPR"
+                    title="Tanya AI Asisten SIPERFORMA PUPR"
                 >
                     {isOpen && !isMinimized ? (
                         <>
@@ -592,7 +592,7 @@ export default function FloatingChatWidget({
                             <div className="flex flex-col items-start text-left pr-1 select-none">
                                 <div className="flex items-center gap-1.5 leading-tight">
                                     <span className="text-xs font-bold tracking-tight text-white drop-shadow-xs">
-                                        AI Asisten e-SAKIP
+                                        AI Asisten SIPERFORMA PUPR
                                     </span>
                                     <Sparkles className="h-3 w-3 text-amber-300 fill-amber-300 animate-pulse shrink-0" />
                                 </div>

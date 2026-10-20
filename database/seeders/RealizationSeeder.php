@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -43,8 +43,8 @@ class RealizationSeeder extends Seeder
         $seksiTR2 = Organization::where('code', 'SEKSI-TR-2')->first() ?? $bidangTR;
         $seksiTR3 = Organization::where('code', 'SEKSI-TR-3')->first() ?? $bidangTR;
 
-        $adminOpd = User::where('email', 'admin.opd@esakip.local')->first()
-            ?? User::where('email', 'superadmin@esakip.local')->firstOrFail();
+        $adminOpd = User::where('email', 'admin.pupr@siperforma.local')->first()
+            ?? User::where('email', 'superadmin@siperforma.local')->firstOrFail();
 
         // ══════════════════════════════════════════════════════════════════════
         // 1. DATA REALISASI HIERARKI MULTI-TAHUN PER ORGANISASI (REALIZATION OPD ITEMS)

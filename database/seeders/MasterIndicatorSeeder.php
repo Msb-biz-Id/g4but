@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -58,9 +58,9 @@ class MasterIndicatorSeeder extends Seeder
         $pp2025 = PlanningPeriod::where('code', 'TA-2025')->first();
         $pp2026 = PlanningPeriod::where('code', 'TA-2026')->firstOrFail();
 
-        $superAdmin = User::where('email', 'superadmin@esakip.local')->first();
-        $adminOpd = User::where('email', 'admin.opd@esakip.local')->first() ?? $superAdmin;
-        $kadis = User::where('email', 'kepala.opd@esakip.local')->first() ?? $superAdmin;
+        $superAdmin = User::where('email', 'superadmin@siperforma.local')->first();
+        $adminOpd = User::where('email', 'admin.pupr@siperforma.local')->first() ?? $superAdmin;
+        $kadis = User::where('email', 'kepala.dinas@siperforma.local')->first() ?? $superAdmin;
 
         $indicators = [
             // ══ 1. IKU LEVEL OPD INDUK (DINAS PUPR MIMIKA) ══════════════════

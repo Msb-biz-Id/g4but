@@ -23,14 +23,14 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Kabupaten Mimika</div>
 <div class="doc-title">REKAPITULASI RENCANA AKSI KINERJA — {{ strtoupper($tw) }}</div>
-<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
+<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; SIPERFORMA PUPR</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
 </table>
-<div class="meta"><div class="meta-l"><strong>Total OPD:</strong> {{ count($rows) }} &nbsp;|&nbsp; <strong>Periode:</strong> {{ $tw }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
+<div class="meta"><div class="meta-l"><strong>Total Unit Kerja:</strong> {{ count($rows) }} &nbsp;|&nbsp; <strong>Periode:</strong> {{ $tw }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
 @if(count($rows)>0)
-<table><thead><tr><th>No</th><th>Kode</th><th>Perangkat Daerah</th><th>Target {{ $tw }}</th><th>Realisasi {{ $tw }}</th><th>Capaian {{ $tw }}</th><th>TW I</th><th>TW II</th><th>TW III</th><th>TW IV</th><th>Status</th><th>Tren</th></tr></thead><tbody>
+<table><thead><tr><th>No</th><th>Kode</th><th>Unit Kerja / Bidang</th><th>Target {{ $tw }}</th><th>Realisasi {{ $tw }}</th><th>Capaian {{ $tw }}</th><th>TW I</th><th>TW II</th><th>TW III</th><th>TW IV</th><th>Status</th><th>Tren</th></tr></thead><tbody>
 @foreach($rows as $r)
 @php $c=(float)($r['capaian']??0); @endphp
 <tr><td class="tc">{{ $r['no']??'-' }}</td><td class="tc">{{ $r['kode']??'-' }}</td><td>{{ $r['opd']??'-' }}</td>
@@ -44,5 +44,5 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
 @endforeach
 </tbody></table>
 @else<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data rencana aksi.</p>@endif
-<div class="footer"><div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
+<div class="footer"><div class="fl">SIPERFORMA PUPR — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
 </body></html>

@@ -39,7 +39,7 @@ const modes = [
 
 export default function AiPreview() {
     const { appConfig } = usePage<PageProps>().props;
-    const appName = appConfig?.appName || 'e-SAKIP';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
     const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
     const orgName = appConfig?.organizationName || 'Dinas Pekerjaan Umum dan Penataan Ruang';
 

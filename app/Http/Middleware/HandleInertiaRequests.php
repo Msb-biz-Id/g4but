@@ -195,7 +195,7 @@ class HandleInertiaRequests extends Middleware
                 }
 
                 return [
-                    'appName' => $configs['app_name'] ?? $configs['app.name'] ?? config('app.name', 'E-Sakip PUPR'),
+                    'appName' => $configs['app_name'] ?? $configs['app.name'] ?? config('app.name', 'SIPERFORMA PUPR'),
                     'appDescription' => $configs['app_description'] ?? 'merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.',
                     'instansiName' => $configs['instansi_name'] ?? config('app.instansi_name', 'Kabupaten Mimika'),
                     'organizationName' => $configs['organization_name'] ?? config('app.organization_name', 'Dinas Pekerjaan Umum dan Penataan Ruang'),
@@ -217,7 +217,7 @@ class HandleInertiaRequests extends Middleware
         } catch (\Throwable) {
             $currYear = (int) date('Y');
             return [
-                'appName' => config('app.name', 'E-Sakip PUPR'),
+                'appName' => config('app.name', 'SIPERFORMA PUPR'),
                 'appDescription' => 'merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.',
                 'instansiName' => config('app.instansi_name', 'Pemerintah Daerah'),
                 'organizationName' => config('app.organization_name', 'Organisasi Perangkat Daerah'),

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>PKO Perangkat Daerah {{ $year }}</title>
+﻿<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>PKO Unit Kerja / Bidang {{ $year }}</title>
 <style>* { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DejaVu Sans',sans-serif; font-size:8px; color:#1a1a2e; padding:14px 18px; }
 .hdr-table { width:100%; border-collapse:collapse; border:none; border-bottom:2px solid #1e3a5f; margin-bottom:10px; padding-bottom:8px; }
@@ -22,15 +22,15 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
     <td class="hdr-logo-cell"><img src="{{ $logoBase64 ?? public_path('logo.png') }}" alt="Logo"></td>
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Kabupaten Mimika</div>
-<div class="doc-title">CAPAIAN PKO PERANGKAT DAERAH</div>
-<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
+<div class="doc-title">CAPAIAN PKO Unit Kerja / Bidang</div>
+<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; SIPERFORMA PUPR</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
 </table>
-<div class="meta"><div class="meta-l"><strong>Total OPD:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
+<div class="meta"><div class="meta-l"><strong>Total Unit Kerja:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
 @if(count($rows)>0)
-<table><thead><tr><th style="width:30px">No</th><th>Perangkat Daerah</th><th style="width:70px">Nilai PKO</th><th style="width:90px">Predikat</th><th style="width:60px">Peringkat</th><th style="width:40px">Tren</th></tr></thead><tbody>
+<table><thead><tr><th style="width:30px">No</th><th>Unit Kerja / Bidang</th><th style="width:70px">Nilai PKO</th><th style="width:90px">Predikat</th><th style="width:60px">Peringkat</th><th style="width:40px">Tren</th></tr></thead><tbody>
 @foreach($rows as $i => $r)
 @php $n = (float)($r['nilai_pko']??0); @endphp
 <tr><td class="tc">{{ $i+1 }}</td><td>{{ $r['perangkat_daerah']??'-' }}</td>
@@ -39,7 +39,7 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
 <td class="tc">{{ $r['tren']??'→' }}</td></tr>
 @endforeach
 </tbody></table>
-@else<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data PKO OPD.</p>@endif
+@else<p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data PKO unit kerja.</p>@endif
 <div style="margin-top:10px; padding:6px 8px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:4px;">
   <div style="font-weight:bold; font-size:7.5px; color:#1e3a5f; margin-bottom:4px; text-transform:uppercase;">
     Keterangan Klasifikasi Predikat Nilai Kinerja Organisasi (NKO / PKO)
@@ -64,5 +64,5 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
     * Rumus: 1. Normalisasi Capaian = min(Capaian PK, 110%) &nbsp;|&nbsp; 2. NKO = Rata-rata Nilai Capaian Seluruh Indikator Kinerja &nbsp;|&nbsp; Standar PermenPANRB No. 22/2024
   </div>
 </div>
-<div class="footer"><div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
+<div class="footer"><div class="fl">SIPERFORMA PUPR — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
 </body></html>

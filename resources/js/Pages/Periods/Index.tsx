@@ -695,9 +695,9 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                 <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200 flex items-start gap-3">
                     <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                     <div className="space-y-1">
-                        <p className="font-semibold text-sm">Informasi Rentang Evaluasi Realisasi (IKU / Renstra OPD)</p>
+                        <p className="font-semibold text-sm">Informasi Rentang Evaluasi Realisasi (IKU / Renstra)</p>
                         <p className="leading-relaxed">
-                            Modul Realisasi Kinerja (IKU dan Renstra OPD) menghitung rentang tahun evaluasi multi-tahun secara dinamis berdasarkan <b>Periode Perencanaan tipe RPJMD</b> yang berstatus <b>Aktif</b>. Klik tombol <b>+ Tambah Sub</b> pada baris tabel untuk menambahkan sub periode pengukuran kinerja (Triwulan / Semester).
+                            Modul Realisasi Kinerja (IKU dan Renstra) menghitung rentang tahun evaluasi multi-tahun secara dinamis berdasarkan <b>Periode Perencanaan tipe Renstra / 5 Tahunan</b> yang berstatus <b>Aktif</b>. Klik tombol <b>+ Tambah Sub</b> pada baris tabel untuk menambahkan sub periode pengukuran kinerja (Triwulan / Semester).
                         </p>
                     </div>
                 </div>
@@ -1376,7 +1376,7 @@ export default function PeriodsIndex({ auth, planningPeriods }: Props) {
                             Edit Periode Perencanaan
                         </DialogTitle>
                         <DialogDescription>
-                            Perbarui data periode perencanaan dan rentang tahun berlakunya. Modul Realisasi IKU dan Renstra OPD akan mengikuti rentang ini jika bertipe RPJMD dan Aktif.
+                            Perbarui data periode perencanaan dan rentang tahun berlakunya. Modul Realisasi IKU dan Renstra akan mengikuti rentang ini jika bertipe Renstra dan Aktif.
                         </DialogDescription>
                     </DialogHeader>
                     {editingPlanningPeriod && (

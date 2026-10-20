@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Matriks Dokumen SAKIP Perangkat Daerah {{ $year }}</title>
+<title>Matriks Dokumen SAKIP Unit Kerja / Bidang {{ $year }}</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DejaVu Sans',sans-serif; font-size:7px; color:#1a1a2e; padding:14px 18px; }
@@ -48,15 +48,15 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
     </div>
   @endif
   <div class="instansi">{{ strtoupper($provinceName ?? \App\Services\PdfService::getProvinceName()) }}</div>
-  <div class="doc-title">MATRIKS KELENGKAPAN DOKUMEN SAKIP SELURUH PERANGKAT DAERAH</div>
-  <div class="doc-sub">12 Dokumen Baku SAKIP &nbsp;|&nbsp; Tahun Evaluasi: {{ $year }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'e-SAKIP' }}</div>
+  <div class="doc-title">MATRIKS KELENGKAPAN DOKUMEN SAKIP SELURUH Unit Kerja / Bidang</div>
+  <div class="doc-sub">12 Dokumen Baku SAKIP &nbsp;|&nbsp; Tahun Evaluasi: {{ $year }} &nbsp;|&nbsp; Sistem {{ $appName ?? 'SIPERFORMA PUPR' }}</div>
 </div>
 
 <div class="meta">
   <div class="meta-l">
-    <strong>Ringkasan:</strong> Total {{ $matrix['total_opd'] ?? count($matrix['rows']) }} OPD &nbsp;|&nbsp;
-    OPD Lengkap (100%): <strong>{{ $matrix['opd_lengkap'] ?? 0 }} OPD ({{ $matrix['pct_lengkap'] ?? 0 }}%)</strong> &nbsp;|&nbsp;
-    OPD Belum Lengkap: <strong>{{ $matrix['opd_belum_lengkap'] ?? 0 }} OPD</strong>
+    <strong>Ringkasan:</strong> Total {{ $matrix['total_opd'] ?? count($matrix['rows']) }} Unit Kerja &nbsp;|&nbsp;
+    Unit Kerja Lengkap (100%): <strong>{{ $matrix['opd_lengkap'] ?? 0 }} Unit Kerja ({{ $matrix['pct_lengkap'] ?? 0 }}%)</strong> &nbsp;|&nbsp;
+    Unit Kerja Belum Lengkap: <strong>{{ $matrix['opd_belum_lengkap'] ?? 0 }} Unit Kerja</strong>
   </div>
   <div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div>
 </div>
@@ -66,7 +66,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
     <tr>
       <th style="width:20px">No</th>
       <th style="width:40px">Kode</th>
-      <th style="width:130px">Perangkat Daerah</th>
+      <th style="width:130px">Unit Kerja / Bidang</th>
       @foreach($matrix['columns'] as $colKey => $colLabel)
         <th style="font-size:6px;width:35px">{{ $colLabel }}</th>
       @endforeach
@@ -114,7 +114,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 </table>
 
 <div class="footer">
-  <div class="fl">Sistem Informasi Akuntabilitas Kinerja Terintegrasi (e-SAKIP) &bull; Kabupaten Mimika</div>
+  <div class="fl">SIPERFORMA PUPR &bull; Kabupaten Mimika</div>
   <div class="fr">Laporan Resmi SAKIP &bull; Dicetak: {{ $generatedAt }} WIT</div>
 </div>
 

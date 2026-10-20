@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="e-SAKIP PUPR merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.">
-        <meta name="keywords" content="e-sakip, sakip mimika, pupr mimika, akuntabilitas kinerja, dinas pupr mimika, iku, informasi publik mimika">
+        <meta name="description" content="SIPERFORMA PUPR merupakan platform digital terintegrasi yang dikembangkan untuk memperkuat implementasi Sistem Akuntabilitas Kinerja Instansi Pemerintah di lingkungan Dinas PUPR Kabupaten Mimika. Sistem ini menghubungkan proses perencanaan, penganggaran, pelaksanaan, monitoring, evaluasi, hingga pelaporan kinerja dalam satu portal terpadu yang dapat diakses secara real time. Melalui dashboard terpadu, Kepala Dinas, Sekretaris, Kepala Bidang, dan pengguna teknis dapat memantau capaian pembangunan infrastruktur secara cepat, akurat, terukur, dan berbasis data.">
+        <meta name="keywords" content="siperforma pupr, siperforma mimika, pupr mimika, sakip mimika, akuntabilitas kinerja, dinas pupr mimika, iku, informasi publik mimika">
         <meta name="author" content="Dinas Pekerjaan Umum dan Penataan Ruang Kabupaten Mimika">
         <meta name="robots" content="index, follow">
 
         <!-- Open Graph / Facebook -->
-        <meta property="og:site_name" content="e-SAKIP PUPR Mimika">
+        <meta property="og:site_name" content="SIPERFORMA PUPR Mimika">
         <meta property="og:locale" content="id_ID">
         <meta property="og:type" content="website">
         <meta property="og:image" content="{{ asset('favicon-32x32.png') }}">
@@ -26,7 +26,7 @@
             })();
         </script>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'SIPERFORMA PUPR') }}</title>
 
         <!-- Favicon -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">

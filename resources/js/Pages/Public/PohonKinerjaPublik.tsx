@@ -250,20 +250,20 @@ function PublicSubTree({
                     ) : (
                         /* Horizontal Branch */
                         <div className="flex flex-col items-center">
-                            <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600" />
+                            <div className="w-0.5 h-6 bg-slate-400/80 dark:bg-slate-500/80" />
 
-                            <div className="flex items-start justify-center gap-6 sm:gap-8 pt-1">
+                            <div className="flex items-start justify-center pt-1">
                                 {visibleChildren.map((child, idx) => {
                                     const isFirst = idx === 0;
                                     const isLast = idx === visibleChildren.length - 1;
                                     const isOnly = visibleChildren.length === 1;
 
                                     return (
-                                        <div key={child.id} className="relative flex flex-col items-center">
+                                        <div key={child.id} className="relative flex flex-col items-center px-3 sm:px-4">
                                             {!isOnly && (
                                                 <div
                                                     className={cn(
-                                                        'absolute top-0 h-0.5 bg-slate-300 dark:bg-slate-600',
+                                                        'absolute top-0 h-0.5 bg-slate-400/80 dark:bg-slate-500/80',
                                                         isFirst
                                                             ? 'left-1/2 right-0'
                                                             : isLast
@@ -273,8 +273,8 @@ function PublicSubTree({
                                                 />
                                             )}
 
-                                            <div className="w-0.5 h-6 bg-slate-300 dark:bg-slate-600" />
-                                            <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[5px] border-t-slate-400 dark:border-t-slate-500 -mt-0.5 mb-1" />
+                                            <div className="w-0.5 h-6 bg-slate-400/80 dark:bg-slate-500/80" />
+                                            <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[5px] border-t-slate-500 dark:border-t-slate-400 -mt-0.5 mb-1" />
 
                                             <PublicSubTree
                                                 node={child}
@@ -348,7 +348,7 @@ export default function PohonKinerjaPublik({
     // Collapse State: default collapse saat pertama kali dibuka
     const [collapsedIds, setCollapsedIds] = useState<Set<number>>(() => collectAllParentIds(tree));
 
-    // Reset collapse state saat data tree berganti (misal filter OPD/periode berubah)
+    // Reset collapse state saat data tree berganti (misal filter unit kerja/periode berubah)
     useEffect(() => {
         setCollapsedIds(collectAllParentIds(tree));
     }, [tree, collectAllParentIds]);
@@ -507,126 +507,134 @@ export default function PohonKinerjaPublik({
                 {/* PUPR Blueprint Grid di Latar Belakang Pohon Kinerja */}
                 <PuprBlueprintGrid className="opacity-[0.04]" />
 
-                {/* Header Toolbar - PUPR Mimika Spirit */}
-                <div className="relative z-10 shrink-0 flex flex-col gap-2.5 border-b border-amber-500/30 bg-gradient-to-r from-[#002B49] via-[#051c2f] to-[#020e17] px-4 py-3 text-white shadow-md">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2.5">
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className="h-8 px-2.5 text-xs gap-1.5 text-slate-200 hover:text-white hover:bg-white/10"
-                            >
-                                <Link href={backUrl} onClick={handleBack}>
-                                    <ArrowLeft className="h-3.5 w-3.5 text-[#FFB800]" />
-                                    <span>Kembali ke Laporan</span>
-                                </Link>
-                            </Button>
-                            <div className="h-4 w-px bg-white/20" />
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFB800] text-slate-950 font-bold shadow-sm">
-                                    <GitBranch className="h-4 w-4" />
-                                </div>
-                                <div>
-                                    <h1 className="text-sm font-bold font-serif text-white leading-none">
-                                        Pohon Kinerja Cascading • PUPR Mimika
-                                    </h1>
-                                    <span className="text-[10px] font-mono text-[#FFB800]">
-                                        Penyelarasan 5 Matra Infrastruktur Bumi Amungme &amp; Kamoro
-                                    </span>
-                                </div>
-                                <span className="ml-2 rounded-md bg-[#FFB800] text-slate-950 px-2 py-0.5 text-[9px] font-mono font-black hidden sm:inline-flex">
-                                    PermenPAN-RB 89/2021
+                {/* Header Toolbar - Mobile-first compact layout */}
+                <div className="relative z-10 shrink-0 flex flex-col gap-2 border-b border-amber-500/30 bg-gradient-to-r from-[#002B49] via-[#051c2f] to-[#020e17] px-3 sm:px-4 py-2.5 text-white shadow-md">
+
+                    {/* Row 1: Back + Title + Print */}
+                    <div className="flex items-center gap-2">
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            asChild
+                            className="h-8 shrink-0 px-2 text-xs gap-1 text-slate-200 hover:text-white hover:bg-white/10"
+                        >
+                            <Link href={backUrl} onClick={handleBack}>
+                                <ArrowLeft className="h-3.5 w-3.5 text-[#FFB800]" />
+                                <span className="hidden xs:inline">Kembali</span>
+                            </Link>
+                        </Button>
+
+                        <div className="h-4 w-px bg-white/20 shrink-0" />
+
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#FFB800] text-slate-950">
+                                <GitBranch className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="min-w-0">
+                                <h1 className="text-xs sm:text-sm font-bold font-serif text-white leading-tight truncate">
+                                    Pohon Kinerja Cascading
+                                    <span className="hidden sm:inline"> • PUPR Mimika</span>
+                                </h1>
+                                <span className="hidden sm:block text-[10px] font-mono text-[#FFB800] leading-none">
+                                    Penyelarasan 5 Matra Infrastruktur Bumi Amungme &amp; Kamoro
                                 </span>
                             </div>
+                            <span className="hidden lg:inline-flex ml-1 rounded-md bg-[#FFB800] text-slate-950 px-1.5 py-0.5 text-[9px] font-mono font-black shrink-0">
+                                PermenPAN-RB 89/2021
+                            </span>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <Button size="sm" asChild className="h-8 text-xs gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-bold shadow-md">
-                                <a
-                                    href={route('planning.trees.print', {
-                                        ...(filters.organization ? { organization: filters.organization } : {}),
-                                        ...(filters.period ? { period: filters.period } : {}),
-                                    })}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    <Printer className="h-3.5 w-3.5" />
-                                    <span>Cetak PDF</span>
-                                </a>
-                            </Button>
-                        </div>
+                        <Button
+                            size="sm"
+                            asChild
+                            className="h-8 shrink-0 px-2.5 text-xs gap-1 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-bold shadow-md"
+                        >
+                            <a
+                                href={route('planning.trees.print', {
+                                    ...(filters.organization ? { organization: filters.organization } : {}),
+                                    ...(filters.period ? { period: filters.period } : {}),
+                                })}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Printer className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Cetak PDF</span>
+                            </a>
+                        </Button>
                     </div>
 
-                    {/* Filter & Controls */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
-                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                            <SelectNative
-                                value={selectedOrgId}
-                                onChange={(e) => handleFilter('organization', e.target.value)}
-                                className="h-8 text-xs w-full sm:w-48 bg-white/10 text-white border-white/20"
-                            >
-                                <option value="" className="text-slate-900">Semua Organisasi</option>
-                                {organizations.map((o) => (
-                                    <option key={o.id} value={String(o.id)} className="text-slate-900">
-                                        {o.name}
-                                    </option>
-                                ))}
-                            </SelectNative>
+                    {/* Row 2: Filters */}
+                    <div className="grid grid-cols-2 sm:flex sm:flex-row gap-1.5 sm:gap-2">
+                        <SelectNative
+                            value={selectedOrgId}
+                            onChange={(e) => handleFilter('organization', e.target.value)}
+                            className="h-8 text-xs col-span-2 sm:w-48 bg-white/10 text-white border-white/20"
+                        >
+                            <option value="" className="text-slate-900">Semua Unit Kerja</option>
+                            {organizations.map((o) => (
+                                <option key={o.id} value={String(o.id)} className="text-slate-900">
+                                    {o.short_name || o.name}
+                                </option>
+                            ))}
+                        </SelectNative>
 
-                            <SelectNative
-                                value={selectedPeriodYear}
-                                onChange={(e) => handleFilter('period', e.target.value)}
-                                className="h-8 text-xs w-full sm:w-36 bg-white/10 text-white border-white/20"
-                            >
-                                <option value="" className="text-slate-900">Semua Periode</option>
-                                {periods.map((p) => (
-                                    <option key={p.id} value={String(p.year)} className="text-slate-900">
-                                        {p.year}
-                                    </option>
-                                ))}
-                            </SelectNative>
+                        <SelectNative
+                            value={selectedPeriodYear}
+                            onChange={(e) => handleFilter('period', e.target.value)}
+                            className="h-8 text-xs bg-white/10 text-white border-white/20 sm:w-28"
+                        >
+                            <option value="" className="text-slate-900">Semua Tahun</option>
+                            {periods.map((p) => (
+                                <option key={p.id} value={String(p.year)} className="text-slate-900">
+                                    {p.year}
+                                </option>
+                            ))}
+                        </SelectNative>
 
-                            <div className="relative flex-1 sm:w-56">
-                                <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
-                                <Input
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Cari simpul, OPD, IK..."
-                                    className="h-8 pl-8 pr-7 text-xs bg-white/10 text-white border-white/20 placeholder-slate-400"
-                                />
-                                {searchQuery && (
-                                    <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="absolute right-2 top-2 text-slate-400 hover:text-white"
-                                    >
-                                        <X className="h-3.5 w-3.5" />
-                                    </button>
-                                )}
-                            </div>
-                            {matchedIds.size > 0 && (
-                                <Badge variant="secondary" className="text-[11px] h-7 px-2 bg-amber-400 text-slate-950 font-bold">
-                                    {matchedIds.size} cocok
-                                </Badge>
+                        <div className="relative">
+                            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-slate-400" />
+                            <Input
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Cari simpul..."
+                                className="h-8 pl-7 pr-7 text-xs bg-white/10 text-white border-white/20 placeholder-slate-400 sm:w-52"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-2 top-2 text-slate-400 hover:text-white"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
                             )}
                         </div>
 
-                        <div className="flex items-center gap-1.5 self-end sm:self-auto">
-                            {/* Layer Filter */}
+                        {matchedIds.size > 0 && (
+                            <Badge variant="secondary" className="h-8 px-2 bg-amber-400 text-slate-950 font-bold text-[11px] self-center">
+                                {matchedIds.size} cocok
+                            </Badge>
+                        )}
+
+                        {/* Action buttons - icon only on mobile */}
+                        <div className="flex items-center gap-1 col-span-2 sm:col-span-1 sm:ml-auto">
                             <div className="relative">
                                 <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => setLayerFilterOpen(!layerFilterOpen)}
-                                    className={cn('h-8 text-xs gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20', layerFilterOpen && 'bg-white/25')}
+                                    className={cn(
+                                        'h-8 text-xs gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20',
+                                        layerFilterOpen && 'bg-white/25',
+                                    )}
+                                    title="Filter Layer"
                                 >
                                     <Layers className="h-3.5 w-3.5 text-amber-300" />
-                                    <span>Layer</span>
+                                    <span className="hidden sm:inline">Layer</span>
                                     <ChevronDown className="h-3 w-3 opacity-60" />
                                 </Button>
 
                                 {layerFilterOpen && (
-                                    <div className="absolute right-0 top-9 z-50 w-64 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-border dark:bg-card">
+                                    <div className="absolute left-0 sm:right-0 sm:left-auto top-9 z-50 w-64 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-border dark:bg-card">
                                         <div className="text-xs font-bold text-slate-800 dark:text-foreground pb-2 mb-1.5 border-b border-slate-100 dark:border-slate-800">
                                             Filter Layer:
                                         </div>
@@ -648,13 +656,26 @@ export default function PohonKinerjaPublik({
                                 )}
                             </div>
 
-                            <Button size="sm" variant="outline" onClick={collapseAll} className="h-8 text-xs gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20" title="Tutup semua cabang turunan">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={collapseAll}
+                                className="h-8 text-xs gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                                title="Tutup semua cabang"
+                            >
                                 <Minimize2 className="h-3.5 w-3.5 text-amber-300" />
-                                <span>Tutup Semua</span>
+                                <span className="hidden sm:inline">Tutup Semua</span>
                             </Button>
-                            <Button size="sm" variant="outline" onClick={expandAll} className="h-8 text-xs gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20" title="Buka seluruh cabang pohon kinerja">
+
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={expandAll}
+                                className="h-8 text-xs gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                                title="Buka seluruh cabang pohon kinerja"
+                            >
                                 <Maximize2 className="h-3.5 w-3.5 text-amber-300" />
-                                <span>Buka Semua</span>
+                                <span className="hidden sm:inline">Buka Semua</span>
                             </Button>
                         </div>
                     </div>
@@ -757,18 +778,18 @@ export default function PohonKinerjaPublik({
                                 </div>
 
                                 {/* Legend Bawah Informasi Interaksi */}
-                                <div className="shrink-0 flex flex-wrap items-center gap-4 border-t border-slate-200 bg-white/95 px-4 py-2 text-xs">
-                                    <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider">
-                                        Tingkatan Simpul:
+                                <div className="shrink-0 flex items-center gap-3 overflow-x-auto border-t border-slate-200 bg-white/95 px-3 sm:px-4 py-1.5 text-xs scrollbar-none">
+                                    <span className="font-bold text-[10px] text-slate-400 uppercase tracking-wider shrink-0">
+                                        Tingkatan:
                                     </span>
                                     {Object.entries(SURABAYA_LEVELS).map(([k, lvl]) => (
-                                        <div key={k} className="flex items-center gap-1.5 text-[11px] text-slate-600">
-                                            <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: lvl.accent }} />
+                                        <div key={k} className="flex items-center gap-1 text-[10px] text-slate-600 shrink-0">
+                                            <span className="h-2 w-2 rounded-full shrink-0" style={{ background: lvl.accent }} />
                                             <span className="font-medium">{lvl.label}</span>
                                         </div>
                                     ))}
-                                    <span className="ml-auto text-[11px] text-slate-500 font-medium">
-                                        💡 Klik kartu untuk detail simpul • Klik tombol [+ Turunan] untuk buka/tutup cabang • Scroll untuk zoom halus (5%)
+                                    <span className="hidden sm:block ml-auto text-[10px] text-slate-400 font-medium shrink-0">
+                                        💡 Klik kartu untuk detail • Scroll untuk zoom (5%)
                                     </span>
                                 </div>
                             </>
@@ -854,7 +875,7 @@ export default function PohonKinerjaPublik({
                                         </div>
                                         {selectedNode.organization.short_name && (
                                             <div className="text-[11px] text-slate-500 font-mono">
-                                                Kode OPD: {selectedNode.organization.short_name}
+                                                Singkatan: {selectedNode.organization.short_name}
                                             </div>
                                         )}
                                     </div>

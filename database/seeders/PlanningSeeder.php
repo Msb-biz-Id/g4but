@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -62,9 +62,9 @@ class PlanningSeeder extends Seeder
         $perf2025 = PerformancePeriod::where('year', 2025)->first();
         $perf2026 = PerformancePeriod::where('year', 2026)->first() ?? $perf2025;
 
-        $superAdmin = User::where('email', 'superadmin@esakip.local')->first();
-        $kadis = User::where('email', 'kepala.opd@esakip.local')->first() ?? $superAdmin;
-        $adminOpd = User::where('email', 'admin.opd@esakip.local')->first() ?? $superAdmin;
+        $superAdmin = User::where('email', 'superadmin@siperforma.local')->first();
+        $kadis = User::where('email', 'kepala.dinas@siperforma.local')->first() ?? $superAdmin;
+        $adminOpd = User::where('email', 'admin.pupr@siperforma.local')->first() ?? $superAdmin;
 
         // ══════════════════════════════════════════════════════════════════════
         // 1. DOKUMEN PERENCANAAN RESMI (PLANNING DOCUMENTS)

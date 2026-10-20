@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Tests\Feature\Authorization;
 
@@ -29,7 +29,7 @@ class RoleMatrixTest extends TestCase
 
     public function test_super_admin_has_full_bypass(): void
     {
-        $superAdmin = User::where('email', 'superadmin@esakip.local')->firstOrFail();
+        $superAdmin = User::where('email', 'superadmin@siperforma.local')->firstOrFail();
 
         $this->actingAs($superAdmin);
 
@@ -42,7 +42,7 @@ class RoleMatrixTest extends TestCase
 
     public function test_admin_opd_is_maker_and_cannot_approve_checker_gates(): void
     {
-        $adminOpd = User::where('email', 'admin.opd@esakip.local')->firstOrFail();
+        $adminOpd = User::where('email', 'admin.pupr@siperforma.local')->firstOrFail();
 
         $this->actingAs($adminOpd);
 
@@ -58,7 +58,7 @@ class RoleMatrixTest extends TestCase
 
     public function test_kepala_opd_is_checker_and_cannot_input_technical_data(): void
     {
-        $kepalaOpd = User::where('email', 'kepala.opd@esakip.local')->firstOrFail();
+        $kepalaOpd = User::where('email', 'kepala.dinas@siperforma.local')->firstOrFail();
 
         $this->actingAs($kepalaOpd);
 
@@ -73,7 +73,7 @@ class RoleMatrixTest extends TestCase
 
     public function test_admin_sekretariat_maker_checker_segregation(): void
     {
-        $adminSekr = User::where('email', 'admin.sekretariat@esakip.local')->firstOrFail();
+        $adminSekr = User::where('email', 'admin.sekretariat@siperforma.local')->firstOrFail();
 
         $this->actingAs($adminSekr);
 
@@ -87,7 +87,7 @@ class RoleMatrixTest extends TestCase
 
     public function test_kepala_sekretariat_can_approve_unit_and_review(): void
     {
-        $kepalaSekr = User::where('email', 'kepala.sekretariat@esakip.local')->firstOrFail();
+        $kepalaSekr = User::where('email', 'kepala.sekretariat@siperforma.local')->firstOrFail();
 
         $this->actingAs($kepalaSekr);
 
@@ -102,7 +102,7 @@ class RoleMatrixTest extends TestCase
 
     public function test_admin_bidang_maker_checker_segregation(): void
     {
-        $adminDikdas = User::where('email', 'admin.dikdas@esakip.local')->firstOrFail();
+        $adminDikdas = User::where('email', 'admin.dikdas@siperforma.local')->firstOrFail();
 
         $this->actingAs($adminDikdas);
 
@@ -116,7 +116,7 @@ class RoleMatrixTest extends TestCase
 
     public function test_kepala_bidang_can_approve_unit_realization(): void
     {
-        $kabidDikdas = User::where('email', 'kabid.dikdas@esakip.local')->firstOrFail();
+        $kabidDikdas = User::where('email', 'kabid.dikdas@siperforma.local')->firstOrFail();
 
         $this->actingAs($kabidDikdas);
 
@@ -127,3 +127,4 @@ class RoleMatrixTest extends TestCase
         $this->assertFalse(Gate::allows('create-realizations'));
     }
 }
+

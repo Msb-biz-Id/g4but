@@ -12,10 +12,10 @@ export default function CivicPortals() {
         {
             title: 'Pohon Kinerja Cascading PUPR',
             category: 'CASCADING STRATEGIS',
-            badgeText: 'RPJMD MIMIKA',
+            badgeText: 'RENSTRA PUPR',
             badgeColor: 'border-amber-400 text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50',
             description:
-                'Telusuri hierarki sasaran strategis dari Bupati Mimika ke Kepala Dinas PUPR, bidang teknis (Bina Marga, Cipta Karya, SDA), hingga pengawasan proyek lapangan.',
+                'Telusuri hierarki sasaran strategis dari Renstra Dinas PUPR Mimika ke sekretariat, bidang teknis (Bina Marga, Cipta Karya, SDA, Penataan Ruang), hingga pengawasan proyek lapangan.',
             href: route('laporan.publik.pohon-kinerja'),
             icon: Network,
             ctaText: 'Buka Pohon Kinerja',

@@ -254,8 +254,8 @@ export default function TreesPrint({
     period,
 }: TreesPrintProps) {
     const { appConfig } = usePage<PageProps>().props;
-    const appName = appConfig?.appName || 'e-SAKIP';
-    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
     const today = formatDate(new Date().toISOString());
 
     return (
@@ -408,7 +408,7 @@ export default function TreesPrint({
                         </div>
                     ))}
                 </div>
-                <span>e-SAKIP LITE • Sistem Akuntabilitas Kinerja Instansi Pemerintah Terpadu</span>
+                <span>SIPERFORMA PUPR • Sistem Informasi Akuntabilitas Kinerja Terintegrasi</span>
             </div>
         </div>
     );

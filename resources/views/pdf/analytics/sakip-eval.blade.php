@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Nilai SAKIP OPD {{ $year }}</title>
+﻿<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Nilai SAKIP Unit Kerja {{ $year }}</title>
 <style>* { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DejaVu Sans',sans-serif; font-size:8px; color:#1a1a2e; padding:14px 18px; }
 .hdr-table { width:100%; border-collapse:collapse; border:none; border-bottom:2px solid #1e3a5f; margin-bottom:10px; padding-bottom:8px; }
@@ -22,15 +22,15 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
     <td class="hdr-logo-cell"><img src="{{ $logoBase64 ?? public_path('logo.png') }}" alt="Logo"></td>
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Kabupaten Mimika</div>
-<div class="doc-title">NILAI SAKIP OPD — 4 KOMPONEN AKUNTABILITAS</div>
-<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
+<div class="doc-title">Nilai SAKIP Unit Kerja — 4 KOMPONEN AKUNTABILITAS</div>
+<div class="doc-sub">Dashboard Analitik Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; SIPERFORMA PUPR</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
 </table>
-<div class="meta"><div class="meta-l"><strong>Total OPD:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
+<div class="meta"><div class="meta-l"><strong>Total Unit Kerja:</strong> {{ count($rows) }}</div><div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div></div>
 @if(count($rows)>0)
-<table><thead><tr><th>No</th><th>Kode</th><th>Perangkat Daerah</th><th>Perencanaan (30)</th><th>Pengukuran (30)</th><th>Pelaporan (15)</th><th>Evaluasi Internal (25)</th><th>Nilai SAKIP</th><th>Predikat</th><th>Tren</th><th>Status LHE</th></tr></thead><tbody>
+<table><thead><tr><th>No</th><th>Kode</th><th>Unit Kerja / Bidang</th><th>Perencanaan (30)</th><th>Pengukuran (30)</th><th>Pelaporan (15)</th><th>Evaluasi Internal (25)</th><th>Nilai SAKIP</th><th>Predikat</th><th>Tren</th><th>Status LHE</th></tr></thead><tbody>
 @foreach($rows as $r)
 @php $n = $r['nilai'] ?? 0; @endphp
 <tr><td class="tc">{{ $r['no']??'-' }}</td><td class="tc">{{ $r['kode']??'-' }}</td><td>{{ $r['perangkat_daerah']??'-' }}</td>
@@ -68,5 +68,5 @@ td { padding:3px 3px; border:1px solid #e2e8f0; vertical-align:middle; } tr:nth-
     * Standar Evaluasi Akuntabilitas Kinerja Instansi Pemerintah (PermenPANRB No. 88/2021)
   </div>
 </div>
-<div class="footer"><div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
+<div class="footer"><div class="fl">SIPERFORMA PUPR — SAKIP Kabupaten Mimika</div><div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div></div>
 </body></html>

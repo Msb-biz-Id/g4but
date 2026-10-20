@@ -57,7 +57,7 @@ export const SURABAYA_LEVELS: Record<string, {
     visi: {
         key: 'visi',
         label: 'Visi / Tujuan',
-        tierName: 'VISI / TUJUAN PEMDA',
+        tierName: 'VISI / TUJUAN DINAS PUPR',
         order: 0,
         headerBg: 'bg-blue-950 text-amber-300',
         headerText: 'text-amber-300',
@@ -71,7 +71,7 @@ export const SURABAYA_LEVELS: Record<string, {
     outcome: {
         key: 'outcome',
         label: 'Sasaran Strategis',
-        tierName: 'SASARAN STRATEGIS (PEMDA)',
+        tierName: 'SASARAN STRATEGIS (DINAS PUPR)',
         order: 1,
         headerBg: 'bg-orange-600 text-white',
         headerText: 'text-white',
@@ -99,7 +99,7 @@ export const SURABAYA_LEVELS: Record<string, {
     kondisi_antara: {
         key: 'kondisi_antara',
         label: 'Tactical Outcome',
-        tierName: 'TACTICAL OUTCOME (OPD)',
+        tierName: 'TACTICAL OUTCOME (UNIT KERJA / BIDANG)',
         order: 3,
         headerBg: 'bg-blue-600 text-white',
         headerText: 'text-white',

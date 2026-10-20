@@ -137,9 +137,9 @@ class PdfService
     public static function getAppName(): string
     {
         try {
-            return AppConfig::where('key', 'app_name')->value('value') ?: 'e-SAKIP';
+            return AppConfig::where('key', 'app_name')->value('value') ?: 'SIPERFORMA PUPR';
         } catch (\Throwable) {
-            return 'e-SAKIP';
+            return 'SIPERFORMA PUPR';
         }
     }
 }

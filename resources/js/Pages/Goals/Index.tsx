@@ -295,7 +295,7 @@ export default function GoalsIndex({
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Tujuan & Sasaran Strategis"
-                    description="Kelola tujuan dan sasaran strategis Pemda dan Perangkat Daerah sesuai RPJMD dan Renstra."
+                    description="Kelola tujuan dan sasaran strategis Dinas PUPR dan Unit Kerja sesuai Renstra dan Renja."
                     breadcrumbs={[
                         { label: 'Perencanaan' },
                         { label: 'Tujuan & Sasaran' },

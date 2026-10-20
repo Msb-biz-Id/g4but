@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -63,17 +63,17 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
     </div>
   @endif
   <div class="instansi">{{ strtoupper($provinceName ?? \App\Services\PdfService::getProvinceName()) }}</div>
-  <div class="doc-title">LAPORAN DETAIL PENCAPAIAN KINERJA PERANGKAT DAERAH</div>
+  <div class="doc-title">LAPORAN DETAIL PENCAPAIAN KINERJA Unit Kerja / Bidang</div>
   <div class="doc-sub">
     <strong>{{ $organization->name }}</strong> ({{ $organization->code }}) &nbsp;|&nbsp;
     Periode: <strong>{{ $periodName }}</strong> &nbsp;|&nbsp;
-    Sistem {{ $appName ?? 'e-SAKIP' }} SAKIP
+    Sistem {{ $appName ?? 'SIPERFORMA PUPR' }} SAKIP
   </div>
 </div>
 
 <div class="meta">
   <div class="meta-l">
-    <strong>Perangkat Daerah:</strong> {{ $organization->name }} &nbsp;|&nbsp;
+    <strong>Unit Kerja / Bidang:</strong> {{ $organization->name }} &nbsp;|&nbsp;
     <strong>Periode:</strong> {{ $periodName }}
   </div>
   <div class="meta-r">Dicetak: {{ $generatedAt }} WIT</div>
@@ -195,7 +195,7 @@ table.data-table tr:nth-child(even) td { background:#f8fafc; }
 </div>
 
 <div class="footer">
-  <div class="fl">Sistem e-SAKIP — SAKIP Terintegrasi Pemerintah Kabupaten Mimika</div>
+  <div class="fl">SIPERFORMA PUPR — SAKIP Terintegrasi Pemerintah Kabupaten Mimika</div>
   <div class="fr">Dicetak otomatis: {{ $generatedAt }} WIT</div>
 </div>
 

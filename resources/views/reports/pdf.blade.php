@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -36,7 +36,7 @@ tr:nth-child(even) td { background: #f5f7fa; }
   <strong>Judul:</strong> {{ $report->title }}<br>
   <strong>Tipe:</strong> {{ strtoupper($report->type) }}<br>
   <strong>Periode:</strong> {{ $report->planningPeriod?->name ?? '-' }}<br>
-  <strong>Organisasi:</strong> {{ $report->organization?->name ?? 'Semua OPD' }}<br>
+  <strong>Organisasi:</strong> {{ $report->organization?->name ?? 'Semua Unit Kerja' }}<br>
   <strong>Tanggal Generate:</strong> {{ now()->format('d-m-Y H:i') }} WIT<br>
   <strong>Dibuat oleh:</strong> {{ $report->generator?->name ?? 'Sistem' }}
 </div>
@@ -93,7 +93,7 @@ tr:nth-child(even) td { background: #f5f7fa; }
 @endif
 
 <div class="footer">
-  Dokumen ini digenerate secara otomatis oleh Sistem e-SAKIP pada {{ now()->toIso8601String() }}.<br>
+  Dokumen ini digenerate secara otomatis oleh SIPERFORMA PUPR pada {{ now()->toIso8601String() }}.<br>
   Bersifat informatif — untuk penggunaan resmi harap verifikasi dengan data sumber.
 </div>
 </body>

@@ -459,20 +459,20 @@ export default function LaporanPublik({
                                     )}
                                 </form>
 
-                                {/* OPD */}
+                                {/* Unit Kerja */}
                                 <div className="w-full sm:w-60">
                                     <Select2
                                         value={filters.organization_id ?? ''}
                                         onChange={(val) => applyFilter({ organization_id: val ? Number(val) : null })}
                                         options={[
-                                            { value: '', label: 'Semua OPD' },
+                                            { value: '', label: 'Semua Unit Kerja' },
                                             ...organizations.map((o) => ({
                                                 value: o.id,
                                                 label: o.name,
                                             })),
                                         ]}
-                                        placeholder="Semua OPD"
-                                        searchPlaceholder="Cari OPD..."
+                                        placeholder="Semua Unit Kerja"
+                                        searchPlaceholder="Cari unit kerja..."
                                     />
                                 </div>
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -44,14 +44,14 @@ tr:nth-child(even) td { background:#f8fafc; }
     <td class="hdr-title-cell">
       <div class="instansi">Pemerintah Kabupaten Mimika</div>
       <div class="doc-title">LAPORAN EVALUASI SAKIP — REKAP PREDIKAT</div>
-      <div class="doc-sub">Evaluasi Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; Sistem e-SAKIP SAKIP</div>
+      <div class="doc-sub">Evaluasi Kinerja &nbsp;|&nbsp; Tahun {{ $year }} &nbsp;|&nbsp; SIPERFORMA PUPR</div>
     </td>
     <td class="hdr-spacer-cell"></td>
   </tr>
 </table>
 <div class="meta">
   <div class="meta-l"><strong>Tahun Evaluasi:</strong> {{ $year }} &nbsp;|&nbsp;
-  <strong>Total OPD:</strong> {{ count($rows) }} &nbsp;|&nbsp;
+  <strong>Total Unit Kerja:</strong> {{ count($rows) }} &nbsp;|&nbsp;
   <strong>Istimewa/Baik:</strong> {{ $stats['sangat_baik'] }} &nbsp;|&nbsp;
   <strong>Butuh Perbaikan:</strong> {{ $stats['baik'] }} &nbsp;|&nbsp;
   <strong>Kurang/Sangat Kurang:</strong> {{ $stats['rendah'] }}</div>
@@ -62,7 +62,7 @@ tr:nth-child(even) td { background:#f8fafc; }
   <thead>
     <tr>
       <th style="width:22px">No</th>
-      <th style="width:160px">Nama OPD / Instansi</th>
+      <th style="width:160px">Nama Unit Kerja</th>
       <th style="width:55px">Perencanaan</th>
       <th style="width:55px">Pengukuran</th>
       <th style="width:55px">Pelaporan</th>
@@ -131,7 +131,7 @@ tr:nth-child(even) td { background:#f8fafc; }
   </div>
 </div>
 <div class="footer">
-  <div class="fl">Sistem e-SAKIP — SAKIP Kabupaten Mimika</div>
+  <div class="fl">SIPERFORMA PUPR — SAKIP Kabupaten Mimika</div>
   <div class="fr">Dicetak otomatis {{ $generatedAt }} WIT</div>
 </div>
 </body>

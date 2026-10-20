@@ -73,32 +73,32 @@ const modules: Module[] = [
             {
                 icon: TreePine,
                 label: 'Pohon Kinerja',
-                desc: 'Visualisasi hierarki tujuan → sasaran → program → kegiatan OPD secara dinamis',
+                desc: 'Visualisasi hierarki tujuan → sasaran → program → kegiatan Unit Kerja PUPR secara dinamis',
             },
             {
                 icon: Goal,
                 label: 'Perjanjian Kinerja',
-                desc: 'Manajemen PK pimpinan, Kepala OPD, dan pejabat unit kerja di lingkungan organisasi',
+                desc: 'Manajemen PK Kepala Dinas, Sekretaris, dan Kepala Bidang / Unit Kerja',
             },
             {
                 icon: BarChart3,
-                label: 'Monitoring OPD',
-                desc: 'Matriks status unggahan dokumen seluruh OPD dalam satu dashboard terintegrasi',
+                label: 'Monitoring Unit Kerja',
+                desc: 'Matriks status unggahan dokumen seluruh Unit Kerja dalam satu dashboard terintegrasi',
             },
             {
                 icon: Share2,
                 label: 'Cascading Kinerja',
-                desc: 'Relasi vertikal & horizontal antar pohon kinerja lintas level pemerintahan',
+                desc: 'Relasi vertikal & horizontal antar pohon kinerja lintas hierarki organisasi',
             },
             {
                 icon: Network,
                 label: 'Crosscutting',
-                desc: 'Pengelolaan indikator lintas OPD dan ketergantungan program bersama',
+                desc: 'Pengelolaan indikator lintas Bidang dan ketergantungan program bersama',
             },
             {
                 icon: ShieldAlert,
                 label: 'Manajemen Risiko',
-                desc: 'Identifikasi, mitigasi, dan pemantauan risiko program kinerja OPD',
+                desc: 'Identifikasi, mitigasi, dan pemantauan risiko program kinerja Unit Kerja',
             },
             {
                 icon: TrendingUp,
@@ -112,15 +112,15 @@ const modules: Module[] = [
         label: 'Pengukuran',
         icon: CheckCircle2,
         gradient: 'from-emerald-500 to-teal-600',
-        title: 'Modul Pengukuran & Realisasi OPD',
+        title: 'Modul Pengukuran & Realisasi Unit Kerja',
         subtitle: 'Pencatatan Capaian Kinerja Terverifikasi',
         description:
-            'Pencatatan realisasi capaian kinerja dan penyerapan anggaran OPD dengan verifikasi data dukung (evidence) berjenjang dan mekanisme jejak audit permanen.',
+            'Pencatatan realisasi capaian kinerja dan penyerapan anggaran Unit Kerja dengan verifikasi data dukung (evidence) berjenjang dan mekanisme jejak audit permanen.',
         subModules: [
             {
                 icon: Gauge,
                 label: 'Realisasi Kinerja',
-                desc: 'Input capaian kinerja per indikator & kegiatan OPD dengan verifikasi berlapis',
+                desc: 'Input capaian kinerja per indikator & kegiatan Unit Kerja dengan verifikasi berlapis',
             },
             {
                 icon: Target,
@@ -140,7 +140,7 @@ const modules: Module[] = [
             {
                 icon: Database,
                 label: 'Migrasi Data',
-                desc: 'Fasilitas migrasi data historis kinerja dari sistem lama ke e-SAKIP secara terstruktur',
+                desc: 'Fasilitas migrasi data historis kinerja dari sistem lama ke SIPERFORMA PUPR secara terstruktur',
             },
         ],
     },
@@ -152,12 +152,12 @@ const modules: Module[] = [
         title: 'Modul Evaluasi & Early Warning System',
         subtitle: 'Deteksi Dini & Penjaminan Akuntabilitas',
         description:
-            'Evaluasi mandiri OPD, reviu oleh Tim Evaluasi Internal, penerbitan rekomendasi LHE SAKIP, dan deteksi dini indikator yang meleset dari target.',
+            'Evaluasi mandiri Unit Kerja, reviu oleh Tim Evaluasi Internal, penerbitan rekomendasi LHE SAKIP, dan deteksi dini indikator yang meleset dari target.',
         subModules: [
             {
                 icon: NotebookPen,
                 label: 'Evaluasi SAKIP',
-                desc: 'Penilaian mandiri & evaluasi akuntabilitas kinerja OPD oleh Tim Evaluasi Internal',
+                desc: 'Penilaian mandiri & evaluasi akuntabilitas kinerja Unit Kerja oleh Tim Evaluasi Internal',
             },
             {
                 icon: AlertTriangle,
@@ -182,14 +182,14 @@ const modules: Module[] = [
         icon: BrainCircuit,
         gradient: 'from-primary to-primary/80',
         title: 'Modul AI & Analitik Prediktif',
-        subtitle: 'Kecerdasan Buatan untuk Pimpinan Daerah',
+        subtitle: 'Kecerdasan Buatan untuk Pimpinan Dinas',
         description:
-            'Asisten cerdas pimpinan daerah untuk penyusunan ringkasan eksekutif, identifikasi anomali data, dan proyeksi pencapaian target berbasis model statistik terverifikasi.',
+            'Asisten cerdas pimpinan dinas untuk penyusunan ringkasan eksekutif, identifikasi anomali data, dan proyeksi pencapaian target berbasis model statistik terverifikasi.',
         subModules: [
             {
                 icon: Bot,
                 label: 'AI Assistant',
-                desc: 'Ringkasan eksekutif instan, rekomendasi kebijakan, dan analisis capaian untuk Gubernur & Kepala OPD',
+                desc: 'Ringkasan eksekutif instan, rekomendasi kebijakan, dan analisis capaian untuk Kepala Dinas & Kepala Bidang',
             },
             {
                 icon: TrendingUp,
@@ -199,12 +199,12 @@ const modules: Module[] = [
             {
                 icon: BarChart3,
                 label: 'Dashboard Analitik',
-                desc: 'Visualisasi matriks kinerja antar OPD, heatmap realisasi, dan tren deviasi target',
+                desc: 'Visualisasi matriks kinerja antar Unit Kerja, heatmap realisasi, dan tren deviasi target',
             },
             {
                 icon: MessageCircle,
                 label: 'WhatsApp AI Chatbot',
-                desc: 'Chatbot WhatsApp untuk pimpinan OPD: tanya capaian kinerja langsung via pesan singkat',
+                desc: 'Chatbot WhatsApp untuk pimpinan & pejabat Unit Kerja: tanya capaian kinerja langsung via pesan singkat',
             },
             {
                 icon: FileText,
@@ -221,7 +221,7 @@ const modules: Module[] = [
         title: 'Modul Pelaporan & Executive Dashboard',
         subtitle: 'Laporan Kinerja Instansi Pemerintah Otomatis',
         description:
-            'Visualisasi matriks kinerja antar OPD, perbandingan target vs realisasi, analitik deviasi, serta ekspor Laporan Kinerja Instansi Pemerintah (LKjIP).',
+            'Visualisasi matriks kinerja antar Unit Kerja, perbandingan target vs realisasi, analitik deviasi, serta ekspor Laporan Kinerja Instansi Pemerintah (LKjIP).',
         subModules: [
             {
                 icon: FileText,
@@ -231,12 +231,12 @@ const modules: Module[] = [
             {
                 icon: BarChart3,
                 label: 'Dashboard Eksekutif',
-                desc: 'Ringkasan kinerja pimpinan: capaian, deviasi, dan status per OPD dalam satu layar',
+                desc: 'Ringkasan kinerja pimpinan: capaian, deviasi, dan status per Unit Kerja dalam satu layar',
             },
             {
                 icon: FileText,
                 label: 'Laporan Publik',
-                desc: 'Portal publik dokumen perencanaan dan laporan kinerja OPD yang dapat diakses tanpa login',
+                desc: 'Portal publik dokumen perencanaan dan laporan kinerja Dinas PUPR yang dapat diakses tanpa login',
             },
             {
                 icon: ScrollText,
@@ -263,17 +263,17 @@ const modules: Module[] = [
             {
                 icon: Users,
                 label: 'Manajemen Pengguna',
-                desc: 'Registrasi akun ASN OPD, whitelist WhatsApp, dan penugasan peran pengguna',
+                desc: 'Registrasi akun ASN Unit Kerja, whitelist WhatsApp, dan penugasan peran pengguna',
             },
             {
                 icon: Shield,
                 label: 'Hak Akses & Peran (RBAC)',
-                desc: 'Kontrol akses granular berbasis peran: Super Admin, Perangkat Daerah, Kepala OPD, Pelaksana, Publik',
+                desc: 'Kontrol akses granular berbasis peran: Super Admin, Kepala Dinas, Kepala Bidang, Pelaksana, Publik',
             },
             {
                 icon: Building2,
                 label: 'Manajemen Organisasi',
-                desc: 'Kelola data OPD, unit kerja, dan struktur organisasi perangkat daerah',
+                desc: 'Kelola data unit kerja, bidang, dan struktur organisasi Dinas PUPR',
             },
             {
                 icon: CalendarRange,
@@ -291,8 +291,8 @@ const modules: Module[] = [
 
 export default function Modules() {
     const { appConfig } = usePage<PageProps>().props;
-    const appName = appConfig?.appName || 'e-SAKIP';
-    const instansiName = appConfig?.instansiName || 'Pemerintah Daerah';
+    const appName = appConfig?.appName || 'SIPERFORMA PUPR';
+    const instansiName = appConfig?.instansiName || 'Pemerintah Kabupaten Mimika';
 
     const [active, setActive] = useState(0);
     const mod = modules[active];
@@ -401,7 +401,7 @@ export default function Modules() {
                         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-slate-100 pt-5 text-xs text-gray-500 dark:border-border dark:text-muted-foreground">
                             <div className="flex items-center gap-1.5">
                                 <Check className="h-3.5 w-3.5 text-emerald-500" />
-                                <span>Interoperabilitas: <strong className="text-gray-800 dark:text-foreground">Satu Data Papua API</strong></span>
+                                <span>Interoperabilitas: <strong className="text-gray-800 dark:text-foreground">Satu Data Mimika API</strong></span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <Check className="h-3.5 w-3.5 text-emerald-500" />
@@ -409,7 +409,7 @@ export default function Modules() {
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <Check className="h-3.5 w-3.5 text-emerald-500" />
-                                <span>Otorisasi: <strong className="text-gray-800 dark:text-foreground">RBAC ASN Papua</strong></span>
+                                <span>Otorisasi: <strong className="text-gray-800 dark:text-foreground">RBAC ASN Mimika</strong></span>
                             </div>
                         </div>
                     </div>
