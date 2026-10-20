@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace Database\Seeders;
 
@@ -307,19 +307,26 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($users as $u) {
-            $roleModel = Role::where('name', $u['role'])->first();
+            $user = User::where('employee_number', $u['nip'])
+                ->orWhere('email', $u['email'])
+                ->orWhere('email', str_replace(['@siperforma.local', 'kepala.dinas@', 'admin.pupr@'], ['@esakip.local', 'kepala.opd@', 'admin.opd@'], $u['email']))
+                ->first();
 
-            $user = User::updateOrCreate(
-                ['email' => $u['email']],
-                [
-                    'name' => $u['name'],
-                    'employee_number' => $u['nip'],
-                    'password' => $defaultPassword,
-                    'is_active' => true,
-                    'email_verified_at' => now(),
-                    'must_change_password' => false,
-                ]
-            );
+            $userData = [
+                'name' => $u['name'],
+                'email' => $u['email'],
+                'employee_number' => $u['nip'],
+                'password' => $defaultPassword,
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'must_change_password' => false,
+            ];
+
+            if ($user) {
+                $user->update($userData);
+            } else {
+                $user = User::create($userData);
+            }
 
             if ($roleModel) {
                 $user->roles()->syncWithoutDetaching([$roleModel->id]);
