@@ -1,1 +1,1 @@
-﻿{{-- Shared CSS for all analytics PDF blades --}}
+{{-- Shared CSS for all analytics PDF blades --}}

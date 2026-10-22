@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Nilai SAKIP Unit Kerja {{ $year }}</title>
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Nilai SAKIP Unit Kerja {{ $year }}</title>
 <style>* { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DejaVu Sans',sans-serif; font-size:8px; color:#1a1a2e; padding:14px 18px; }
 .hdr-table { width:100%; border-collapse:collapse; border:none; border-bottom:2px solid #1e3a5f; margin-bottom:10px; padding-bottom:8px; }

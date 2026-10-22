@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
 <title>Analitik Deviasi {{ $year }}</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
