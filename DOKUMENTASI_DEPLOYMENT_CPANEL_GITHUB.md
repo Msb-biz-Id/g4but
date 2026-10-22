@@ -116,7 +116,7 @@ cd ekasuarirepack
 Di dalam Terminal cPanel, masuk ke folder proyek dan buat file `.env`:
 
 ```bash
-cd ~/ekasuarirepack
+cd /www/wwwroot/pupr.msb.biz.id
 cp .env.example .env
 nano .env
 ```

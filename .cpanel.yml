@@ -4,6 +4,7 @@ deployment:
     - export DEPLOYPATH=/home/$USER/ekasuarirepack
     - /bin/cp -R * $DEPLOYPATH
     - cd $DEPLOYPATH
+    - composer install --no-dev --optimize-autoloader
     - php artisan migrate --force
     - php artisan optimize:clear
     - php artisan config:cache
